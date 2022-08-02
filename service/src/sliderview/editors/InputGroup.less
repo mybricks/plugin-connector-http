@@ -1,0 +1,92 @@
+.inputGroup {
+  padding: 1px 0 0 0;
+  flex: 1;
+
+  .item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+
+    .label {
+      text-align: right;
+      padding: 0 5px;
+      color: #777;
+    }
+
+    .type {
+      width: 30px;
+      text-align: left;
+      padding-right: 5px;
+    }
+
+    input {
+      border: 1px solid #DDD;
+      border-radius: 3px;
+      padding: 5px;
+      background: #FFF;
+      width: 60px;
+      margin-right: 10px;
+    }
+
+    select {
+      margin-right: 10px;
+    }
+
+    .iconRemove {
+      //margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .iconAdder {
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: normal;
+      color: #555;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 7px;
+      margin-left: 5px;
+
+      &:hover {
+        color: rgb(255, 255, 255);
+        background-color: #fa6400;
+      }
+    }
+  }
+
+  .adder {
+    display: flex;
+    //justify-content: flex-end;
+    padding-left: 5px;
+
+    &:first-child {
+      margin-top: 7px;
+    }
+
+    &:not(:first-child) {
+      justify-content: flex-end;
+      padding-right: 2px;
+    }
+
+    span {
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: normal;
+      color: #555;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 3px;
+
+      &:hover {
+        color: rgb(255, 255, 255);
+        background-color: #fa6400;
+      }
+    }
+  }
+}
