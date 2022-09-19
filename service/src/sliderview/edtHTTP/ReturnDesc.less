@@ -1,0 +1,114 @@
+.returnDesc {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  flex: 1;
+  border-radius: 3px;
+  margin-left: 6px;
+
+  .req {
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .params {
+      //border: 1px solid #EEE;
+      //border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .param {
+        display: flex;
+        align-items: center;
+        margin: 2px 0;
+
+        label {
+          padding: 0;
+          margin-right: 15px;
+          width: 55px;
+        }
+
+        input, textarea {
+          border: 1px solid #DDD;
+          border-radius: 3px;
+          padding: 5px;
+          background: #FFF;
+          width: 150px;
+        }
+      }
+    }
+
+    button {
+      background: #FFF;
+      width: 50px;
+    }
+  }
+
+  //.errMsg {
+  //  position: absolute;
+  //  left: 100px;
+  //  top: 9px;
+  //  color: red;
+  //  width: 100px;
+  //  font-style: italic;
+  //}
+}
+
+.returnDescErr {
+  border: 1px solid #FF0000 !important;
+
+  &::after {
+    content: attr(data-err);
+    color: red;
+    position: absolute;
+    bottom: -20px;
+  }
+}
+
+.response {
+  //border-top: 1px solid #EEE;
+  //padding: 5px 5px 0 85px;
+  padding: 5px;
+  flex: 1;
+  overflow: hidden;
+  min-height: 200px;
+
+  .toolbar {
+    display: flex;
+    //justify-content: flex-end;
+  }
+
+  .result {
+    //border-top: 1px dashed #DDD;
+    padding: 5px 15px 5px 5px;
+    color: #777;
+    height: 100%;
+    overflow-y: auto;
+
+    .logErr {
+      color: red;
+    }
+
+    .logInfo {
+
+    }
+
+    textarea {
+      display: flex;
+      width: 100%;
+      height: 300px;
+      padding: 10px;
+      background: #fcfcfc;
+      line-height: 16px;
+    }
+
+    .error {
+      width: 200px;
+      padding: 12px;
+      color: red;
+    }
+  }
+
+}

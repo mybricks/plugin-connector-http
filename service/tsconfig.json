@@ -23,11 +23,8 @@
     "jsx": "react",
     "baseUrl": ".",
     "paths": {
-      "@mybricks/sdk": [
-        "../../../mybricks/designer/sdk/types.d.ts"
-      ],
       "@mybricks/rxui": [
-        "../../../rxui"
+        "../../rxui"
       ]
     }
   },

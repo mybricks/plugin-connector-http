@@ -7,7 +7,7 @@ import {T_ReturnSchema} from "../../types";
 class MyCtx {
   panelEle: HTMLElement
 
-  popMenuStyle
+  popMarkMenuStyle
 
   schema: T_ReturnSchema
 
@@ -18,7 +18,7 @@ class MyCtx {
   setCurXPath(xpath: string) {
     this._curXPath = xpath
 
-    const [markAsReturnIsValid,validSchema] = validateSchema(this.schema.all,xpath)
+    const [markAsReturnIsValid, validSchema] = validateSchema(this.schema.all, xpath)
     this.schema.fact = validSchema
   }
 
@@ -29,7 +29,7 @@ class MyCtx {
   }
 
   blurPop() {
-    this.popMenuStyle = void 0
+    this.popMarkMenuStyle = void 0
   }
 
   markAsReturn() {
@@ -71,8 +71,8 @@ export default function ReturnShema({schema}: { schema: T_ReturnSchema }) {
     let allSchema = schema.all
 
     if (allSchema) {
-      const [markAsReturnIsValid,validSchema] = validateSchema(allSchema,schema._markAsReturn)
-      if(validSchema){
+      const [markAsReturnIsValid, validSchema] = validateSchema(allSchema, schema._markAsReturn)
+      if (validSchema) {
         schema.fact = validSchema
       }
     }
@@ -83,10 +83,8 @@ export default function ReturnShema({schema}: { schema: T_ReturnSchema }) {
     })
   }, [schema])
 
-
   function proAry(items) {
-    let sample = items
-    return proItem({val: {type: 'object', properties: sample}})
+    return proItem({val: items})
   }
 
   function proObj(properties, xpath) {
@@ -124,7 +122,13 @@ export default function ReturnShema({schema}: { schema: T_ReturnSchema }) {
             xpath !== void 0 ?
               <button onClick={evt(e => popMark(e, xpath)).stop}>
                 标记
-              </button> : null
+              </button> :
+              val.type === 'unknown' ? (
+                <button onClick={evt(e => repairType(val)).stop}>
+                  补充为字符类型
+                </button>
+              ) : null
+
           }
         </div>
         {jsx}
@@ -138,25 +142,34 @@ export default function ReturnShema({schema}: { schema: T_ReturnSchema }) {
 
     ctx.setCurXPath(xpath)
 
-    ctx.popMenuStyle = {
+    ctx.popMarkMenuStyle = {
       display: 'block',
       left: po.x,
       top: po.y + btnEle.offsetHeight
     }
 
     cvCtx.regBlurFn(() => {
-      ctx.popMenuStyle = void 0
+      ctx.popMarkMenuStyle = void 0
     })
   }, [])
+
+  const repairType = useCallback((val)=>{
+    val.type='string'
+  },[])
 
   return ctx.schema.all ? (
     <div className={css.returnParams} ref={ctx.setEle} onClick={ctx.blurPop}>
       <div>
         {proItem({val: ctx.schema.all, xpath: '', root: true})}
       </div>
-      <div className={css.popMenu} style={ctx.popMenuStyle}>
+      <div className={css.popMenu} style={ctx.popMarkMenuStyle}>
         <div className={css.menuItem} onClick={ctx.markAsReturn}>返回内容</div>
-        {/*<div className={css.menuItem}>错误判断</div>*/}
+        {/*<div className={css.menuItem}>判断是否成功</div>*/}
+        {/*<div className={css.menuItem}>错误信息</div>*/}
+      </div>
+      <div className={css.popMenu} style={ctx.popMarkMenuStyle}>
+        <div className={css.menuItem} onClick={ctx.markAsReturn}>返回内容</div>
+        {/*<div className={css.menuItem}>判断是否成功</div>*/}
         {/*<div className={css.menuItem}>错误信息</div>*/}
       </div>
     </div>

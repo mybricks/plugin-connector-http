@@ -83,11 +83,8 @@ function aryToSchema(ary: T_ReqParam[]) {
     })
 
     return {
-      type: 'list',
-      items: {
-        type: 'object',
-        properties
-      }
+      type: 'object',
+      properties
     }
   }
 }

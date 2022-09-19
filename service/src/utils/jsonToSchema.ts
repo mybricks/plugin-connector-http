@@ -5,6 +5,9 @@ export default function jsonToSchema(json): T_Schema {
   proItem({schema, val: json})
 
   if (schema.type) {
+
+    //console.log(schema)
+
     return schema
   } else {
     return
@@ -30,7 +33,14 @@ function proItem({schema, val, key, fromAry}: { schema, val, key?, fromAry? }) {
 // debugger
 //     }
     if (typeof val === 'object' && val) {
-      const properties = fromAry ? schema : {}
+      let nSchema
+      if(fromAry){
+        schema.type = 'object'
+        nSchema = schema.properties = {}
+      }
+
+      const properties = fromAry ? nSchema : {}
+
       if (!fromAry) {
         if (key) {
           schema[key] = {

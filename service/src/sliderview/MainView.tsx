@@ -2,7 +2,7 @@ import css from './MainView.less'
 import {evt, useComputed, useObservable} from "@mybricks/rxui";
 import SVContext from "./SVContext";
 import Toolbar from "./Toolbar";
-import HttpAPIEditor from "./HttpAPIEditor";
+import HttpAPIEditor from "./edtHTTP/HttpAPIEditor";
 import * as Icons from '../Icons'
 import {useCallback, useEffect, useLayoutEffect} from "react";
 
@@ -78,7 +78,7 @@ export default function ({data, connector}) {
   })
 
   // useEffect(() => {
-  //   svContext.editConnector(data.connectors[0])////TODO
+  //   svContext.editConnector(data.connectors[1])////TODO
   // }, [])
 
   const panelClick = useCallback(() => {
