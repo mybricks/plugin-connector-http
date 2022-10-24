@@ -48,6 +48,7 @@ export default class SVContext {
       const {id, title, url, method, script, paramAry, returnSchema} = conData
       this.connector.add({
         id,
+        type: 'http',
         title,
         url,
         method,

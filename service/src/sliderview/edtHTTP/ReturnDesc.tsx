@@ -103,6 +103,18 @@ export default function ReturnDesc({ctx}: { ctx: Ctx }) {
         }
 
         pushLog(`调用发生错误，结果 \n ${valStr}`, 'error')
+      }).then(val => {
+        try {
+          ctx.data.returnSchema = {
+            all: jsonToSchema(val),
+            fact: void 0,
+            _markAsReturn: ctx.data.returnSchema._markAsReturn
+          }
+        } catch (ex) {
+          console.error(ex)
+
+          pushLog(`调用发生错误，结果 \n ${ex.message}`, 'error')
+        }
       })
     }
   }, [])
