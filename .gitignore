@@ -1,9 +1,10 @@
 .git/
+.idea/
 .DS_Store
-node_modules/*
-/tmp
-.tmp
-.history
-**/*.js.map
+node_modules
 src/**/*.js
-/dist
+tags/*
+.history
+.vscode/
+.tmp/
+package-lock.json
