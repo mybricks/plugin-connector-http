@@ -415,7 +415,6 @@ export default function Sidebar({
       obj[key] = typeof cur === 'object' ? cur : { domain: cur };
       return obj;
     }, {});
-    const { serviceTemplate = {} } = context.projectData;
     return (
       <>
         <div
