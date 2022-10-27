@@ -9,7 +9,7 @@ import {
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DEFAULT_PANEL_VISIBLE, NO_PANEL_VISIBLE } from '../../constant';
 import { FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
-import Editor from '@fangzhou/code-editor';
+import Editor from '@mybricks/code-editor';
 import DebugForm from './debug';
 
 import css from '../../style-cssModules.less';

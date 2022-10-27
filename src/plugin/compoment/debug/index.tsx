@@ -1,12 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Form, Button, Switch, Input } from 'antd';
-import { callConnector } from '../../../ajax/pc';
+import { Form, Switch, Input } from 'antd';
 import { json as GenerateSchema } from 'generate-schema';
 import { get } from '../../../utils/lodash';
 import { getParams } from '../paramsEdit/utils';
 import { ROOTNAME } from '../../../constant';
-import { formatSchema, getDataByOutputKeys } from '../../../utils';
-import JSONView from '@fangzhou/code-editor';
+import {
+  formatSchema,
+  getDataByOutputKeys,
+  getDecodeString,
+} from '../../../utils';
+import JSONView from '@mybricks/code-editor';
 import ReturnShema from '../returnSchema';
 import { isEmpty } from '../../../utils/lodash';
 import ParamsEdit from '../paramsEdit';
@@ -85,27 +88,25 @@ export default function Debug({
       try {
         await panelForm.validateFields();
       } catch (error) {
-        // setError('暂无数据，请补全接口基本信息');
         return;
       }
-      // setLoading(true);
-      // setError(null);
       const originParams = sidebarContext.formModel.paramsList?.[0].data || [];
       const params = params2data(originParams);
       setData([]);
-      const data = await callConnector(
-        {
-          type: sidebarContext.formModel.type,
-          content: { ...sidebarContext.formModel },
-          script: getScript({
-            ...sidebarContext.formModel,
-            resultTransformDisabled: true,
-            globalParamsFn: context.projectData.serviceTemplate.paramsFn,
-          }),
-        },
-        { ...params },
-        { debug: true, context, resultTransformDisabled: true, prefix }
-      );
+      const data = await new Promise((resolve, reject) => {
+        eval(
+          `(${getDecodeString(
+            getScript({
+              ...sidebarContext.formModel,
+              resultTransformDisabled: true,
+              globalParamsFn: context.projectData.serviceTemplate.paramsFn,
+            })
+          )})`
+        )(params, { then: resolve, onError: reject }, { ajax: ({url, ...options}) => fetch(url, {
+          ...options,
+          body: options.data ? JSON.stringify(options.data): void 0
+        }).then(r => r.json()) });
+      });
 
       allDataRef.current = data;
       const { outputKeys } = sidebarContext.formModel;
@@ -118,7 +119,6 @@ export default function Debug({
       const inputSchema = GenerateSchema('', params || {});
       sidebarContext.formModel.outputSchema = outputSchema;
       sidebarContext.formModel.inputSchema = inputSchema;
-      // setLoading(false);
       setSchema({ ...sidebarContext.formModel.resultSchema });
     } catch (error) {
       console.log(error);

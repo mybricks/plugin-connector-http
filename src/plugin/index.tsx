@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { useComputed, useObservable, uuid } from '@mybricks/rxui';
 import { message, Tooltip, Button, Form, Input, Modal, Collapse } from 'antd';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import {
   exampleParamsFunc,
   exampleResultFunc,
@@ -21,7 +20,7 @@ import { FormOutlined } from '@ant-design/icons';
 import { DeleteOutlined } from '@ant-design/icons';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { CopyOutlined } from '@ant-design/icons';
-import Editor from '@fangzhou/code-editor';
+import Editor from '@mybricks/code-editor';
 import css from '../style-cssModules.less';
 import { get } from '../utils/lodash';
 import { formatDate } from '../utils/moment';
@@ -275,14 +274,9 @@ export default function Sidebar({
       }
       if (copy) {
         return (
-          <CopyToClipboard
-            text={item[key]}
-            onCopy={() => sendMsg('接口ID复制成功')}
-          >
-            <span
-              className={css['sidebar-panel-list-item__copy']}
-            >{`${item[key]}`}</span>
-          </CopyToClipboard>
+          <span
+            className={css['sidebar-panel-list-item__copy']}
+          >{`${item[key]}`}</span>
         );
       }
       if (link) {
@@ -479,12 +473,7 @@ export default function Sidebar({
                             {useMock ? 'Mock' : '接口'}
                           </div>
                           <div className={css.name}>
-                            <CopyToClipboard
-                              text={item.id}
-                              onCopy={() => sendMsg('接口ID复制成功')}
-                            >
-                              <span>{item.content.title}</span>
-                            </CopyToClipboard>
+                            <span>{item.content.title}</span>
                           </div>
                         </div>
                         <div className={css['sidebar-panel-list-item__right']}>
