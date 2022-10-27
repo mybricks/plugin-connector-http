@@ -1,0 +1,71 @@
+.toolbar {
+  height: 30px;
+  background: #FFF;
+  border-bottom: 1px solid #DDD;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px 0 15px;
+
+  .search {
+    border-radius: 3px;
+    height: 22px;
+    flex: 1;
+    padding: 0 5px 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    input {
+      flex: 1;
+      height: 100%;
+      padding: 5px;
+    }
+
+    svg {
+      width: 13px;
+
+      path {
+        stroke: #AAA;
+      }
+    }
+  }
+
+  .icon {
+    cursor: pointer;
+    color: #555;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+ 
+    &:hover {
+      color: #fa6400;
+    }
+
+    &:last-child {
+      margin-right: -4px;
+    }
+  }
+
+  .disable {
+    opacity: .3;
+    pointer-events: none;
+  }
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  &:hover {
+    color: rgb(255, 255, 255);
+    background-color: #fa6400;
+  }
+}
+
+.clickAble {
+  cursor: pointer;
+}

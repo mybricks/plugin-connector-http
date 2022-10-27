@@ -1,0 +1,434 @@
+@color: #fa6400;
+
+.sidebar-panel {
+  :global {
+    .ant-btn-sm {
+      height: 24px;
+      padding: 0px 5px;
+      font-size: 12px;
+      border-radius: 2px;
+    }
+    .ant-btn > .anticon + span,
+    .ant-btn > span + .anticon {
+      margin-left: 3px;
+    }
+  }
+
+  width: 320px;
+  background-color: #f7f7f7;
+  z-index: 9;
+  display: none;
+  height: 100%;
+
+  &-view {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  &-edit {
+    width: 560px;
+    position: absolute;
+    z-index: 1000;
+    top: 40px;
+    bottom: 25px;
+    left: 271px;
+    background-color: #f7f7f7;
+    border-right: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    display: none;
+    &-open {
+      display: block;
+    }
+    .sidebar-panel-title {
+      .actions {
+        :global {
+          .ant-btn {
+            font-size: 12px;
+            height: 22px;
+            line-height: 1;
+            border-radius: 3px;
+            + .ant-btn {
+              margin-left: 10px;
+            }
+          }
+        }
+      }
+    }
+
+    :global {
+      .ant-empty {
+        margin: 0;
+      }
+    }
+  }
+
+  &-open {
+    display: flex;
+  }
+
+  &-title {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 0 10px;
+    line-height: 32px;
+    height: 32px;
+    background-color: #f7f7f7;
+    display: flex;
+    justify-content: space-between;
+    user-select: text;
+  }
+  &-header {
+    background-color: #f7f7f7;
+    justify-content: space-between;
+
+    .icon {
+      cursor: pointer;
+      font-size: 16px;
+      &:hover {
+        color: @color;
+      }
+    }
+    &__title {
+      font-size: 14px;
+      font-weight: 666;
+      height: 40px;
+      padding: 0 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+    }
+    &__sub-title {
+      font-size: 14px;
+      font-weight: 666;
+      color: #333;
+      height: 100%;
+      line-height: 200%;
+      min-width: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid #ddd;
+      border-bottom: 1px solid #f7f7f7;
+      padding: 0 10px;
+      margin-bottom: -2px;
+    }
+    &__toolbar {
+      padding: 0 10px 0 6px;
+      height: 26px;
+      display: flex;
+      justify-content: space-between;
+      background-color: #fafafa;
+      align-items: center;
+    }
+  }
+}
+
+.sidebar-panel-content {
+  padding: 12px;
+  overflow-y: auto;
+  height: calc(100% - 32px);
+  font-size: 12px;
+
+  &-title {
+    height: 32px;
+    line-height: 32px;
+    background-color: #f7f7f7;
+    margin: 0 -12px;
+    padding: 0 12px;
+    margin-bottom: 12px;
+  }
+  .param-item {
+    display: flex;
+    width: 100%;
+    align-items: baseline;
+    &-actions {
+      margin-left: 12px;
+      :global {
+        .anticon {
+          &:hover {
+            color: @color;
+          }
+        }
+      }
+    }
+  }
+
+  :global {
+    .ant-radio-button-wrapper,
+    .ant-form-item-label > label,
+    .ant-collapse-header,
+    .ant-tree-list,
+    .ant-radio-button {
+      font-size: 12px;
+    }
+    .ant-table {
+      &-tbody {
+        tr.ant-table-row {
+          height: 40px !important;
+          td {
+            padding: 0 0 0 6px;
+            height: 40px !important;
+          }
+
+          input {
+            padding: 0 7px;
+          }
+        }
+      }
+      &-cell {
+        .ant-select-selector {
+          height: 24px !important;
+
+          padding: 0 7px !important;
+        }
+        .ant-select-selection {
+          &-search {
+            height: 24px !important;
+          }
+          &-item {
+            height: 24px !important;
+            line-height: 24px !important;
+          }
+        }
+      }
+    }
+    .ant-table-thead > tr > th {
+      font-size: 12px;
+      font-weight: 400;
+    }
+    .ant-btn {
+      font-size: 12px;
+      height: 22px;
+      line-height: 1;
+      padding: 0 7px;
+      border-radius: 3px;
+    }
+    .ant-collapse-content-box {
+      padding: 0 !important;
+    }
+    .ant-form-item {
+      margin-bottom: 18px;
+    }
+    .ant-input-sm {
+      font-size: 12px;
+    }
+    .ant-input-number {
+      &-handler-wrap,
+      &-input-wrap,
+      &-input {
+        height: 24px;
+        line-height: 24px;
+      }
+    }
+    .ant-radio-button-wrapper {
+      &:hover {
+        color: inherit;
+      }
+      &-checked {
+        box-shadow: none !important;
+        background: #616c81 !important;
+        border-color: #616c81 !important;
+        &::before {
+          background: #616c81 !important;
+        }
+      }
+    }
+  }
+}
+
+.sidebar-panel-list {
+  display: flex;
+  width: 100%;
+  overflow-y: auto;
+  flex: 1;
+  flex-direction: column;
+  &-item {
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    font-size: 12px;
+    padding: 0 3px;
+    position: relative;
+    cursor: pointer;
+    & > div {
+      &:first-child {
+        display: flex;
+        justify-content: space-between;
+      }
+    }
+    &.active {
+      background-color: rgba(247, 247, 247, 0.4);
+    }
+    &__name {
+      display: inline-block;
+      color: #aaa;
+      padding-right: 3px;
+      text-align: right;
+      width: 55px;
+    }
+    &__param {
+      display: flex;
+      margin-bottom: 4px;
+      font-size: 12px;
+      padding: 0 6px;
+      &:last-child {
+        padding-bottom: 0;
+        margin-bottom: 0;
+      }
+    }
+    &__expand {
+      background-color: #fff;
+      padding: 5px;
+      border-bottom: 1px solid #ccc;
+    }
+    &__copy {
+      &:hover {
+        color: #fa6400;
+      }
+    }
+    &:hover {
+      background-color: #f1f1f1;
+    }
+    .icon {
+      padding-left: 4px;
+      cursor: pointer;
+      color: rgba(0, 0, 0, 0.85);
+    }
+    .tag {
+      padding: 0 2px;
+      color: @color;
+      flex: 0 0 35px;
+      cursor: pointer;
+      &__no-address {
+        color: rgba(255, 0, 0, 0.8);
+      }
+    }
+    .name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    &__left {
+      padding: 12px 0;
+      display: flex;
+      min-width: 130px;
+      flex: 1;
+      &--tag {
+        display: none;
+        position: absolute;
+        right: 20px;
+        top: -14px;
+        transform: scale(0.8);
+        :global {
+          .ant-tag {
+            line-height: 1;
+            padding: 0;
+            border: none;
+          }
+        }
+      }
+    }
+
+    &__right {
+      display: flex;
+      flex: 0 0 58px;
+      align-items: center;
+      justify-content: space-between;
+      padding-right: 4px;
+      .action {
+        font-size: 12px;
+        cursor: pointer;
+        color: rgba(0, 0, 0, 0.85);
+
+        &:hover {
+          color: @color;
+        }
+      }
+    }
+  }
+}
+
+.sidebar-panel-code {
+  position: relative;
+  font-size: 12px;
+
+  &-icon {
+    position: absolute;
+    top: 28px;
+    right: 2px;
+    z-index: 1;
+    cursor: pointer;
+
+    &-full {
+      position: fixed;
+      top: 48px;
+      right: 50px;
+      z-index: 10;
+      cursor: pointer;
+    }
+  }
+
+  &-full {
+    position: fixed;
+    z-index: 9;
+    padding: 40px 42px 26px;
+    background-color: rgba(0, 0, 0, 0.45);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+  }
+
+  :global {
+    .ant-collapse-header {
+      background-color: #f7f7f7;
+      padding: 6px 0 !important;
+      margin: 0;
+    }
+    .ant-collapse-arrow {
+      padding: 0 !important;
+      font-size: 10px !important;
+      margin-right: 6px !important;
+    }
+    .ant-collapse-item {
+      margin-bottom: 0;
+    }
+    .ant-collapse-content-box {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    .ant-radio-button-wrapper {
+      height: 22px !important;
+      padding: 0 5px !important;
+    }
+  }
+}
+
+.sidebar-mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 346px;
+  z-index: 1000;
+  height: 100%;
+}
+
+.doc-link {
+  cursor: pointer;
+}
+
+.ct {
+  padding: 0 6px 0;
+  border-radius: 6px;
+  border: 1px solid #eee;
+  margin-bottom: 12px;
+}
+
+.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
