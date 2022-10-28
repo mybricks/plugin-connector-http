@@ -1,20 +1,20 @@
-import {
-  Button,
-  Collapse,
-  Form,
-  Input,
-  Radio,
-  Tooltip,
-} from 'antd';
+import { Button, Collapse, Form, Input, Radio, Tooltip } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { DEFAULT_PANEL_VISIBLE, NO_PANEL_VISIBLE } from '../../constant';
+import { DEFAULT_PANEL_VISIBLE, NO_PANEL_VISIBLE } from '../../../constant';
 import Editor from '@mybricks/code-editor';
-import DebugForm from './debug';
+import DebugForm from '../debug';
 
-import css from '../../style-cssModules.less';
+import css from './index.less';
 import ReactDOM from 'react-dom';
-import { fullScreen, fullScreenExit } from '../../icon'
-import { icons } from 'antd/lib/image/PreviewGroup';
+import { fullScreen, fullScreenExit } from '../../../icon';
+import RadioBtns from './RadioBtn';
+
+const methodOpts = [
+  {title: 'GET', value: 'GET'},
+  {title: 'POST', value: 'POST'},
+  {title: 'PUT', value: 'PUT'},
+  {title: 'DELETE', value: 'DELETE'}
+]
 
 export default function DefaultPanel({
   sidebarContext,
@@ -22,7 +22,7 @@ export default function DefaultPanel({
   onValuesChange,
   onFinish,
   form,
-  prefix
+  prefix,
 }: any) {
   const paramRef = useRef();
   const resultRef = useRef();
@@ -62,6 +62,12 @@ export default function DefaultPanel({
 
   const onDocLinkClick = useCallback(() => {
     window.open(form.getFieldValue('doc'));
+  }, []);
+
+  const setParams = useCallback((values) => {
+    sidebarContext.formModel = { ...sidebarContext.formModel, ...values };
+    sidebarContext.formModel.input = encodeURIComponent(values.input);
+    sidebarContext.formModel.output = encodeURIComponent(values.output);
   }, []);
 
   const onChange = (changedValue: any, allValues: any) => {
@@ -133,32 +139,60 @@ export default function DefaultPanel({
                 key='basicInfo'
                 style={{ position: 'relative' }}
               >
-                <Form.Item
-                  label='接口名称'
-                  name='title'
-                  rules={[{ required: true, message: '请输入接口名称' }]}
-                >
-                  <Input />
-                </Form.Item>
-                <Form.Item
-                  label='请求方法'
-                  name='method'
-                  rules={[{ required: true, message: '请选择请求方法' }]}
-                >
-                  <Radio.Group optionType='button' buttonStyle='solid'>
-                    <Radio.Button value='GET'>GET</Radio.Button>
-                    <Radio.Button value='POST'>POST</Radio.Button>
-                    <Radio.Button value='PUT'>PUT</Radio.Button>
-                    <Radio.Button value='DELETE'>DELETE</Radio.Button>
-                  </Radio.Group>
-                </Form.Item>
-                <Form.Item
-                  label='请求路径'
-                  name='path'
-                  rules={[{ required: true, message: '请填写请求路径' }]}
-                >
-                  <Input.TextArea />
-                </Form.Item>
+                <div className={css.item}>
+                  <label>
+                    <i>*</i>名称
+                  </label>
+                  {/* <div
+                    className={`${css.editor} ${css.textEdt} ${
+                      ctx.titleErr ? css.error : ''
+                    }`}
+                    data-err={ctx.titleErr}
+                  >
+                    <input
+                      type={'text'}
+                      placeholder={'服务接口的标题'}
+                      value={ctx.data.title}
+                      onChange={(e) => {
+                        ctx.titleErr = void 0;
+                        ctx.data.title = e.target.value;
+                      }}
+                    />
+                  </div> */}
+                </div>
+                <div className={css.item}>
+                  <label>
+                    <i>*</i>地址
+                  </label>
+                  {/* <div
+                    className={`${css.editor} ${css.textEdt} ${
+                      ctx.urlErr ? css.error : ''
+                    }`}
+                    data-err={ctx.urlErr}
+                  >
+                    <textarea
+                      value={ctx.data.url}
+                      placeholder={'接口的完整地址，以http://或https://开始'}
+                      onChange={(e) => {
+                        ctx.urlErr = void 0;
+                        ctx.data.url = e.target.value;
+                        ctx.data.returnSchema.fact = void 0; //clear it
+                      }}
+                    />
+                  </div> */}
+                </div>
+                <div className={css.sperator}></div>
+                <div className={css.item}>
+                  <label>
+                    <i>*</i>请求方法
+                  </label>
+                  <div className={css.editor}>
+                    <RadioBtns
+                      binding={[sidebarContext.formModel, 'method']}
+                      options={methodOpts}
+                    />
+                  </div>
+                </div>
               </Collapse.Panel>
             </Collapse>
           </div>
@@ -320,7 +354,12 @@ export default function DefaultPanel({
               key='debugInfo'
               style={{ position: 'relative' }}
             >
-              <DebugForm context={context} sidebarContext={sidebarContext} panelForm={form} prefix={prefix} />
+              <DebugForm
+                context={context}
+                sidebarContext={sidebarContext}
+                panelForm={form}
+                prefix={prefix}
+              />
             </Collapse.Panel>
           </Collapse>
         </div>

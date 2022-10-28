@@ -58,8 +58,7 @@ function params2data(params: any) {
 export default function Debug({
   sidebarContext,
   context,
-  panelForm,
-  prefix,
+  panelForm
 }: any) {
   const [form] = Form.useForm();
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
