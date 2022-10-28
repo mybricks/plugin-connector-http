@@ -20,6 +20,7 @@ export default function DefaultPanel({
   onValuesChange,
   onFinish,
   form,
+  style,
   prefix
 }: any) {
   const paramRef = useRef();
@@ -80,7 +81,7 @@ export default function DefaultPanel({
 
   return ReactDOM.createPortal(
     <div
-      style={{ left: 361 }}
+      style={{ left: 361, ...style }}
       className={`${css['sidebar-panel-edit']} ${
         sidebarContext.panelVisible & DEFAULT_PANEL_VISIBLE
           ? css['sidebar-panel-edit-open']

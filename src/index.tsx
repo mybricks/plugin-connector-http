@@ -1,5 +1,5 @@
 import Plugin from './plugin';
-import { Icon } from './icon';
+import { icon } from './icon';
 import data from './data';
 
 function pluginEntry(config?: any) {
@@ -12,7 +12,7 @@ function pluginEntry(config?: any) {
       sliderView: {
         tab: {
           title: '连接器',
-          icon: Icon,
+          icon: icon,
           apiSet: ['connector'],
           render(args: any) {
             // @ts-ignore

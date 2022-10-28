@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useComputed, useObservable, uuid } from '@mybricks/rxui';
 import { Button, Form, Input, Collapse } from 'antd';
@@ -24,7 +24,6 @@ import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 
 let sidebarContext: SidebarContext;
-let context: any;
 
 interface Iprops {
   context: any;
@@ -166,6 +165,7 @@ export default function Sidebar({
         templateVisible: false,
         templateForm: {},
         leftWidth: 271,
+        enableRenderPortal: false,
         updateService,
         addActions: addActions
           ? addActions.some(({ type }: any) => type === 'defalut')
@@ -376,11 +376,12 @@ export default function Sidebar({
           onFinish={onFinish}
           prefix={prefix}
           key={type}
+          style={{ top: ref.current?.getBoundingClientRect().top }}
         />
       ) : (
         ReactDOM.createPortal(
           <div
-            style={{ left: 361 }}
+            style={{ left: 361, top: ref.current?.getBoundingClientRect().top }}
             key={type}
             className={`${css['sidebar-panel-edit']} ${
               sidebarContext.panelVisible & visible
@@ -432,6 +433,10 @@ export default function Sidebar({
     updateService();
     serviceForm.setFieldsValue({ useMock: sidebarContext.formModel.useMock });
   };
+
+  useEffect(() => {
+    sidebarContext.enableRenderPortal = true;
+  }, [])
 
   const SidebarPanel = useComputed(() => {
     const list = data.connectors;
@@ -556,10 +561,10 @@ export default function Sidebar({
               })}
             </div>
           </div>
-          {renderAddActions()}
-          {ReactDOM.createPortal(
+          {sidebarContext.enableRenderPortal ? renderAddActions() : null}
+          {sidebarContext.enableRenderPortal ? ReactDOM.createPortal(
             <div
-              style={{ left: 361 }}
+              style={{ left: 361, top: ref.current?.getBoundingClientRect().top }}
               className={`${css['sidebar-panel-edit']} ${
                 sidebarContext.templateVisible
                   ? css['sidebar-panel-edit-open']
@@ -660,7 +665,7 @@ export default function Sidebar({
               </div>
             </div>,
             document.body
-          )}
+          ) : null}
         </div>
       </>
     );
