@@ -375,11 +375,13 @@ export default function Sidebar({
           onValuesChange={onValuesChange}
           onFinish={onFinish}
           prefix={prefix}
+          key={type}
         />
       ) : (
         ReactDOM.createPortal(
           <div
             style={{ left: 361 }}
+            key={type}
             className={`${css['sidebar-panel-edit']} ${
               sidebarContext.panelVisible & visible
                 ? css['sidebar-panel-edit-open']
@@ -480,6 +482,7 @@ export default function Sidebar({
                 const { useMock } = item.content;
                 return (
                   <div
+                    key={item.id}
                   >
                     <div
                       key={item.id}

@@ -40,21 +40,21 @@ export default function DefaultPanel({
   }, []);
 
   const onParamsEditorFullscreen = () => {
-    paramRef.current.classList.add(css['sidebar-panel-code-full']);
+    paramRef.current?.classList.add(css['sidebar-panel-code-full']);
     sidebarContext.fullscreenParamsEditor = true;
   };
 
   const onParamsEditorFullscreenExit = () => {
-    paramRef.current.classList.remove(css['sidebar-panel-code-full']);
+    paramRef.current?.classList.remove(css['sidebar-panel-code-full']);
     sidebarContext.fullscreenParamsEditor = false;
   };
   const onResultEditorFullscreen = () => {
     sidebarContext.fullscrenResultEditor = true;
-    resultRef.current.classList.add(css['sidebar-panel-code-full']);
+    resultRef.current?.classList.add(css['sidebar-panel-code-full']);
   };
   const onResultEditorFullscreenExit = () => {
     sidebarContext.fullscrenResultEditor = false;
-    resultRef.current.classList.remove(css['sidebar-panel-code-full']);
+    resultRef.current?.classList.remove(css['sidebar-panel-code-full']);
   };
 
   const onDocLinkClick = useCallback(() => {

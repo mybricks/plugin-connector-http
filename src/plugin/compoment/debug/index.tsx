@@ -64,6 +64,7 @@ export default function Debug({
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
   const allDataRef = useRef<any>();
+  const [errorInfo, setError] = useState('');
 
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
@@ -92,6 +93,7 @@ export default function Debug({
       const originParams = sidebarContext.formModel.paramsList?.[0].data || [];
       const params = params2data(originParams);
       setData([]);
+      setError('');
       const data = await sidebarContext.connector.test({
         type: 'http',
         script: getDecodeString(
@@ -114,8 +116,11 @@ export default function Debug({
       sidebarContext.formModel.outputSchema = outputSchema;
       sidebarContext.formModel.inputSchema = inputSchema;
       setSchema({ ...sidebarContext.formModel.resultSchema });
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      console.log(error)
+      sidebarContext.formModel.outputSchema = void 0;
+      sidebarContext.formModel.resultSchema = void 0;
+      setError(error)
     }
   };
 
@@ -202,7 +207,7 @@ export default function Debug({
         <Params onDebugClick={onDebugClick} ctx={sidebarContext} />
       </Form.Item>
       <Form.Item label='返回数据' name='outputKeys'>
-        <ReturnShema schema={schema} />
+        <ReturnShema schema={schema} error={errorInfo} />
       </Form.Item>
       <DataShow data={remoteData} />
     </Form>
