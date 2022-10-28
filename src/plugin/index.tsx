@@ -86,7 +86,7 @@ export default function Sidebar({
           updateTime: Date.now(),
         };
         serviceList.push(serviceItem);
-  
+
         sidebarContext.connector.add({
           id,
           type: sidebarContext.formModel.type,
