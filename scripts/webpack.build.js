@@ -19,14 +19,7 @@ module.exports = merge(commonCfg, {
       react: 'react',
       'react-dom': 'react-dom',
       '@mybricks/rxui': '@mybricks/rxui',
-      '@ant-design/icons': '@ant-design/icons',
       antd: 'antd',
-      '@ant-design/icons': {
-        commonjs: '@ant-design/icons',
-        commonjs2: '@ant-design/icons',
-        amd: '@ant-design/icons',
-        root: 'icons',
-      },
     },
   ],
   plugins: [

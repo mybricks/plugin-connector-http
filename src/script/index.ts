@@ -29,13 +29,12 @@ function getScript(serviceItem) {
         const newParams = eval(`(${globalParamsFn})`)(
           method === 'GET' ? { params, url } : { data: params, url }
         );
-        const opts = {
-          method,
-          url,
-          ...eval(`(${inputFn})`)({ url, ...newParams }),
-        };
+        newParams.url = url;
+        const options = eval(`(${inputFn})`)(newParams);
+        options.method = options.method || method;
+        options.url = options.url || url;
         config
-          .ajax(opts)
+          .ajax(options)
           .then((response) => {
             if (response.status !== 200) {
               throw response;

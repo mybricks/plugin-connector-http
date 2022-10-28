@@ -1,6 +1,7 @@
 .git/
 .idea/
 .DS_Store
+lib
 node_modules
 src/**/*.js
 tags/*

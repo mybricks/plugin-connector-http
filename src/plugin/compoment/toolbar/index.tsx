@@ -1,6 +1,5 @@
 import css from './index.less';
-import { PlusOutlined } from '@ant-design/icons';
-
+import { plus } from '../../../icon'
 import React, { useCallback } from 'react';
 import {
   KDEV_PANEL_VISIBLE,
@@ -35,7 +34,7 @@ export default function ({ ctx }: any) {
     if (!ctx.addActions || ctx.addActions.length === 1) {
       return (
         <div className={css.icon} onClick={onAddClick}>
-          <PlusOutlined />
+          {plus}
         </div>
       );
     }
@@ -50,7 +49,7 @@ export default function ({ ctx }: any) {
     return (
       <Dropdown overlay={menu} trigger={['click']}>
         <div className={css.icon}>
-          <PlusOutlined />
+          {plus}
         </div>
       </Dropdown>
     );

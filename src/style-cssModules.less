@@ -84,6 +84,8 @@
     .icon {
       cursor: pointer;
       font-size: 16px;
+      display: flex;
+      align-items: center;
       &:hover {
         color: @color;
       }
@@ -294,9 +296,17 @@
       background-color: #f1f1f1;
     }
     .icon {
-      padding-left: 4px;
       cursor: pointer;
       color: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      svg {
+        max-width: 12px;
+      }
+    }
+    .iconExpand {
+      transform: rotate(90deg);
+      transition: 0.1s;
     }
     .tag {
       padding: 0 2px;
@@ -313,7 +323,7 @@
       white-space: nowrap;
     }
     &__left {
-      padding: 12px 0;
+      padding: 12px 0 12px 4px;
       display: flex;
       min-width: 130px;
       flex: 1;
@@ -340,6 +350,8 @@
       justify-content: space-between;
       padding-right: 4px;
       .action {
+        display: flex;
+        align-items: center;
         font-size: 12px;
         cursor: pointer;
         color: rgba(0, 0, 0, 0.85);

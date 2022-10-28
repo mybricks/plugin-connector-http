@@ -8,12 +8,13 @@ import {
 } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DEFAULT_PANEL_VISIBLE, NO_PANEL_VISIBLE } from '../../constant';
-import { FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
 import Editor from '@mybricks/code-editor';
 import DebugForm from './debug';
 
 import css from '../../style-cssModules.less';
 import ReactDOM from 'react-dom';
+import { fullScreen, fullScreenExit } from '../../icon'
+import { icons } from 'antd/lib/image/PreviewGroup';
 
 export default function DefaultPanel({
   sidebarContext,
@@ -174,14 +175,14 @@ export default function DefaultPanel({
                     onClick={onParamsEditorFullscreenExit}
                     className={css['sidebar-panel-code-icon-full']}
                   >
-                    <FullscreenExitOutlined style={{ fontSize: 16 }} />
+                    {fullScreenExit}
                   </div>
                 ) : (
                   <div
                     onClick={onParamsEditorFullscreen}
                     className={css['sidebar-panel-code-icon']}
                   >
-                    <FullscreenOutlined style={{ fontSize: 12 }} />
+                    {fullScreen}
                   </div>
                 )}
                 <Form.Item
@@ -232,14 +233,14 @@ export default function DefaultPanel({
                     onClick={onResultEditorFullscreenExit}
                     className={css['sidebar-panel-code-icon-full']}
                   >
-                    <FullscreenExitOutlined style={{ fontSize: 16 }} />
+                    {fullScreen}
                   </div>
                 ) : (
                   <div
                     onClick={onResultEditorFullscreen}
                     className={css['sidebar-panel-code-icon']}
                   >
-                    <FullscreenOutlined style={{ fontSize: 12 }} />
+                    {fullScreen}
                   </div>
                 )}
                 <Form.Item

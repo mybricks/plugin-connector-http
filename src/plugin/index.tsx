@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { useComputed, useObservable, uuid } from '@mybricks/rxui';
-import { message, Tooltip, Button, Form, Input, Modal, Collapse } from 'antd';
+import { Button, Form, Input, Collapse } from 'antd';
 import {
   exampleParamsFunc,
   exampleResultFunc,
@@ -14,12 +14,6 @@ import {
   KDEV_PANEL_VISIBLE,
   NO_PANEL_VISIBLE,
 } from '../constant';
-import { CaretRightOutlined, SettingOutlined } from '@ant-design/icons';
-import { CaretDownOutlined } from '@ant-design/icons';
-import { FormOutlined } from '@ant-design/icons';
-import { DeleteOutlined } from '@ant-design/icons';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
-import { CopyOutlined } from '@ant-design/icons';
 import Editor from '@mybricks/code-editor';
 import css from '../style-cssModules.less';
 import { get } from '../utils/lodash';
@@ -27,6 +21,7 @@ import { formatDate } from '../utils/moment';
 import DefaultPanel from './compoment/defaultPanel';
 import { getScript } from '../script';
 import Toolbar from './compoment/toolbar';
+import * as Icons from '../icon';
 
 let sidebarContext: SidebarContext;
 let context: any;
@@ -48,11 +43,8 @@ interface Iconnector {
   add: (params: any) => null;
   remove: (id: number | string) => null;
   update: (params: any) => null;
+  test: (...args: any) => any;
 }
-
-const sendMsg = (msg?: string) => {
-  message.info(msg || '文档已锁定');
-};
 
 const interfaceParams = [
   { key: 'id', name: '标识', copy: true },
@@ -64,15 +56,9 @@ const interfaceParams = [
   { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
 ];
 
-const templateParams = [
-  { key: 'prt', name: '预发环境', isTpl: true },
-  { key: 'staging', name: '测试环境', isTpl: true },
-];
-
 export default function Sidebar({
   context: myCtx,
   contentType,
-  domainVisible = true,
   templateConfig = {},
   addActions,
   connector,
@@ -125,6 +111,7 @@ export default function Sidebar({
           update: (args: any) => {
             connector.update({ ...args });
           },
+          test: (...args: any) => connector.test(...args)
         },
       }),
     { to: 'children' }
@@ -171,25 +158,14 @@ export default function Sidebar({
     sidebarContext.formModel = { ...item.content };
     sidebarContext.formModel.title += ' 复制';
     await createService();
-    message.success('复制成功');
+    // message.success('复制成功');
   }, []);
 
   const onRemoveItem = useCallback(async (item) => {
-    Modal.confirm({
-      title: `确认删除 ${item.content.title} 吗`,
-      icon: <ExclamationCircleOutlined />,
-      className: 'fangzhou-theme',
-      onOk: async () => {
-        await removeService(String(item.id));
-        sidebarContext.panelVisible = NO_PANEL_VISIBLE;
-      },
-      getContainer: () => document.body,
-    });
-  }, []);
-
-  const onRemoveTemplate = useCallback(() => {
-    context.projectData.serviceTemplate = {};
-    sidebarContext.templateVisible = false;
+    if (confirm(`确认删除 ${item.content.title} 吗`)) {
+      await removeService(String(item.id));
+      sidebarContext.panelVisible = NO_PANEL_VISIBLE;
+    }
   }, []);
 
   const addDefaultService = useCallback(async () => {
@@ -236,12 +212,12 @@ export default function Sidebar({
     if (sidebarContext.isEdit) {
       await updateService();
     } else {
-      message.success('添加成功');
+      // message.success('添加成功');
       await createService();
     }
   };
 
-  const onValuesChange = useCallback(({ useMock, mockAddress }, values) => {
+  const onValuesChange = useCallback((_, values) => {
     setParams(values);
   }, []);
 
@@ -424,7 +400,7 @@ export default function Sidebar({
               <div className={css['sidebar-panel-header__title']}>
                 <span>服务连接</span>
                 <div className={css.icon} onClick={onGlobalConfigClick}>
-                  <SettingOutlined />
+                  {Icons.set}
                 </div>
               </div>
               <Toolbar ctx={sidebarContext} />
@@ -442,11 +418,7 @@ export default function Sidebar({
                 );
                 const { useMock } = item.content;
                 return (
-                  <Tooltip
-                    key={item.id}
-                    placement='right'
-                    title='请先配置Mock地址，再开启Mock'
-                    visible={item.id === sidebarContext.toolTipId}
+                  <div
                   >
                     <div
                       key={item.id}
@@ -459,12 +431,8 @@ export default function Sidebar({
                           onClick={(e) => onItemClick(e, item)}
                           className={css['sidebar-panel-list-item__left']}
                         >
-                          <div className={css.icon}>
-                            {!expand ? (
-                              <CaretRightOutlined />
-                            ) : (
-                              <CaretDownOutlined />
-                            )}
+                          <div className={`${css.icon} ${expand ? css.iconExpand : ''}`}>
+                            {Icons.arrowR}
                           </div>
                           <div
                             className={css.tag}
@@ -477,31 +445,25 @@ export default function Sidebar({
                           </div>
                         </div>
                         <div className={css['sidebar-panel-list-item__right']}>
-                          <Tooltip placement='top' title='编辑'>
                             <div
                               ref={clickRef}
                               className={css.action}
                               onClick={() => onEditItem(item)}
                             >
-                              <FormOutlined />
+                              {Icons.edit}
                             </div>
-                          </Tooltip>
-                          <Tooltip placement='top' title='复制'>
                             <div
                               className={css.action}
                               onClick={() => onCopyItem(item)}
                             >
-                              <CopyOutlined />
+                              {Icons.copy}
                             </div>
-                          </Tooltip>
-                          <Tooltip placement='top' title='删除'>
                             <div
                               className={css.action}
                               onClick={() => onRemoveItem(item)}
                             >
-                              <DeleteOutlined />
+                              {Icons.remove}
                             </div>
-                          </Tooltip>
                         </div>
                       </div>
                     </div>
@@ -525,7 +487,7 @@ export default function Sidebar({
                         })}
                       </div>
                     ) : null}
-                  </Tooltip>
+                  </div>
                 );
               })}
             </div>
@@ -713,7 +675,7 @@ async function removeService(id: string) {
     });
     context.projectData.serviceList = list;
     sidebarContext.connector.remove(id);
-    message.success('删除成功');
+    // message.success('删除成功');
     resolve('');
   });
 }
