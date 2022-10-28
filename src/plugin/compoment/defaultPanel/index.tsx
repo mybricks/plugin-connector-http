@@ -5,6 +5,7 @@ import Editor from '@mybricks/code-editor';
 import DebugForm from '../debug';
 
 import css from './index.less';
+import parenetCss from '../../../style-cssModules.less';
 import ReactDOM from 'react-dom';
 import { fullScreen, fullScreenExit } from '../../../icon';
 import RadioBtns from './RadioBtn';
@@ -34,7 +35,6 @@ export default function DefaultPanel({
     sidebarContext.formModel = {};
     sidebarContext.isEdit = false;
   }, []);
-
   const onServiceSubmit = useCallback(async () => {
     if (!context.isLock) return;
     form.validateFields().then(() => {
@@ -90,16 +90,16 @@ export default function DefaultPanel({
   return ReactDOM.createPortal(
     <div
       style={{ left: 361 }}
-      className={`${css['sidebar-panel-edit']} ${
+      className={`${parenetCss['sidebar-panel-edit']} ${
         sidebarContext.panelVisible & DEFAULT_PANEL_VISIBLE
-          ? css['sidebar-panel-edit-open']
+          ? parenetCss['sidebar-panel-edit-open']
           : ''
       }`}
     >
-      <div className={css['sidebar-panel-title']}>
+      <div className={parenetCss['sidebar-panel-title']}>
         <div>{sidebarContext.formModel?.title}</div>
         <div className='fangzhou-theme'>
-          <div className={css['actions']}>
+          <div className={parenetCss['actions']}>
             {!sidebarContext.isEidt && (
               <Button
                 type='primary'
@@ -116,7 +116,7 @@ export default function DefaultPanel({
           </div>
         </div>
       </div>
-      <div className={css['sidebar-panel-content']}>
+      <div className={parenetCss['sidebar-panel-content']}>
         <Form
           className='fangzhou-theme'
           form={form}
@@ -129,7 +129,7 @@ export default function DefaultPanel({
         >
           <div className={css.ct}>
             <Collapse
-              className={css['sidebar-panel-code']}
+              className={parenetCss['sidebar-panel-code']}
               ghost
               defaultActiveKey={['basicInfo']}
             >
@@ -143,43 +143,42 @@ export default function DefaultPanel({
                   <label>
                     <i>*</i>名称
                   </label>
-                  {/* <div
+                  <div
                     className={`${css.editor} ${css.textEdt} ${
-                      ctx.titleErr ? css.error : ''
+                      sidebarContext.titleErr ? css.error : ''
                     }`}
-                    data-err={ctx.titleErr}
+                    data-err={sidebarContext.titleErr}
                   >
                     <input
                       type={'text'}
                       placeholder={'服务接口的标题'}
-                      value={ctx.data.title}
+                      defaultValue={sidebarContext.formModel.title}
                       onChange={(e) => {
-                        ctx.titleErr = void 0;
-                        ctx.data.title = e.target.value;
+                        sidebarContext.titleErr = void 0;
+                        sidebarContext.formModel.title = e.target.value;
                       }}
                     />
-                  </div> */}
+                  </div>
                 </div>
                 <div className={css.item}>
                   <label>
                     <i>*</i>地址
                   </label>
-                  {/* <div
+                  <div
                     className={`${css.editor} ${css.textEdt} ${
-                      ctx.urlErr ? css.error : ''
+                      sidebarContext.urlErr ? css.error : ''
                     }`}
-                    data-err={ctx.urlErr}
+                    data-err={sidebarContext.urlErr}
                   >
                     <textarea
-                      value={ctx.data.url}
-                      placeholder={'接口的完整地址，以http://或https://开始'}
+                      value={sidebarContext.formModel.path}
+                      placeholder={'接口的请求路径'}
                       onChange={(e) => {
-                        ctx.urlErr = void 0;
-                        ctx.data.url = e.target.value;
-                        ctx.data.returnSchema.fact = void 0; //clear it
+                        sidebarContext.urlErr = void 0;
+                        sidebarContext.formModel.path = e.target.value;
                       }}
                     />
-                  </div> */}
+                  </div>
                 </div>
                 <div className={css.sperator}></div>
                 <div className={css.item}>
@@ -197,7 +196,7 @@ export default function DefaultPanel({
             </Collapse>
           </div>
           <div className={css.ct}>
-            <Collapse className={css['sidebar-panel-code']} ghost>
+            <Collapse className={parenetCss['sidebar-panel-code']} ghost>
               <Collapse.Panel
                 forceRender
                 header='请求参数处理函数'
@@ -207,28 +206,18 @@ export default function DefaultPanel({
                 {sidebarContext.fullscreenParamsEditor ? (
                   <div
                     onClick={onParamsEditorFullscreenExit}
-                    className={css['sidebar-panel-code-icon-full']}
+                    className={parenetCss['sidebar-panel-code-icon-full']}
                   >
                     {fullScreenExit}
                   </div>
                 ) : (
                   <div
                     onClick={onParamsEditorFullscreen}
-                    className={css['sidebar-panel-code-icon']}
+                    className={parenetCss['sidebar-panel-code-icon']}
                   >
                     {fullScreen}
                   </div>
                 )}
-                <Form.Item
-                  name='input'
-                  style={{
-                    width: '100%',
-                    marginBottom: 8,
-                    height: 300,
-                    overflow: 'auto',
-                  }}
-                  wrapperCol={{ span: 24 }}
-                >
                   <Editor
                     onMounted={(editor, monaco, container) => {
                       paramRef.current = container;
@@ -238,6 +227,10 @@ export default function DefaultPanel({
                         }
                       };
                     }}
+                    onChange={(code: string) => {
+                      sidebarContext.formModel.input = encodeURIComponent(code);
+                    }}
+                    value={decodeURIComponent(sidebarContext.formModel.input)}
                     width='100%'
                     height='100%'
                     minHeight={300}
@@ -250,12 +243,11 @@ export default function DefaultPanel({
                     }}
                     minimap={{ enabled: false }}
                   />
-                </Form.Item>
               </Collapse.Panel>
             </Collapse>
           </div>
           <div className={css.ct}>
-            <Collapse className={css['sidebar-panel-code']} ghost>
+            <Collapse className={parenetCss['sidebar-panel-code']} ghost>
               <Collapse.Panel
                 forceRender
                 header='返回结果处理函数'
@@ -265,14 +257,14 @@ export default function DefaultPanel({
                 {sidebarContext.fullscrenResultEditor ? (
                   <div
                     onClick={onResultEditorFullscreenExit}
-                    className={css['sidebar-panel-code-icon-full']}
+                    className={parenetCss['sidebar-panel-code-icon-full']}
                   >
                     {fullScreen}
                   </div>
                 ) : (
                   <div
                     onClick={onResultEditorFullscreen}
-                    className={css['sidebar-panel-code-icon']}
+                    className={parenetCss['sidebar-panel-code-icon']}
                   >
                     {fullScreen}
                   </div>
@@ -296,6 +288,10 @@ export default function DefaultPanel({
                         }
                       };
                     }}
+                    onChange={(code: string) => {
+                      sidebarContext.formModel.output = encodeURIComponent(code);
+                    }}
+                    value={decodeURIComponent(sidebarContext.formModel.output)}
                     width='100%'
                     height='100%'
                     minHeight={300}
@@ -313,7 +309,7 @@ export default function DefaultPanel({
             </Collapse>
           </div>
           <div className={css.ct}>
-            <Collapse className={css['sidebar-panel-code']} ghost>
+            <Collapse className={parenetCss['sidebar-panel-code']} ghost>
               <Collapse.Panel
                 forceRender
                 header='其他信息'
@@ -327,7 +323,7 @@ export default function DefaultPanel({
                   label={
                     <Tooltip placement='bottom' title='点击跳转'>
                       <span
-                        className={css['doc-link']}
+                        className={parenetCss['doc-link']}
                         onClick={onDocLinkClick}
                       >
                         文档链接
@@ -344,7 +340,7 @@ export default function DefaultPanel({
         </Form>
         <div className={css.ct}>
           <Collapse
-            className={css['sidebar-panel-code']}
+            className={parenetCss['sidebar-panel-code']}
             defaultActiveKey={['debugInfo']}
             ghost
           >

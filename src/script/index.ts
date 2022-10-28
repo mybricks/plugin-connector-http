@@ -41,7 +41,7 @@ function getScript(serviceItem) {
             }
             const res = eval(`(${outputFn})`)(
               response.data,
-              Object.assign({}, opts),
+              Object.assign({}, options),
               {
                 throwStatusCodeError: (data) => {
                   onError(data);

@@ -1,4 +1,5 @@
 import css from './index.less';
+import React from 'react';
 
 export default function RadioBtns({ options, binding }) {
   const [from, key] = binding;
@@ -11,7 +12,7 @@ export default function RadioBtns({ options, binding }) {
             className={`${css.opt} ${
               opt.value === from[key] ? css.selected : ''
             }`}
-            onClick={(e) => {
+            onClick={() => {
               from[key] = opt.value;
             }}
           >
