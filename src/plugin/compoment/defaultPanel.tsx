@@ -14,11 +14,9 @@ import DebugForm from './debug';
 import css from '../../style-cssModules.less';
 import ReactDOM from 'react-dom';
 import { fullScreen, fullScreenExit } from '../../icon'
-import { icons } from 'antd/lib/image/PreviewGroup';
 
 export default function DefaultPanel({
   sidebarContext,
-  context,
   onValuesChange,
   onFinish,
   form,
@@ -36,7 +34,6 @@ export default function DefaultPanel({
   }, []);
 
   const onServiceSubmit = useCallback(async () => {
-    if (!context.isLock) return;
     form.validateFields().then(() => {
       form.submit();
     });
@@ -98,7 +95,6 @@ export default function DefaultPanel({
               <Button
                 type='primary'
                 size='small'
-                disabled={!context.isLock}
                 onClick={() => onServiceSubmit()}
               >
                 保存
@@ -320,7 +316,7 @@ export default function DefaultPanel({
               key='debugInfo'
               style={{ position: 'relative' }}
             >
-              <DebugForm context={context} sidebarContext={sidebarContext} panelForm={form} prefix={prefix} />
+              <DebugForm sidebarContext={sidebarContext} panelForm={form} prefix={prefix} />
             </Collapse.Panel>
           </Collapse>
         </div>

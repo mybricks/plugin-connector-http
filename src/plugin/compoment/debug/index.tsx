@@ -57,7 +57,6 @@ function params2data(params: any) {
 
 export default function Debug({
   sidebarContext,
-  context,
   panelForm,
   prefix,
 }: any) {
@@ -99,7 +98,6 @@ export default function Debug({
           getScript({
             ...sidebarContext.formModel,
             resultTransformDisabled: true,
-            globalParamsFn: context.projectData.serviceTemplate.paramsFn,
           })
         )
       }, params);
@@ -112,6 +110,7 @@ export default function Debug({
       const outputSchema = GenerateSchema('', outputData);
       formatSchema(outputSchema);
       const inputSchema = GenerateSchema('', params || {});
+      formatSchema(inputSchema);
       sidebarContext.formModel.outputSchema = outputSchema;
       sidebarContext.formModel.inputSchema = inputSchema;
       setSchema({ ...sidebarContext.formModel.resultSchema });

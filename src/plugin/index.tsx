@@ -36,6 +36,8 @@ interface Iprops {
   domainVisible: boolean;
   connector: Iconnector;
   addActions?: any[];
+  data: any[];
+  serviceTemplate: any;
   prefix: string;
 }
 
@@ -57,26 +59,91 @@ const interfaceParams = [
 ];
 
 export default function Sidebar({
-  context: myCtx,
   contentType,
   templateConfig = {},
   addActions,
   connector,
   prefix,
+  data,
+  serviceTemplate = {}
 }: Iprops) {
-  context = myCtx;
   const ref = useRef();
-  useEffect(() => {
-    context.projectData.serviceTemplate = {
-      ...templateConfig.initialValues,
-      paramsFn: encodeURIComponent(exampleParamsFunc),
-      ...context.projectData.serviceTemplate,
-    };
-    if (!context.projectData.debugDomain) {
-      context.projectData.debugDomain = templateConfig.debugDomain;
-    }
-  }, []);
+  const updateService = useCallback(async(action?: string) => {
+    return new Promise((resolve) => {
+      const { id = uuid(), ...others }: any = sidebarContext.formModel;
+      if (action === 'create') {
+        const serviceList: any[] = data.connectors;
+        const serviceItem = {
+          id,
+          type: sidebarContext.type,
+          content: {
+            input: encodeURIComponent(exampleParamsFunc),
+            output: encodeURIComponent(exampleResultFunc),
+            inputSchema: { type: 'object' },
+            ...others,
+          },
+          createTime: Date.now(),
+          updateTime: Date.now(),
+        };
+        serviceList.push(serviceItem);
+  
+        sidebarContext.connector.add({
+          id,
+          type: sidebarContext.formModel.type,
+          title: others.title,
+          inputSchema: others.inputSchema,
+          outputSchema: others.outputSchema,
+          script: getScript({
+            ...serviceItem.content,
+          }),
+        });
+        data.connectors = [...serviceList ];
+      } else {
+        const list = [];
+        data.connectors.forEach((service: any) => {
+          if (service.id === id) {
+            const serviceItem = {
+              ...service,
+              updateTime: Date.now(),
+              content: { ...others },
+            };
+            list.push(serviceItem);
+            sidebarContext.connector.update({
+              id,
+              title: others.title,
+              type: sidebarContext.formModel.type,
+              inputSchema: serviceItem.content.inputSchema,
+              outputSchema: serviceItem.content.outputSchema,
+              script: getScript({
+                ...serviceItem.content,
+              }),
+            });
+          } else {
+            list.push({ ...service });
+          }
+          data.connectors = list;
+        });
+      }
+      // @ts-ignore
+      resolve('');
+    });
+  }, [])
 
+  const createService = useCallback(() => {
+    return updateService('create');
+  }, [])
+
+  const removeService = useCallback((id: string) => {
+    return new Promise((resolve) => {
+      const list = data.connectors.filter((service) => {
+        return String(service.id) !== String(id);
+      });
+      data.connectors = list;
+      sidebarContext.connector.remove(id);
+      // message.success('删除成功');
+      resolve('');
+    });
+  }, [])
   sidebarContext = useObservable(
     SidebarContext,
     (next) =>
@@ -221,15 +288,15 @@ export default function Sidebar({
     setParams(values);
   }, []);
 
-  const onTemplateChange = useCallback((_, values) => {
-    context.projectData.serviceTemplate = {
-      ...values,
-      resultFn: encodeURIComponent(values.resultFn || templateResultFunc),
-      paramsFn: encodeURIComponent(values.paramsFn || exampleParamsFunc),
-    };
-    context.projectData.serviceTemplate.id =
-      context.projectData.serviceTemplate.id || uuid();
-  }, []);
+  // const onTemplateChange = useCallback((_, values) => {
+  //   context.projectData.serviceTemplate = {
+  //     ...values,
+  //     resultFn: encodeURIComponent(values.resultFn || templateResultFunc),
+  //     paramsFn: encodeURIComponent(values.paramsFn || exampleParamsFunc),
+  //   };
+  //   context.projectData.serviceTemplate.id =
+  //     context.projectData.serviceTemplate.id || uuid();
+  // }, []);
 
   const onItemClick = useCallback((e: any, item: any) => {
     if (item.id === sidebarContext.expandId) {
@@ -303,7 +370,6 @@ export default function Sidebar({
       }
       return type === 'http' ? (
         <DefaultPanel
-          context={context}
           sidebarContext={sidebarContext}
           form={serviceForm}
           onValuesChange={onValuesChange}
@@ -322,7 +388,6 @@ export default function Sidebar({
           >
             <Compnent
               panelCtx={sidebarContext}
-              globalCtx={myCtx}
               constant={{
                 exampleParamsFunc,
                 exampleResultFunc,
@@ -367,11 +432,7 @@ export default function Sidebar({
   };
 
   const SidebarPanel = useComputed(() => {
-    const { serviceTemplate = {} } = context.projectData;
-    const list = [];
-    if (myCtx.projectData.serviceList.length) {
-      list.push(...myCtx.projectData.serviceList);
-    }
+    const list = data.connectors;
     const initialValues = Object.keys(serviceTemplate).reduce((obj, key) => {
       if (key === 'id') return obj;
       if (
@@ -526,7 +587,7 @@ export default function Sidebar({
                     ...templateConfig.initialValues,
                     ...initialValues,
                   }}
-                  onValuesChange={onTemplateChange}
+                  // onValuesChange={onTemplateChange}
                 >
                   <Collapse
                     className={css['sidebar-panel-code']}
@@ -599,83 +660,4 @@ export default function Sidebar({
   });
 
   return <>{SidebarPanel}</>;
-}
-
-async function updateService(action?: string) {
-  return new Promise((resolve) => {
-    const { id = uuid(), ...others } = sidebarContext.formModel;
-    const serviceList = [];
-    if (action === 'create') {
-      const serviceItem = {
-        id,
-        type: sidebarContext.type,
-        content: {
-          input: encodeURIComponent(exampleParamsFunc),
-          output: encodeURIComponent(exampleResultFunc),
-          inputSchema: { type: 'object' },
-          ...others,
-        },
-        creatorId: context.user.userId,
-        creatorName: context.user.name,
-        createTime: Date.now(),
-        updateTime: Date.now(),
-      };
-      serviceList.push(...context.projectData.serviceList, serviceItem);
-
-      sidebarContext.connector.add({
-        id,
-        type: sidebarContext.formModel.type,
-        title: others.title,
-        inputSchema: others.inputSchema,
-        outputSchema: others.outputSchema,
-        script: getScript({
-          ...serviceItem.content,
-          globalParamsFn: context.projectData.serviceTemplate.paramsFn,
-        }),
-      });
-    } else {
-      context.projectData.serviceList.forEach((service: any) => {
-        if (service.id === id) {
-          const serviceItem = {
-            ...service,
-            updateTime: Date.now(),
-            content: { ...others },
-          };
-          serviceList.push(serviceItem);
-          sidebarContext.connector.update({
-            id,
-            title: others.title,
-            type: sidebarContext.formModel.type,
-            inputSchema: serviceItem.content.inputSchema,
-            outputSchema: serviceItem.content.outputSchema,
-            script: getScript({
-              ...serviceItem.content,
-              globalParamsFn: context.projectData.serviceTemplate.paramsFn,
-            }),
-          });
-        } else {
-          serviceList.push({ ...service });
-        }
-      });
-    }
-    context.projectData.serviceList = serviceList;
-    // @ts-ignore
-    resolve('');
-  });
-}
-
-async function createService() {
-  return updateService('create');
-}
-
-async function removeService(id: string) {
-  return new Promise((resolve) => {
-    const list = context.projectData.serviceList.filter((service) => {
-      return String(service.id) !== String(id);
-    });
-    context.projectData.serviceList = list;
-    sidebarContext.connector.remove(id);
-    // message.success('删除成功');
-    resolve('');
-  });
 }

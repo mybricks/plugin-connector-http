@@ -1,4 +1,7 @@
 // @ts-nocheck
+
+import { exampleParamsFunc } from '../constant'
+
 function getScript(serviceItem) {
   function fetch(params, { then, onError }, config) {
     function getDecodeString(fn: string) {
@@ -36,11 +39,8 @@ function getScript(serviceItem) {
         config
           .ajax(options)
           .then((response) => {
-            if (response.status !== 200) {
-              throw response;
-            }
             const res = eval(`(${outputFn})`)(
-              response.data,
+              response,
               Object.assign({}, options),
               {
                 throwStatusCodeError: (data) => {
@@ -94,7 +94,7 @@ function getScript(serviceItem) {
       )
       .replace(
         '__globalParamsFn__',
-        '`' + serviceItem.globalParamsFn + '`'
+        '`' + (serviceItem.globalParamsFn || decodeURIComponent(exampleParamsFunc)) + '`'
       )
   );
 }
