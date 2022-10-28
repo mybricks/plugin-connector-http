@@ -200,6 +200,10 @@ export default function DefaultPanel({
                         }
                       };
                     }}
+                    env={{
+                      isNode: false,
+                      isElectronRenderer: false,
+                    }}
                     width='100%'
                     height='100%'
                     minHeight={300}
@@ -257,6 +261,10 @@ export default function DefaultPanel({
                           onResultEditorFullscreenExit();
                         }
                       };
+                    }}
+                    env={{
+                      isNode: false,
+                      isElectronRenderer: false,
                     }}
                     width='100%'
                     height='100%'

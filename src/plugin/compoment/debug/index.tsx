@@ -27,7 +27,14 @@ function DataShow({ data }: any) {
   return isEmpty(data) ? null : (
     <div style={{ marginLeft: 87 }}>
       <div className={css.title}>标记后的返回结果示例</div>
-      <JSONView value={valueStr} language='json' />
+      <JSONView
+        value={valueStr}
+        language='json'
+        env={{
+          isNode: false,
+          isElectronRenderer: false,
+        }}
+      />
     </div>
   );
 }
@@ -55,11 +62,7 @@ function params2data(params: any) {
   return obj;
 }
 
-export default function Debug({
-  sidebarContext,
-  panelForm,
-  prefix,
-}: any) {
+export default function Debug({ sidebarContext, panelForm, prefix }: any) {
   const [form] = Form.useForm();
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
@@ -94,15 +97,18 @@ export default function Debug({
       const params = params2data(originParams);
       setData([]);
       setError('');
-      const data = await sidebarContext.connector.test({
-        type: 'http',
-        script: getDecodeString(
-          getScript({
-            ...sidebarContext.formModel,
-            resultTransformDisabled: true,
-          })
-        )
-      }, params);
+      const data = await sidebarContext.connector.test(
+        {
+          type: 'http',
+          script: getDecodeString(
+            getScript({
+              ...sidebarContext.formModel,
+              resultTransformDisabled: true,
+            })
+          ),
+        },
+        params
+      );
       allDataRef.current = data;
       const { outputKeys } = sidebarContext.formModel;
       const outputData = getDataByOutputKeys(data, outputKeys);
@@ -117,10 +123,10 @@ export default function Debug({
       sidebarContext.formModel.inputSchema = inputSchema;
       setSchema({ ...sidebarContext.formModel.resultSchema });
     } catch (error: any) {
-      console.log(error)
+      console.log(error);
       sidebarContext.formModel.outputSchema = void 0;
       sidebarContext.formModel.resultSchema = void 0;
-      setError(error)
+      setError(error);
     }
   };
 

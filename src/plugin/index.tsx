@@ -647,6 +647,10 @@ export default function Sidebar({
                             horizontalScrollbarSize: 2,
                             verticalScrollbarSize: 2,
                           }}
+                          env={{
+                            isNode: false,
+                            isElectronRenderer: false,
+                          }}
                           minimap={{ enabled: false }}
                         />
                       </Form.Item>
