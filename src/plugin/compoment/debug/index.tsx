@@ -93,13 +93,16 @@ export default function Debug({
       const originParams = sidebarContext.formModel.paramsList?.[0].data || [];
       const params = params2data(originParams);
       setData([]);
-      const data = await sidebarContext.connector.test(getDecodeString(
-        getScript({
-          ...sidebarContext.formModel,
-          globalParamsFn: context.projectData.serviceTemplate.paramsFn,
-        })
-      ), params);
-      console.log(data, '1233213')
+      const data = await sidebarContext.connector.test({
+        type: 'http',
+        script: getDecodeString(
+          getScript({
+            ...sidebarContext.formModel,
+            resultTransformDisabled: true,
+            globalParamsFn: context.projectData.serviceTemplate.paramsFn,
+          })
+        )
+      }, params);
       allDataRef.current = data;
       const { outputKeys } = sidebarContext.formModel;
       const outputData = getDataByOutputKeys(data, outputKeys);

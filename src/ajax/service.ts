@@ -6,7 +6,7 @@ function callConnector(connector: any = {}, params: any, config: any) {
         fn(
           params,
           { then: resolve, onError: reject },
-          { ajax: config.agent }
+          { ajax: config.ajax }
         );
       } catch (ex) {
         reject(`连接器script错误: ${ex}`);
