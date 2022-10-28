@@ -1,11 +1,12 @@
 {
   "name": "@mybricks/plugin-connector-http",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "CheMingjun",
   "license": "",
   "main": "lib/plugin.js",
   "scripts": {
-    "build": "webpack --config ./scripts/webpack.build.js && tsc --declaration"
+    "build": "webpack --config ./scripts/webpack.build.js && tsc --declaration",
+    "publishToNpm": "npm run build && npm publish --registry=https://registry.npmjs.org --access=public"
   },
   "repository": {
     "type": "git"
