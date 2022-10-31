@@ -1,6 +1,5 @@
 import css from './index.less';
 import React, { useRef, useState } from 'react';
-import { evt, getPosition } from '@mybricks/rxui';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
 
@@ -57,12 +56,22 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
           {key}
           <span className={css.typeName}>({getTypeName(val.type)})</span>
           {xpath !== void 0 ? (
-            <button onClick={evt((e: any) => popMark(e, xpath)).stop}>
+            <button
+              onClick={(e) => {
+                popMark(e, xpath);
+                e.stopPropagation();
+              }}
+            >
               标记
             </button>
           ) : null}
           {markedAsReturn ? (
-            <button onClick={evt((e: any) => cancelMark(e, xpath)).stop}>
+            <button
+              onClick={(e) => {
+                cancelMark(e, xpath);
+                e.stopPropagation();
+              }}
+            >
               取消
             </button>
           ) : null}
@@ -74,7 +83,8 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
 
   const popMark = useCallback((e, xpath) => {
     const btnEle = e.currentTarget;
-    const po = getPosition(btnEle, parentEleRef.current);
+    const parentPos = parentEleRef.current.getBoundingClientRect();
+    const currentPos = btnEle.getBoundingClientRect();
     keysRef.current = [
       ...keysRef.current.filter(
         (key: string) => !(key.includes(xpath) || xpath.includes(key))
@@ -83,8 +93,8 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
     ];
     setStyle({
       display: 'block',
-      left: po.x,
-      top: po.y + btnEle.offsetHeight,
+      left: currentPos.x - parentPos.x,
+      top: currentPos.y - parentPos.y + btnEle.offsetHeight,
     });
   }, []);
 
@@ -92,7 +102,7 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
     keysRef.current = [
       ...keysRef.current.filter((key: string) => key !== xpath),
     ];
-    markAsReturn()
+    markAsReturn();
   }, []);
 
   const resetPopMenuStyle = useCallback(() => {
@@ -100,9 +110,7 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
   }, []);
 
   if (error) {
-    return (
-      <div className={css.errorInfo}>{error}</div>
-    )
+    return <div className={css.errorInfo}>{error}</div>;
   }
   return schema ? (
     <div

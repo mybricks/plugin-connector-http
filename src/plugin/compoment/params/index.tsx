@@ -2,10 +2,10 @@
  * 使用树形选择器完成字段映射
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, memo} from 'react';
 import css from './index.less';
 import { cloneDeep } from '../../../utils/lodash';
-import { Button } from 'antd';
+import Button from '../../../components/Button'
 
 function merge(object: any, source: any, ctx: any) {
   if (!object || !source) return;
@@ -56,7 +56,7 @@ function merge(object: any, source: any, ctx: any) {
   }
 }
 
-export default function ParamsEdit({ onDebugClick, ctx }: any) {
+function ParamsEdit({ onDebugClick, ctx }: any) {
   const valueRef = useRef({});
   const [render, forceRender] = useState(0);
 
@@ -78,7 +78,6 @@ export default function ParamsEdit({ onDebugClick, ctx }: any) {
     updateValue();
     forceRender(Math.random());
   }, [ctx.formModel.params]);
-
   const set = useCallback((item, key, val) => {
     item[key] = val;
     updateValue();
@@ -108,7 +107,7 @@ export default function ParamsEdit({ onDebugClick, ctx }: any) {
     const hide = isObject || isRoot || isArray;
 
     return (
-      <div className={css.ct}>
+      <div className={css.ct} key={item.id}>
         <div className={`${css.item} ${isRoot ? css.rootItem : ''}`}>
           <div style={{ padding: '0 10px 0 2px' }}>
             {isArrayParent ? `[${item.name}]` : item.name}
@@ -144,6 +143,8 @@ export default function ParamsEdit({ onDebugClick, ctx }: any) {
     </div>
   );
 }
+
+export default memo(ParamsEdit)
 
 function getTypeName(v: string) {
   switch (v) {

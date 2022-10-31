@@ -1,4 +1,4 @@
-export default function get(data: any, originKeys: any, defaultValue: any) {
+export default function get(data: any, originKeys: any, defaultValue?: any) {
   if (!originKeys || !data) return data;
   const keys = Array.isArray(originKeys) ? [...originKeys] : originKeys.split('.');
   let res = data;

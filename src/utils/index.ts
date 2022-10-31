@@ -80,3 +80,37 @@ export function getDataByOutputKeys(data, outputKeys) {
   }
   return outputData;
 }
+
+export function params2data(params: any) {
+  if (!params) return;
+  let obj: any = {};
+
+  if (params.type === 'string') {
+    return params.defaultValue;
+  }
+  if (params.type === 'number') {
+    return +params.defaultValue;
+  }
+
+  if (params.children) {
+    if (params.type === 'array') {
+      obj = [];
+    }
+    params.children.forEach((child: any) => {
+      obj[child.name] = params2data(child);
+    });
+  }
+
+  return obj;
+}
+
+export function uuid() {
+  let len = 6,
+    seed = "abcdefhijkmnprstwxyz",
+    maxPos = seed.length;
+  let rtn = "";
+  for (let i = 0; i < len; i++) {
+    rtn += seed.charAt(Math.floor(Math.random() * maxPos));
+  }
+  return "u_" + rtn;
+}

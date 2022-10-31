@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { useComputed, useObservable, uuid } from '@mybricks/rxui';
-import { Button, Form, Input, Collapse } from 'antd';
+import { uuid } from '../utils';
 import {
   exampleParamsFunc,
   exampleResultFunc,
@@ -22,8 +21,10 @@ import DefaultPanel from './compoment/defaultPanel';
 import { getScript } from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
-
-let sidebarContext: SidebarContext;
+import Colp from '../components/Collapse';
+import Button from '../components/Button';
+import GlobalPanel from './compoment/globalPanel';
+// let sidebarContext: SidebarContext;
 
 interface Iprops {
   context: any;
@@ -64,73 +65,111 @@ export default function Sidebar({
   connector,
   prefix,
   data,
-  serviceTemplate = {}
+  serviceTemplate = {},
 }: Iprops) {
   const ref = useRef();
-  const updateService = useCallback(async(action?: string) => {
-    return new Promise((resolve) => {
-      const { id = uuid(), ...others }: any = sidebarContext.formModel;
-      if (action === 'create') {
-        const serviceList: any[] = data.connectors;
-        const serviceItem = {
-          id,
-          type: sidebarContext.type,
-          content: {
-            input: encodeURIComponent(exampleParamsFunc),
-            output: encodeURIComponent(exampleResultFunc),
-            inputSchema: { type: 'object' },
-            ...others,
-          },
-          createTime: Date.now(),
-          updateTime: Date.now(),
-        };
-        serviceList.push(serviceItem);
+  const [sidebarContext, setContext] = useState({
+    eidtVisible: false,
+    panelVisible: NO_PANEL_VISIBLE,
+    kdev: {
+      departmentOptions: [],
+      interfaceOptions: [],
+      searchOptions: [],
+      interfaceMap: {},
+    },
+    tg: {},
+    comlibNavVisible: true,
+    isEdit: false,
+    formModel: {},
+    isDebug: false,
+    currentClickMenu: 'comlib',
+    contentType,
+    templateVisible: false,
+    templateForm: {},
+    leftWidth: 271,
+    enableRenderPortal: true,
+    addActions: addActions
+      ? addActions.some(({ type }: any) => type === 'defalut')
+        ? addActions
+        : [{ type: 'http', title: '默认' }].concat(addActions)
+      : [{ type: 'http', title: '默认' }],
+    connector: {
+      add: (args: any) => connector.add({ ...args }),
+      remove: (id: string) => connector.remove(id),
+      update: (args: any) => {
+        connector.update({ ...args });
+      },
+      test: (...args: any) => connector.test(...args),
+    },
+  });
+  const updateService = useCallback(
+    async (action?: string) => {
+      return new Promise((resolve) => {
+        const { id = uuid(), ...others }: any = sidebarContext.formModel;
+        if (action === 'create') {
+          const serviceList: any[] = data.connectors;
+          const serviceItem = {
+            id,
+            type: sidebarContext.type,
+            content: {
+              input: encodeURIComponent(exampleParamsFunc),
+              output: encodeURIComponent(exampleResultFunc),
+              inputSchema: { type: 'object' },
+              ...others,
+            },
+            createTime: Date.now(),
+            updateTime: Date.now(),
+          };
+          serviceList.push(serviceItem);
 
-        sidebarContext.connector.add({
-          id,
-          type: sidebarContext.formModel.type,
-          title: others.title,
-          inputSchema: others.inputSchema,
-          outputSchema: others.outputSchema,
-          script: getScript({
-            ...serviceItem.content,
-          }),
-        });
-        data.connectors = [...serviceList ];
-      } else {
-        const list = [];
-        data.connectors.forEach((service: any) => {
-          if (service.id === id) {
-            const serviceItem = {
-              ...service,
-              updateTime: Date.now(),
-              content: { ...others },
-            };
-            list.push(serviceItem);
-            sidebarContext.connector.update({
-              id,
-              title: others.title,
-              type: sidebarContext.formModel.type,
-              inputSchema: serviceItem.content.inputSchema,
-              outputSchema: serviceItem.content.outputSchema,
-              script: getScript({
-                ...serviceItem.content,
-              }),
-            });
-          } else {
-            list.push({ ...service });
-          }
-          data.connectors = list;
-        });
-      }
-      // @ts-ignore
-      resolve('');
-    });
-  }, [])
+          sidebarContext.connector.add({
+            id,
+            type: sidebarContext.formModel.type,
+            title: others.title,
+            inputSchema: others.inputSchema,
+            outputSchema: others.outputSchema,
+            script: getScript({
+              ...serviceItem.content,
+            }),
+          });
+          data.connectors = [...serviceList];
+        } else {
+          const list = [];
+          data.connectors.forEach((service: any) => {
+            if (service.id === id) {
+              const serviceItem = {
+                ...service,
+                updateTime: Date.now(),
+                content: { ...others },
+              };
+              list.push(serviceItem);
+              sidebarContext.connector.update({
+                id,
+                title: others.title,
+                type: sidebarContext.formModel.type,
+                inputSchema: serviceItem.content.inputSchema,
+                outputSchema: serviceItem.content.outputSchema,
+                script: getScript({
+                  ...serviceItem.content,
+                }),
+              });
+            } else {
+              list.push({ ...service });
+            }
+            data.connectors = list;
+          });
+        }
+        // @ts-ignore
+        resolve('');
+        setRender({});
+      });
+    },
+    [sidebarContext]
+  );
 
   const createService = useCallback(() => {
     return updateService('create');
-  }, [])
+  }, []);
 
   const removeService = useCallback((id: string) => {
     return new Promise((resolve) => {
@@ -142,73 +181,30 @@ export default function Sidebar({
       // message.success('删除成功');
       resolve('');
     });
-  }, [])
-  sidebarContext = useObservable(
-    SidebarContext,
-    (next) =>
-      next({
-        eidtVisible: false,
-        panelVisible: NO_PANEL_VISIBLE,
-        kdev: {
-          departmentOptions: [],
-          interfaceOptions: [],
-          searchOptions: [],
-          interfaceMap: {},
-        },
-        tg: {},
-        comlibNavVisible: true,
-        isEdit: false,
-        formModel: {},
-        isDebug: false,
-        currentClickMenu: 'comlib',
-        contentType,
-        templateVisible: false,
-        templateForm: {},
-        leftWidth: 271,
-        enableRenderPortal: false,
-        updateService,
-        addActions: addActions
-          ? addActions.some(({ type }: any) => type === 'defalut')
-            ? addActions
-            : [{ type: 'http', title: '默认' }].concat(addActions)
-          : [{ type: 'http', title: '默认' }],
-        connector: {
-          add: (args: any) => connector.add({ ...args }),
-          remove: (id: string) => connector.remove(id),
-          update: (args: any) => {
-            connector.update({ ...args });
-          },
-          test: (...args: any) => connector.test(...args)
-        },
-      }),
-    { to: 'children' }
-  );
+  }, []);
 
-  const [serviceForm] = Form.useForm();
-  const [templateForm] = Form.useForm();
-  const [tgForm] = Form.useForm();
   const clickRef = useRef();
-  sidebarContext.templateForm = templateForm;
+
+  const setRender = useCallback((value: any) => {
+    setContext((ctx) => ({
+      ...ctx,
+      ...value,
+    }));
+  }, []);
 
   const onEditItem = useCallback((item) => {
-    sidebarContext.isEdit = true;
-    sidebarContext.isDebug = false;
-    sidebarContext.activeId = item.id;
-    sidebarContext.templateVisible = false;
-
+    const obj: any = {
+      isEdit: true,
+      isDebug: true,
+      activeId: item.id,
+      templateVisible: false,
+    };
     if (item.type === SERVICE_TYPE.TG) {
-      sidebarContext.panelVisible = TG_PANEL_VISIBLE;
-      sidebarContext.formModel = { id: item.id, ...item.content };
-      const { title, apiName, token } = item.content;
-      tgForm.setFieldsValue({
-        title,
-        apiName,
-        token,
-      });
+      obj.panelVisible = TG_PANEL_VISIBLE;
+      obj.formModel = { id: item.id, ...item.content };
     } else {
-      serviceForm.resetFields();
-      sidebarContext.panelVisible = DEFAULT_PANEL_VISIBLE;
-      sidebarContext.formModel = {
+      obj.panelVisible = DEFAULT_PANEL_VISIBLE;
+      obj.formModel = {
         ...item.content,
         id: item.id,
         input: item.content.input
@@ -218,26 +214,28 @@ export default function Sidebar({
           ? decodeURIComponent(item.content.output)
           : exampleResultFunc,
       };
-      serviceForm.setFieldsValue(sidebarContext.formModel);
     }
+    setRender(obj);
   }, []);
+
   const onCopyItem = useCallback(async (item) => {
     sidebarContext.formModel = { ...item.content };
     sidebarContext.formModel.title += ' 复制';
+    setRender(sidebarContext);
     await createService();
-    // message.success('复制成功');
   }, []);
 
   const onRemoveItem = useCallback(async (item) => {
     if (confirm(`确认删除 ${item.content.title} 吗`)) {
       await removeService(String(item.id));
       sidebarContext.panelVisible = NO_PANEL_VISIBLE;
+      setRender(sidebarContext);
     }
   }, []);
 
   const addDefaultService = useCallback(async () => {
     sidebarContext.panelVisible = DEFAULT_PANEL_VISIBLE;
-    serviceForm.setFieldsValue({
+    sidebarContext.formModel = {
       title: '',
       path: '',
       desc: '',
@@ -245,7 +243,8 @@ export default function Sidebar({
       useMock: false,
       input: exampleParamsFunc,
       output: exampleResultFunc,
-    });
+    };
+    setRender(sidebarContext);
   }, []);
 
   sidebarContext.addDefaultService = addDefaultService;
@@ -253,11 +252,13 @@ export default function Sidebar({
   const onGlobalConfigClick = useCallback(() => {
     sidebarContext.templateVisible = true;
     sidebarContext.panelVisible = NO_PANEL_VISIBLE;
+    setRender(sidebarContext);
   }, []);
 
   const closeTemplateForm = useCallback(() => {
     sidebarContext.templateVisible = false;
     sidebarContext.isEdit = false;
+    setRender(sidebarContext);
   }, []);
 
   const onCancel = useCallback(() => {
@@ -265,6 +266,7 @@ export default function Sidebar({
     sidebarContext.isDebug = false;
     sidebarContext.activeId = void 0;
     sidebarContext.isEdit = false;
+    setRender(sidebarContext);
   }, []);
   sidebarContext.onCancel = onCancel;
 
@@ -272,38 +274,34 @@ export default function Sidebar({
     sidebarContext.formModel = { ...sidebarContext.formModel, ...values };
     sidebarContext.formModel.input = encodeURIComponent(values.input);
     sidebarContext.formModel.output = encodeURIComponent(values.output);
+    setRender(sidebarContext);
   }, []);
 
   const onFinish = async (values: ServiceConfig) => {
-    setParams(values);
     if (sidebarContext.isEdit) {
       await updateService();
     } else {
-      // message.success('添加成功');
       await createService();
     }
+    sidebarContext.panelVisible = NO_PANEL_VISIBLE;
+    sidebarContext.activeId = void 0;
+    sidebarContext.formModel = {};
+    sidebarContext.isEdit = false;
+    setRender(sidebarContext);
   };
 
   const onValuesChange = useCallback((_, values) => {
     setParams(values);
   }, []);
 
-  // const onTemplateChange = useCallback((_, values) => {
-  //   context.projectData.serviceTemplate = {
-  //     ...values,
-  //     resultFn: encodeURIComponent(values.resultFn || templateResultFunc),
-  //     paramsFn: encodeURIComponent(values.paramsFn || exampleParamsFunc),
-  //   };
-  //   context.projectData.serviceTemplate.id =
-  //     context.projectData.serviceTemplate.id || uuid();
-  // }, []);
-
   const onItemClick = useCallback((e: any, item: any) => {
     if (item.id === sidebarContext.expandId) {
       sidebarContext.expandId = 0;
+      setRender(sidebarContext);
       return;
     }
     sidebarContext.expandId = item.id;
+    setRender(sidebarContext);
   }, []);
 
   const onLinkClick = useCallback((url: string) => {
@@ -371,9 +369,9 @@ export default function Sidebar({
       return type === 'http' ? (
         <DefaultPanel
           sidebarContext={sidebarContext}
-          form={serviceForm}
+          setRender={setRender}
           onValuesChange={onValuesChange}
-          onFinish={onFinish}
+          onSubmit={onFinish}
           prefix={prefix}
           key={type}
           style={{ top: ref.current?.getBoundingClientRect().top }}
@@ -402,7 +400,17 @@ export default function Sidebar({
         )
       );
     });
-  }, []);
+  }, [sidebarContext]);
+
+  const renderGlobalPanel = useCallback(() => {
+    return (
+      <GlobalPanel
+        sidebarContext={sidebarContext}
+        style={{ top: ref.current?.getBoundingClientRect().top }}
+        closeTemplateForm={closeTemplateForm}
+      />
+    );
+  }, [sidebarContext]);
 
   const getInterfaceParams = useCallback((item) => {
     if (item.type === SERVICE_TYPE.TG) {
@@ -431,245 +439,120 @@ export default function Sidebar({
       useMock: !content.useMock,
     };
     updateService();
-    serviceForm.setFieldsValue({ useMock: sidebarContext.formModel.useMock });
   };
 
-  useEffect(() => {
-    sidebarContext.enableRenderPortal = true;
-  }, [])
-
-  const SidebarPanel = useComputed(() => {
-    const list = data.connectors;
-    const initialValues = Object.keys(serviceTemplate).reduce((obj, key) => {
-      if (key === 'id') return obj;
-      if (
-        ['resultFn', 'paramsFn', 'tgToken'].includes(key) &&
-        serviceTemplate[key]
-      ) {
-        obj[key] = decodeURIComponent(serviceTemplate[key]);
-        return obj;
-      }
-      const cur = serviceTemplate[key];
-      obj[key] = typeof cur === 'object' ? cur : { domain: cur };
-      return obj;
-    }, {});
-    return (
-      <>
+  const list = data.connectors;
+  return (
+    <>
+      <div
+        ref={ref}
+        className={`${css['sidebar-panel']} ${css['sidebar-panel-open']}`}
+      >
         <div
-          ref={ref}
-          className={`${css['sidebar-panel']} ${css['sidebar-panel-open']}`}
+          className={`${css['sidebar-panel-view']} ${
+            sidebarContext.isEdit ? css.disabled : ''
+          }`}
         >
-          <div
-            className={`${css['sidebar-panel-view']} ${
-              sidebarContext.isEdit ? css.disabled : ''
-            }`}
-          >
-            <div className={css['sidebar-panel-header']}>
-              <div className={css['sidebar-panel-header__title']}>
-                <span>服务连接</span>
-                <div className={css.icon} onClick={onGlobalConfigClick}>
-                  {Icons.set}
-                </div>
+          <div className={css['sidebar-panel-header']}>
+            <div className={css['sidebar-panel-header__title']}>
+              <span>服务连接</span>
+              <div className={css.icon} onClick={onGlobalConfigClick}>
+                {Icons.set}
               </div>
-              <Toolbar ctx={sidebarContext} />
             </div>
-            <div className={css['sidebar-panel-list']}>
-              {(sidebarContext.searchValue
-                ? list.filter((item) =>
-                    item.content.title.includes(sidebarContext.searchValue)
-                  )
-                : list
-              ).map((item) => {
-                const expand = sidebarContext.expandId === item.id;
-                item.updateTime = formatDate(
-                  item.updateTime || item.createTime
-                );
-                const { useMock } = item.content;
-                return (
+            <Toolbar ctx={sidebarContext} setRender={setRender} />
+          </div>
+          <div className={css['sidebar-panel-list']}>
+            {(sidebarContext.searchValue
+              ? list.filter((item) =>
+                  item.content.title.includes(sidebarContext.searchValue)
+                )
+              : list
+            ).map((item) => {
+              const expand = sidebarContext.expandId === item.id;
+              item.updateTime = formatDate(item.updateTime || item.createTime);
+              const { useMock } = item.content;
+              return (
+                <div key={item.id}>
                   <div
                     key={item.id}
+                    className={`${css['sidebar-panel-list-item']} ${
+                      sidebarContext.activeId === item.id ? css.active : ''
+                    }`}
                   >
-                    <div
-                      key={item.id}
-                      className={`${css['sidebar-panel-list-item']} ${
-                        sidebarContext.activeId === item.id ? css.active : ''
-                      }`}
-                    >
-                      <div>
+                    <div>
+                      <div
+                        onClick={(e) => onItemClick(e, item)}
+                        className={css['sidebar-panel-list-item__left']}
+                      >
                         <div
-                          onClick={(e) => onItemClick(e, item)}
-                          className={css['sidebar-panel-list-item__left']}
+                          className={`${css.icon} ${
+                            expand ? css.iconExpand : ''
+                          }`}
                         >
-                          <div className={`${css.icon} ${expand ? css.iconExpand : ''}`}>
-                            {Icons.arrowR}
-                          </div>
-                          <div
-                            className={css.tag}
-                            onClick={(e) => onServiceItemTitleClick(e, item)}
-                          >
-                            {useMock ? 'Mock' : '接口'}
-                          </div>
-                          <div className={css.name}>
-                            <span>{item.content.title}</span>
-                          </div>
+                          {Icons.arrowR}
                         </div>
-                        <div className={css['sidebar-panel-list-item__right']}>
-                            <div
-                              ref={clickRef}
-                              className={css.action}
-                              onClick={() => onEditItem(item)}
-                            >
-                              {Icons.edit}
-                            </div>
-                            <div
-                              className={css.action}
-                              onClick={() => onCopyItem(item)}
-                            >
-                              {Icons.copy}
-                            </div>
-                            <div
-                              className={css.action}
-                              onClick={() => onRemoveItem(item)}
-                            >
-                              {Icons.remove}
-                            </div>
+                        <div
+                          className={css.tag}
+                          onClick={(e) => onServiceItemTitleClick(e, item)}
+                        >
+                          {useMock ? 'Mock' : '接口'}
+                        </div>
+                        <div className={css.name}>
+                          <span>{item.content.title}</span>
+                        </div>
+                      </div>
+                      <div className={css['sidebar-panel-list-item__right']}>
+                        <div
+                          ref={clickRef}
+                          className={css.action}
+                          onClick={() => onEditItem(item)}
+                        >
+                          {Icons.edit}
+                        </div>
+                        <div
+                          className={css.action}
+                          onClick={() => onCopyItem(item)}
+                        >
+                          {Icons.copy}
+                        </div>
+                        <div
+                          className={css.action}
+                          onClick={() => onRemoveItem(item)}
+                        >
+                          {Icons.remove}
                         </div>
                       </div>
                     </div>
-                    {expand ? (
-                      <div className={css['sidebar-panel-list-item__expand']}>
-                        {getInterfaceParams(item).map((param: any) => {
-                          return (
-                            <div
-                              className={css['sidebar-panel-list-item__param']}
-                              key={param.key}
+                  </div>
+                  {expand ? (
+                    <div className={css['sidebar-panel-list-item__expand']}>
+                      {getInterfaceParams(item).map((param: any) => {
+                        return (
+                          <div
+                            className={css['sidebar-panel-list-item__param']}
+                            key={param.key}
+                          >
+                            <span
+                              className={css['sidebar-panel-list-item__name']}
+                              style={{ width: param.width }}
                             >
-                              <span
-                                className={css['sidebar-panel-list-item__name']}
-                                style={{ width: param.width }}
-                              >
-                                {param.name}:
-                              </span>
-                              <span>{renderParam(item, param)}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          {sidebarContext.enableRenderPortal ? renderAddActions() : null}
-          {sidebarContext.enableRenderPortal ? ReactDOM.createPortal(
-            <div
-              style={{ left: 361, top: ref.current?.getBoundingClientRect().top }}
-              className={`${css['sidebar-panel-edit']} ${
-                sidebarContext.templateVisible
-                  ? css['sidebar-panel-edit-open']
-                  : ''
-              }`}
-            >
-              <div className={css['sidebar-panel-title']}>
-                <div>编辑全局配置</div>
-                <div className='fangzhou-theme'>
-                  <div className={css['actions']}>
-                    <Button size='small' onClick={() => closeTemplateForm()}>
-                      关闭
-                    </Button>
-                  </div>
+                              {param.name}:
+                            </span>
+                            <span>{renderParam(item, param)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                 </div>
-              </div>
-              <div className={css['sidebar-panel-content']}>
-                <Form
-                  className='fangzhou-theme'
-                  form={templateForm}
-                  labelCol={{ span: 5 }}
-                  wrapperCol={{ span: 19 }}
-                  size='small'
-                  autoComplete='off'
-                  initialValues={{
-                    paramsFn: exampleParamsFunc,
-                    resultFn: templateResultFunc,
-                    ...templateConfig.initialValues,
-                    ...initialValues,
-                  }}
-                  // onValuesChange={onTemplateChange}
-                >
-                  <Collapse
-                    className={css['sidebar-panel-code']}
-                    defaultActiveKey={['domain', 'resultFn']}
-                    ghost
-                  >
-                    {(serviceTemplate.prt || serviceTemplate.staging) && (
-                      <Collapse.Panel
-                        header='域名设置'
-                        forceRender={true}
-                        key='domain'
-                      >
-                        {serviceTemplate.pr && (
-                          <Form.Item label='预发环境'>
-                            <Form.Item name={['prt', 'domain']}>
-                              <Input placeholder='https://www.prt.com' />
-                            </Form.Item>
-                            <Form.Item
-                              name={['prt', 'laneId']}
-                              style={{ marginTop: -16, marginBottom: 0 }}
-                            >
-                              <Input placeholder='泳道ID' />
-                            </Form.Item>
-                          </Form.Item>
-                        )}
-                        {serviceTemplate.staging && (
-                          <Form.Item label='测试环境' name='staging'>
-                            <Form.Item name={['staging', 'domain']}>
-                              <Input placeholder='https://www.staging.com' />
-                            </Form.Item>
-                            <Form.Item
-                              name={['staging', 'laneId']}
-                              style={{ marginTop: -16, marginBottom: 0 }}
-                            >
-                              <Input placeholder='泳道ID' />
-                            </Form.Item>
-                          </Form.Item>
-                        )}
-                      </Collapse.Panel>
-                    )}
-                    <Collapse.Panel header='请求参数处理函数' key='paramsFn'>
-                      <Form.Item
-                        name='paramsFn'
-                        style={{ width: '100%', marginBottom: 8 }}
-                        wrapperCol={{ span: 24 }}
-                      >
-                        <Editor
-                          width='100%'
-                          height='260px'
-                          language='javascript'
-                          theme='light'
-                          lineNumbers='off'
-                          scrollbar={{
-                            horizontalScrollbarSize: 2,
-                            verticalScrollbarSize: 2,
-                          }}
-                          env={{
-                            isNode: false,
-                            isElectronRenderer: false,
-                          }}
-                          minimap={{ enabled: false }}
-                        />
-                      </Form.Item>
-                    </Collapse.Panel>
-                  </Collapse>
-                </Form>
-              </div>
-            </div>,
-            document.body
-          ) : null}
+              );
+            })}
+          </div>
         </div>
-      </>
-    );
-  });
-
-  return <>{SidebarPanel}</>;
+        {renderAddActions()}
+        {renderGlobalPanel()}
+      </div>
+    </>
+  );
 }

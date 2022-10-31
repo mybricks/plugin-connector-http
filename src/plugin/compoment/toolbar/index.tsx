@@ -5,45 +5,45 @@ import {
   KDEV_PANEL_VISIBLE,
   TG_PANEL_VISIBLE,
 } from '../../../constant';
-import { Dropdown, Input, Menu } from 'antd';
-
-const { Search } = Input;
-
-export default function ({ ctx }: any) {
-  const onAddClick = useCallback(async ({ key = 'http' } = {}) => {
-    ctx.type = key;
+import Dropdown from '../../../components/Dropdown';
+export default function ({ ctx, setRender }: any) {
+  const onAddClick = useCallback(async (type = 'http') => {
+    ctx.type = type;
     ctx.activeId = void 0;
     ctx.isEdit = false;
     ctx.templateVisible = false;
-    ctx.formModel = { type: key };
-    switch (key) {
+    ctx.formModel = { type };
+    switch (type) {
       case 'kdev':
         ctx.panelVisible = KDEV_PANEL_VISIBLE;
+        setRender(ctx);
         break;
 
       case 'tg':
         ctx.panelVisible = TG_PANEL_VISIBLE;
+        setRender(ctx);
         break;
 
       default:
+        setRender(ctx);
         ctx.addDefaultService();
     }
   }, []);
 
   const renderAddActionList = useCallback(() => {
-    if (!ctx.addActions || ctx.addActions.length === 1) {
-      return (
-        <div className={css.icon} onClick={onAddClick}>
-          {plus}
-        </div>
-      );
-    }
+    // if (!ctx.addActions || ctx.addActions.length === 1) {
+    //   return (
+    //     <div className={css.icon} onClick={onAddClick}>
+    //       {plus}
+    //     </div>
+    //   );
+    // }
     const menu = (
-      <Menu onClick={onAddClick}>
+      <div className={css.ct}>
         {ctx.addActions.map(({ type, title }: any) => (
-          <Menu.Item key={type}>{title}</Menu.Item>
+          <div className={css.item} onClick={() => onAddClick(type)} key={type}>{title}</div>
         ))}
-      </Menu>
+      </div>
     );
 
     return (

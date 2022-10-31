@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { exampleParamsFunc } from '../constant'
+import { exampleParamsFunc } from '../constant';
 
 function getScript(serviceItem) {
   function fetch(params, { then, onError }, config) {
@@ -10,7 +10,9 @@ function getScript(serviceItem) {
         'function _RT_('
       );
     }
-    function getLast(str) { return str.split('.').slice(-1)[0]}
+    function getLast(str) {
+      return str.split('.').slice(-1)[0];
+    }
     function getData(data, keys) {
       let res = data;
       keys.forEach((key) => (res = res[key]));
@@ -24,6 +26,8 @@ function getScript(serviceItem) {
       const path = `__path__`;
       const outputKeys = __outputKeys__;
       const resultTransformDisabled = __resultTransformDisabled__;
+      const mockAddress = __mockAddress__;
+
       try {
         const inputFn = getDecodeString(input);
         const outputFn = getDecodeString(output);
@@ -35,7 +39,7 @@ function getScript(serviceItem) {
         newParams.url = url;
         const options = eval(`(${inputFn})`)(newParams);
         options.method = options.method || method;
-        options.url = options.url || url;
+        options.url = mockAddress ? mockAddress : options.url || url;
         config
           .ajax(options)
           .then((response) => {
@@ -93,8 +97,15 @@ function getScript(serviceItem) {
         serviceItem.resultTransformDisabled
       )
       .replace(
+        '__mockAddress__',
+        serviceItem.mockAddress ? `'${serviceItem.mockAddress}'` : false
+      )
+      .replace(
         '__globalParamsFn__',
-        '`' + (serviceItem.globalParamsFn || decodeURIComponent(exampleParamsFunc)) + '`'
+        '`' +
+          (serviceItem.globalParamsFn ||
+            decodeURIComponent(exampleParamsFunc)) +
+          '`'
       )
   );
 }
