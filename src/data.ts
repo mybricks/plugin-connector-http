@@ -1,3 +1,6 @@
 export default {
-  connectors: []
+  connectors: [],
+  config: {
+    paramsFn: `function a() {}`
+  }
 };

@@ -1,6 +1,5 @@
 function callConnector(connector: any = {}, params: any, config: any) {
   return new Promise((resolve, reject) => {
-    console.log(connector)
     if (typeof connector.script === 'string') {
       try {
         const fn = eval(`(${decodeURIComponent(connector.script)})`);

@@ -5,7 +5,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import css from './index.less';
 import { cloneDeep } from '../../../utils/lodash';
-import { Button } from 'antd';
+import Button from '../../../components/Button'
 
 function merge(object: any, source: any, ctx: any) {
   if (!object || !source) return;
@@ -78,7 +78,6 @@ export default function ParamsEdit({ onDebugClick, ctx }: any) {
     updateValue();
     forceRender(Math.random());
   }, [ctx.formModel.params]);
-
   const set = useCallback((item, key, val) => {
     item[key] = val;
     updateValue();

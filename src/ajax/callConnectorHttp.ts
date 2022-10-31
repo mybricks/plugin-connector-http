@@ -16,13 +16,13 @@ interface IConfig {
 const defaultFn = (options: IOptions, ...args: any) => ({ ...options, ...args });
 
 export function callConnectorHttp(
-  script: string,
+  connector: any,
   params: any,
   config?: IConfig
 ) {
   return new Promise((resolve, reject) => {
     try {
-      const fn = eval(`(${decodeURIComponent(script)})`);
+      const fn = eval(`(${decodeURIComponent(connector.script)})`);
       const { beforeSend = defaultFn } = config || {};
       fn(
         params,

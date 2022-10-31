@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useComputed, useObservable, uuid } from '@mybricks/rxui';
-import { Button, Form, Input, Collapse } from 'antd';
 import {
   exampleParamsFunc,
   exampleResultFunc,
@@ -22,7 +21,8 @@ import DefaultPanel from './compoment/defaultPanel';
 import { getScript } from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
-
+import Colp from '../components/Collapse';
+import Button from '../components/Button';
 let sidebarContext: SidebarContext;
 
 interface Iprops {
@@ -64,10 +64,10 @@ export default function Sidebar({
   connector,
   prefix,
   data,
-  serviceTemplate = {}
+  serviceTemplate = {},
 }: Iprops) {
   const ref = useRef();
-  const updateService = useCallback(async(action?: string) => {
+  const updateService = useCallback(async (action?: string) => {
     return new Promise((resolve) => {
       const { id = uuid(), ...others }: any = sidebarContext.formModel;
       if (action === 'create') {
@@ -96,7 +96,7 @@ export default function Sidebar({
             ...serviceItem.content,
           }),
         });
-        data.connectors = [...serviceList ];
+        data.connectors = [...serviceList];
       } else {
         const list = [];
         data.connectors.forEach((service: any) => {
@@ -126,11 +126,11 @@ export default function Sidebar({
       // @ts-ignore
       resolve('');
     });
-  }, [])
+  }, []);
 
   const createService = useCallback(() => {
     return updateService('create');
-  }, [])
+  }, []);
 
   const removeService = useCallback((id: string) => {
     return new Promise((resolve) => {
@@ -142,7 +142,7 @@ export default function Sidebar({
       // message.success('删除成功');
       resolve('');
     });
-  }, [])
+  }, []);
   sidebarContext = useObservable(
     SidebarContext,
     (next) =>
@@ -178,17 +178,13 @@ export default function Sidebar({
           update: (args: any) => {
             connector.update({ ...args });
           },
-          test: (...args: any) => connector.test(...args)
+          test: (...args: any) => connector.test(...args),
         },
       }),
     { to: 'children' }
   );
 
-  const [serviceForm] = Form.useForm();
-  const [templateForm] = Form.useForm();
-  const [tgForm] = Form.useForm();
   const clickRef = useRef();
-  sidebarContext.templateForm = templateForm;
 
   const onEditItem = useCallback((item) => {
     sidebarContext.isEdit = true;
@@ -199,14 +195,7 @@ export default function Sidebar({
     if (item.type === SERVICE_TYPE.TG) {
       sidebarContext.panelVisible = TG_PANEL_VISIBLE;
       sidebarContext.formModel = { id: item.id, ...item.content };
-      const { title, apiName, token } = item.content;
-      tgForm.setFieldsValue({
-        title,
-        apiName,
-        token,
-      });
     } else {
-      serviceForm.resetFields();
       sidebarContext.panelVisible = DEFAULT_PANEL_VISIBLE;
       sidebarContext.formModel = {
         ...item.content,
@@ -218,7 +207,6 @@ export default function Sidebar({
           ? decodeURIComponent(item.content.output)
           : exampleResultFunc,
       };
-      serviceForm.setFieldsValue(sidebarContext.formModel);
     }
   }, []);
   const onCopyItem = useCallback(async (item) => {
@@ -237,7 +225,7 @@ export default function Sidebar({
 
   const addDefaultService = useCallback(async () => {
     sidebarContext.panelVisible = DEFAULT_PANEL_VISIBLE;
-    serviceForm.setFieldsValue({
+    sidebarContext.formModel = {
       title: '',
       path: '',
       desc: '',
@@ -245,7 +233,7 @@ export default function Sidebar({
       useMock: false,
       input: exampleParamsFunc,
       output: exampleResultFunc,
-    });
+    }
   }, []);
 
   sidebarContext.addDefaultService = addDefaultService;
@@ -275,28 +263,19 @@ export default function Sidebar({
   }, []);
 
   const onFinish = async (values: ServiceConfig) => {
-    setParams(values);
+    // setParams(values);
     if (sidebarContext.isEdit) {
       await updateService();
     } else {
       // message.success('添加成功');
       await createService();
     }
+    sidebarContext.panelVisible = NO_PANEL_VISIBLE;
   };
 
   const onValuesChange = useCallback((_, values) => {
     setParams(values);
   }, []);
-
-  // const onTemplateChange = useCallback((_, values) => {
-  //   context.projectData.serviceTemplate = {
-  //     ...values,
-  //     resultFn: encodeURIComponent(values.resultFn || templateResultFunc),
-  //     paramsFn: encodeURIComponent(values.paramsFn || exampleParamsFunc),
-  //   };
-  //   context.projectData.serviceTemplate.id =
-  //     context.projectData.serviceTemplate.id || uuid();
-  // }, []);
 
   const onItemClick = useCallback((e: any, item: any) => {
     if (item.id === sidebarContext.expandId) {
@@ -371,9 +350,8 @@ export default function Sidebar({
       return type === 'http' ? (
         <DefaultPanel
           sidebarContext={sidebarContext}
-          form={serviceForm}
           onValuesChange={onValuesChange}
-          onFinish={onFinish}
+          onSubmit={onFinish}
           prefix={prefix}
           key={type}
           style={{ top: ref.current?.getBoundingClientRect().top }}
@@ -431,12 +409,11 @@ export default function Sidebar({
       useMock: !content.useMock,
     };
     updateService();
-    serviceForm.setFieldsValue({ useMock: sidebarContext.formModel.useMock });
   };
 
   useEffect(() => {
     sidebarContext.enableRenderPortal = true;
-  }, [])
+  }, []);
 
   const SidebarPanel = useComputed(() => {
     const list = data.connectors;
@@ -486,9 +463,7 @@ export default function Sidebar({
                 );
                 const { useMock } = item.content;
                 return (
-                  <div
-                    key={item.id}
-                  >
+                  <div key={item.id}>
                     <div
                       key={item.id}
                       className={`${css['sidebar-panel-list-item']} ${
@@ -500,7 +475,11 @@ export default function Sidebar({
                           onClick={(e) => onItemClick(e, item)}
                           className={css['sidebar-panel-list-item__left']}
                         >
-                          <div className={`${css.icon} ${expand ? css.iconExpand : ''}`}>
+                          <div
+                            className={`${css.icon} ${
+                              expand ? css.iconExpand : ''
+                            }`}
+                          >
                             {Icons.arrowR}
                           </div>
                           <div
@@ -514,25 +493,25 @@ export default function Sidebar({
                           </div>
                         </div>
                         <div className={css['sidebar-panel-list-item__right']}>
-                            <div
-                              ref={clickRef}
-                              className={css.action}
-                              onClick={() => onEditItem(item)}
-                            >
-                              {Icons.edit}
-                            </div>
-                            <div
-                              className={css.action}
-                              onClick={() => onCopyItem(item)}
-                            >
-                              {Icons.copy}
-                            </div>
-                            <div
-                              className={css.action}
-                              onClick={() => onRemoveItem(item)}
-                            >
-                              {Icons.remove}
-                            </div>
+                          <div
+                            ref={clickRef}
+                            className={css.action}
+                            onClick={() => onEditItem(item)}
+                          >
+                            {Icons.edit}
+                          </div>
+                          <div
+                            className={css.action}
+                            onClick={() => onCopyItem(item)}
+                          >
+                            {Icons.copy}
+                          </div>
+                          <div
+                            className={css.action}
+                            onClick={() => onRemoveItem(item)}
+                          >
+                            {Icons.remove}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -562,110 +541,57 @@ export default function Sidebar({
             </div>
           </div>
           {sidebarContext.enableRenderPortal ? renderAddActions() : null}
-          {sidebarContext.enableRenderPortal ? ReactDOM.createPortal(
-            <div
-              style={{ left: 361, top: ref.current?.getBoundingClientRect().top }}
-              className={`${css['sidebar-panel-edit']} ${
-                sidebarContext.templateVisible
-                  ? css['sidebar-panel-edit-open']
-                  : ''
-              }`}
-            >
-              <div className={css['sidebar-panel-title']}>
-                <div>编辑全局配置</div>
-                <div className='fangzhou-theme'>
-                  <div className={css['actions']}>
-                    <Button size='small' onClick={() => closeTemplateForm()}>
-                      关闭
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              <div className={css['sidebar-panel-content']}>
-                <Form
-                  className='fangzhou-theme'
-                  form={templateForm}
-                  labelCol={{ span: 5 }}
-                  wrapperCol={{ span: 19 }}
-                  size='small'
-                  autoComplete='off'
-                  initialValues={{
-                    paramsFn: exampleParamsFunc,
-                    resultFn: templateResultFunc,
-                    ...templateConfig.initialValues,
-                    ...initialValues,
+          {sidebarContext.enableRenderPortal
+            ? ReactDOM.createPortal(
+                <div
+                  style={{
+                    left: 361,
+                    top: ref.current?.getBoundingClientRect().top,
                   }}
-                  // onValuesChange={onTemplateChange}
+                  className={`${css['sidebar-panel-edit']} ${
+                    sidebarContext.templateVisible
+                      ? css['sidebar-panel-edit-open']
+                      : ''
+                  }`}
                 >
-                  <Collapse
-                    className={css['sidebar-panel-code']}
-                    defaultActiveKey={['domain', 'resultFn']}
-                    ghost
-                  >
-                    {(serviceTemplate.prt || serviceTemplate.staging) && (
-                      <Collapse.Panel
-                        header='域名设置'
-                        forceRender={true}
-                        key='domain'
-                      >
-                        {serviceTemplate.pr && (
-                          <Form.Item label='预发环境'>
-                            <Form.Item name={['prt', 'domain']}>
-                              <Input placeholder='https://www.prt.com' />
-                            </Form.Item>
-                            <Form.Item
-                              name={['prt', 'laneId']}
-                              style={{ marginTop: -16, marginBottom: 0 }}
-                            >
-                              <Input placeholder='泳道ID' />
-                            </Form.Item>
-                          </Form.Item>
-                        )}
-                        {serviceTemplate.staging && (
-                          <Form.Item label='测试环境' name='staging'>
-                            <Form.Item name={['staging', 'domain']}>
-                              <Input placeholder='https://www.staging.com' />
-                            </Form.Item>
-                            <Form.Item
-                              name={['staging', 'laneId']}
-                              style={{ marginTop: -16, marginBottom: 0 }}
-                            >
-                              <Input placeholder='泳道ID' />
-                            </Form.Item>
-                          </Form.Item>
-                        )}
-                      </Collapse.Panel>
-                    )}
-                    <Collapse.Panel header='请求参数处理函数' key='paramsFn'>
-                      <Form.Item
-                        name='paramsFn'
-                        style={{ width: '100%', marginBottom: 8 }}
-                        wrapperCol={{ span: 24 }}
-                      >
-                        <Editor
-                          width='100%'
-                          height='260px'
-                          language='javascript'
-                          theme='light'
-                          lineNumbers='off'
-                          scrollbar={{
-                            horizontalScrollbarSize: 2,
-                            verticalScrollbarSize: 2,
-                          }}
-                          env={{
-                            isNode: false,
-                            isElectronRenderer: false,
-                          }}
-                          minimap={{ enabled: false }}
-                        />
-                      </Form.Item>
-                    </Collapse.Panel>
-                  </Collapse>
-                </Form>
-              </div>
-            </div>,
-            document.body
-          ) : null}
+                  <div className={css['sidebar-panel-title']}>
+                    <div>编辑全局配置</div>
+                    <div className='fangzhou-theme'>
+                      <div className={css['actions']}>
+                        <Button
+                          size='small'
+                          onClick={() => closeTemplateForm()}
+                        >
+                          关 闭
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={css['sidebar-panel-content']}>
+                    <Colp header='请求参数处理函数'>
+                      <Editor
+                        width='100%'
+                        height='260px'
+                        language='javascript'
+                        theme='light'
+                        lineNumbers='off'
+                        scrollbar={{
+                          horizontalScrollbarSize: 2,
+                          verticalScrollbarSize: 2,
+                        }}
+                        // value={data.config.paramsFn}
+                        env={{
+                          isNode: false,
+                          isElectronRenderer: false,
+                        }}
+                        minimap={{ enabled: false }}
+                      />
+                    </Colp>
+                  </div>
+                </div>,
+                document.body
+              )
+            : null}
         </div>
       </>
     );

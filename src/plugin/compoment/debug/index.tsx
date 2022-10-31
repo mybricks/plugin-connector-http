@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Form, Switch, Input } from 'antd';
 import { json as GenerateSchema } from 'generate-schema';
 import { get } from '../../../utils/lodash';
 import { getParams } from '../paramsEdit/utils';
@@ -8,16 +7,18 @@ import {
   formatSchema,
   getDataByOutputKeys,
   getDecodeString,
+  params2data,
 } from '../../../utils';
 import JSONView from '@mybricks/code-editor';
 import ReturnShema from '../returnSchema';
 import { isEmpty } from '../../../utils/lodash';
 import ParamsEdit from '../paramsEdit';
 import Params from '../params';
+import Input from '../../../components/Input';
+import Switch from '../../../components/Switch';
+import FormItem from '../../../components/FormItem';
 import { getScript } from '../../../script';
 import css from './index.less';
-
-const { Item } = Form;
 
 function DataShow({ data }: any) {
   let valueStr = '';
@@ -39,31 +40,7 @@ function DataShow({ data }: any) {
   );
 }
 
-function params2data(params: any) {
-  if (!params) return;
-  let obj: any = {};
-
-  if (params.type === 'string') {
-    return params.defaultValue;
-  }
-  if (params.type === 'number') {
-    return +params.defaultValue;
-  }
-
-  if (params.children) {
-    if (params.type === 'array') {
-      obj = [];
-    }
-    params.children.forEach((child: any) => {
-      obj[child.name] = params2data(child);
-    });
-  }
-
-  return obj;
-}
-
-export default function Debug({ sidebarContext, panelForm }: any) {
-  const [form] = Form.useForm();
+export default function Debug({ sidebarContext }: any) {
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
   const allDataRef = useRef<any>();
@@ -74,13 +51,13 @@ export default function Debug({ sidebarContext, panelForm }: any) {
     name: 'root',
     children: [],
   };
-  useEffect(() => {
-    form.setFieldsValue({
-      ...sidebarContext.formModel,
-    });
+  // useEffect(() => {
+  //   form.setFieldsValue({
+  //     ...sidebarContext.formModel,
+  //   });
 
-    return () => form.resetFields();
-  }, [sidebarContext.formModel]);
+  //   return () => form.resetFields();
+  // }, [sidebarContext.formModel]);
 
   useEffect(() => {
     setSchema(sidebarContext.formModel.resultSchema);
@@ -89,7 +66,7 @@ export default function Debug({ sidebarContext, panelForm }: any) {
   const onDebugClick = async () => {
     try {
       try {
-        await panelForm.validateFields();
+        // await panelForm.validateFields();
       } catch (error) {
         return;
       }
@@ -103,6 +80,7 @@ export default function Debug({ sidebarContext, panelForm }: any) {
           script: getDecodeString(
             getScript({
               ...sidebarContext.formModel,
+              mockAddress: sidebarContext.formModel.useMock && sidebarContext.formModel.mockAddress,
               resultTransformDisabled: true,
             })
           ),
@@ -126,14 +104,23 @@ export default function Debug({ sidebarContext, panelForm }: any) {
       console.log(error);
       sidebarContext.formModel.outputSchema = void 0;
       sidebarContext.formModel.resultSchema = void 0;
-      setError(error);
+      setError(error.message);
     }
   };
 
-  const onValuesChange = useCallback((changedValue: any, allValues: any) => {
-    const { outputKeys, params, useMock, mockAddress } = changedValue;
-    const { resultSchema } = sidebarContext.formModel;
+  const onParamsChange = useCallback((params) => {
+    if (params !== void 0) {
+      const data = params2data(params.children || []);
+      sidebarContext.formModel.inputSchema = GenerateSchema(
+        sidebarContext.formModel.id,
+        data
+      );
+      sidebarContext.formModel.params = params;
+    }
+  }, []);
 
+  const onOutputKeysChange = useCallback((outputKeys) => {
+    const { resultSchema } = sidebarContext.formModel;
     if (outputKeys !== void 0) {
       sidebarContext.formModel.outputKeys = outputKeys;
       let outputSchema: any = {};
@@ -171,51 +158,56 @@ export default function Debug({ sidebarContext, panelForm }: any) {
 
       sidebarContext.formModel.outputSchema = outputSchema;
     }
-    if (params !== void 0) {
-      const actualParams: any = {};
-      getParams(allValues.params[0], actualParams);
-      sidebarContext.formModel.inputSchema = GenerateSchema(
-        sidebarContext.formModel.id,
-        actualParams[ROOTNAME]
-      );
-      sidebarContext.formModel.params = allValues.params;
-    }
-    if (useMock !== void 0) {
-      sidebarContext.formModel.useMock = useMock;
-    }
-    if (mockAddress !== void 0) {
-      sidebarContext.formModel.mockAddress = mockAddress;
-    }
   }, []);
   return (
-    <Form
-      labelCol={{ span: 4 }}
-      wrapperCol={{ span: 20 }}
-      className='fangzhou-theme'
-      form={form}
-      size='small'
-      onValuesChange={onValuesChange}
-    >
-      <Form.Item label='Mock' name='useMock' valuePropName='checked'>
-        <Switch />
-      </Form.Item>
-      <Form.Item
-        label='mock地址'
-        name='mockAddress'
-        style={{ display: sidebarContext.formModel.useMock ? 'flex' : 'none' }}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item label='请求参数' name='params'>
-        <ParamsEdit ctx={sidebarContext} />
-      </Form.Item>
-      <Form.Item label='' name='paramsReal'>
+    <>
+      <FormItem label='Mock'>
+        <Switch
+          defaultChecked={sidebarContext.formModel.useMock}
+          onChange={(checked: boolean) =>
+            (sidebarContext.formModel.useMock = checked)
+          }
+        />
+      </FormItem>
+
+      <FormItem label="mock地址">
+        <Input
+          value={sidebarContext.formModel.mockAddress}
+          onChange={(e) =>
+            (sidebarContext.formModel.mockAddress = e.target.value)
+          }
+        />
+      </FormItem>
+
+      <FormItem label='请求参数'>
+        <ParamsEdit
+          value={sidebarContext.formModel.params}
+          ctx={sidebarContext}
+          onChange={onParamsChange}
+        />
+      </FormItem>
+      <FormItem>
+        <Params
+          value={sidebarContext.formModel.paramsReal}
+          onDebugClick={onDebugClick}
+          ctx={sidebarContext}
+        />
+      </FormItem>
+      {/* <Form.Item label='' name='paramsReal'>
         <Params onDebugClick={onDebugClick} ctx={sidebarContext} />
-      </Form.Item>
-      <Form.Item label='返回数据' name='outputKeys'>
+      </Form.Item> */}
+      <FormItem label='返回数据'>
+        <ReturnShema
+          value={sidebarContext.formModel.outputKeys}
+          onChange={onOutputKeysChange}
+          schema={schema}
+          error={errorInfo}
+        />
+      </FormItem>
+      {/* <Form.Item label='返回数据' name='outputKeys'>
         <ReturnShema schema={schema} error={errorInfo} />
-      </Form.Item>
+      </Form.Item> */}
       <DataShow data={remoteData} />
-    </Form>
+    </>
   );
 }
