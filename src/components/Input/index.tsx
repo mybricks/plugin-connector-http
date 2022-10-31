@@ -2,12 +2,10 @@ import React from 'react';
 import css from './index.less';
 
 export default function Input({
-  title,
-  value,
+  defaultValue,
   onChange,
   validateError = '',
   placeholder,
-  require = false,
   type = 'input',
 }: any) {
   return (
@@ -19,10 +17,10 @@ export default function Input({
         data-err={validateError}
       >
         {type === 'input' ? (
-          <input value={value} placeholder={placeholder} onChange={onChange} />
+          <input defaultValue={defaultValue} placeholder={placeholder} onChange={onChange} />
         ) : (
           <textarea
-            value={value}
+            defaultValue={defaultValue}
             placeholder={placeholder}
             onChange={onChange}
           />

@@ -40,36 +40,35 @@ function DataShow({ data }: any) {
   );
 }
 
-export default function Debug({ sidebarContext }: any) {
+export default function Debug({ sidebarContext, setRender }: any) {
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
   const allDataRef = useRef<any>();
   const [errorInfo, setError] = useState('');
-
+  const [mock, setMock] = useState(sidebarContext.formModel.useMock);
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
     name: 'root',
     children: [],
   };
-  // useEffect(() => {
-  //   form.setFieldsValue({
-  //     ...sidebarContext.formModel,
-  //   });
-
-  //   return () => form.resetFields();
-  // }, [sidebarContext.formModel]);
 
   useEffect(() => {
     setSchema(sidebarContext.formModel.resultSchema);
   }, [sidebarContext.formModel.resultSchema]);
 
+  const validate = useCallback(() => {
+    if (!sidebarContext.formModel.path) {
+      sidebarContext.urlErr = '请填写完整的地址';
+      setRender(sidebarContext);
+      return false;
+    }
+    return true;
+  }, [])
+
   const onDebugClick = async () => {
     try {
-      try {
-        // await panelForm.validateFields();
-      } catch (error) {
-        return;
-      }
+      // TODO
+      // if (!validate()) return;
       const originParams = sidebarContext.formModel.paramsList?.[0].data || [];
       const params = params2data(originParams);
       setData([]);
@@ -80,7 +79,9 @@ export default function Debug({ sidebarContext }: any) {
           script: getDecodeString(
             getScript({
               ...sidebarContext.formModel,
-              mockAddress: sidebarContext.formModel.useMock && sidebarContext.formModel.mockAddress,
+              mockAddress:
+                sidebarContext.formModel.useMock &&
+                sidebarContext.formModel.mockAddress,
               resultTransformDisabled: true,
             })
           ),
@@ -116,6 +117,7 @@ export default function Debug({ sidebarContext }: any) {
         data
       );
       sidebarContext.formModel.params = params;
+      setRender(sidebarContext)
     }
   }, []);
 
@@ -157,27 +159,31 @@ export default function Debug({ sidebarContext }: any) {
       setData(getDataByOutputKeys(allDataRef.current, outputKeys));
 
       sidebarContext.formModel.outputSchema = outputSchema;
+      setRender(sidebarContext);
     }
-  }, []);
+  }, [sidebarContext]);
   return (
     <>
       <FormItem label='Mock'>
         <Switch
           defaultChecked={sidebarContext.formModel.useMock}
-          onChange={(checked: boolean) =>
-            (sidebarContext.formModel.useMock = checked)
-          }
+          onChange={(checked: boolean) => {
+            sidebarContext.formModel.useMock = checked;
+            setMock(checked);
+          }}
         />
       </FormItem>
 
-      <FormItem label="mock地址">
-        <Input
-          value={sidebarContext.formModel.mockAddress}
-          onChange={(e) =>
-            (sidebarContext.formModel.mockAddress = e.target.value)
-          }
-        />
-      </FormItem>
+      {mock ? (
+        <FormItem label='mock地址'>
+          <Input
+            defaultValue={sidebarContext.formModel.mockAddress}
+            onChange={(e) =>
+              (sidebarContext.formModel.mockAddress = e.target.value)
+            }
+          />
+        </FormItem>
+      ) : null}
 
       <FormItem label='请求参数'>
         <ParamsEdit
@@ -193,9 +199,6 @@ export default function Debug({ sidebarContext }: any) {
           ctx={sidebarContext}
         />
       </FormItem>
-      {/* <Form.Item label='' name='paramsReal'>
-        <Params onDebugClick={onDebugClick} ctx={sidebarContext} />
-      </Form.Item> */}
       <FormItem label='返回数据'>
         <ReturnShema
           value={sidebarContext.formModel.outputKeys}
@@ -204,9 +207,6 @@ export default function Debug({ sidebarContext }: any) {
           error={errorInfo}
         />
       </FormItem>
-      {/* <Form.Item label='返回数据' name='outputKeys'>
-        <ReturnShema schema={schema} error={errorInfo} />
-      </Form.Item> */}
       <DataShow data={remoteData} />
     </>
   );

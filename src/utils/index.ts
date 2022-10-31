@@ -103,3 +103,14 @@ export function params2data(params: any) {
 
   return obj;
 }
+
+export function uuid() {
+  let len = 6,
+    seed = "abcdefhijkmnprstwxyz",
+    maxPos = seed.length;
+  let rtn = "";
+  for (let i = 0; i < len; i++) {
+    rtn += seed.charAt(Math.floor(Math.random() * maxPos));
+  }
+  return "u_" + rtn;
+}

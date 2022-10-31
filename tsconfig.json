@@ -21,12 +21,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",
-    "baseUrl": ".",
-    "paths": {
-      "@mybricks/rxui": [
-        "../../rxui"
-      ]
-    }
+    "baseUrl": "."
   },
   "exclude": [
     "./node_modules"

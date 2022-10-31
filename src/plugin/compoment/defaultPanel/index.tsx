@@ -26,10 +26,12 @@ export default function DefaultPanel({
   onFinish,
   style,
   prefix,
-  onSubmit
+  onSubmit,
+  setRender
 }: any) {
   const paramRef = useRef();
   const resultRef = useRef();
+  const addresRef = useRef();
   const [useMock, setUseMock] = useState(sidebarContext.formModel.useMock);
   const onClosePanel = useCallback(() => {
     sidebarContext.panelVisible = NO_PANEL_VISIBLE;
@@ -37,52 +39,34 @@ export default function DefaultPanel({
     sidebarContext.activeId = void 0;
     sidebarContext.formModel = {};
     sidebarContext.isEdit = false;
+    setRender(sidebarContext);
   }, []);
 
   const onParamsEditorFullscreen = () => {
     paramRef.current?.classList.add(css['sidebar-panel-code-full']);
     sidebarContext.fullscreenParamsEditor = true;
+    setRender(sidebarContext);
   };
 
   const onParamsEditorFullscreenExit = () => {
     paramRef.current?.classList.remove(css['sidebar-panel-code-full']);
     sidebarContext.fullscreenParamsEditor = false;
+    setRender(sidebarContext);
   };
   const onResultEditorFullscreen = () => {
     sidebarContext.fullscrenResultEditor = true;
     resultRef.current?.classList.add(css['sidebar-panel-code-full']);
+    setRender(sidebarContext);
   };
   const onResultEditorFullscreenExit = () => {
     sidebarContext.fullscrenResultEditor = false;
     resultRef.current?.classList.remove(css['sidebar-panel-code-full']);
-  };
-
-  // const onDocLinkClick = useCallback(() => {
-  //   window.open(form.getFieldValue('doc'));
-  // }, []);
-
-  const setParams = useCallback((values) => {
-    sidebarContext.formModel = { ...sidebarContext.formModel, ...values };
-    sidebarContext.formModel.input = encodeURIComponent(values.input);
-    sidebarContext.formModel.output = encodeURIComponent(values.output);
-  }, []);
-
-  const onChange = (changedValue: any, allValues: any) => {
-    if (changedValue.useMock !== void 0) {
-      setUseMock(changedValue.useMock);
-    }
-    onValuesChange(changedValue, allValues);
+    setRender(sidebarContext);
   };
 
   useEffect(() => {
     setUseMock(sidebarContext.formModel.useMock);
   }, [sidebarContext.formModel.useMock]);
-
-  const onFormSubmit = useCallback((values) => {
-    onFinish(values).then(() => {
-      onClosePanel();
-    });
-  }, []);
 
   return ReactDOM.createPortal(
     <div
@@ -115,7 +99,7 @@ export default function DefaultPanel({
       <div className={parenetCss['sidebar-panel-content']}>
         <>
           <div className={css.ct}>
-            <Collapse header='基本信息' defaultChecked={true}>
+            <Collapse header='基本信息' defaultFold={false}>
               <div className={css.item}>
                 <label>
                   <i>*</i>名称
@@ -130,6 +114,7 @@ export default function DefaultPanel({
                     type={'text'}
                     placeholder={'服务接口的标题'}
                     defaultValue={sidebarContext.formModel.title}
+                    key={sidebarContext.formModel.title}
                     onChange={(e) => {
                       sidebarContext.titleErr = void 0;
                       sidebarContext.formModel.title = e.target.value;
@@ -142,17 +127,23 @@ export default function DefaultPanel({
                   <i>*</i>地址
                 </label>
                 <div
+                  ref={addresRef}
                   className={`${css.editor} ${css.textEdt} ${
                     sidebarContext.urlErr ? css.error : ''
                   }`}
                   data-err={sidebarContext.urlErr}
                 >
                   <textarea
-                    value={sidebarContext.formModel.path}
+                    
+                    defaultValue={sidebarContext.formModel.path}
+                    key={sidebarContext.formModel.path}
                     placeholder={'接口的请求路径'}
                     onChange={(e) => {
-                      sidebarContext.urlErr = void 0;
+                      if (sidebarContext.urlErr) {
+                        sidebarContext.urlErr = void 0;
+                      }
                       sidebarContext.formModel.path = e.target.value;
+                      
                     }}
                   />
                 </div>
@@ -289,7 +280,7 @@ export default function DefaultPanel({
           <Collapse key={Math.random()} header='接口调试' defaultFold={false}>
             <DebugForm
               sidebarContext={sidebarContext}
-              prefix={prefix}
+              setRender={setRender}
             />
           </Collapse>
         </div>

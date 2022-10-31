@@ -6,7 +6,7 @@ import {
   TG_PANEL_VISIBLE,
 } from '../../../constant';
 import Dropdown from '../../../components/Dropdown';
-export default function ({ ctx }: any) {
+export default function ({ ctx, setRender }: any) {
   const onAddClick = useCallback(async (type = 'http') => {
     ctx.type = type;
     ctx.activeId = void 0;
@@ -16,13 +16,16 @@ export default function ({ ctx }: any) {
     switch (type) {
       case 'kdev':
         ctx.panelVisible = KDEV_PANEL_VISIBLE;
+        setRender(ctx);
         break;
 
       case 'tg':
         ctx.panelVisible = TG_PANEL_VISIBLE;
+        setRender(ctx);
         break;
 
       default:
+        setRender(ctx);
         ctx.addDefaultService();
     }
   }, []);

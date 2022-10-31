@@ -18,8 +18,7 @@ module.exports = merge(commonCfg, {
   externals: [
     {
       react: 'react',
-      'react-dom': 'react-dom',
-      '@mybricks/rxui': '@mybricks/rxui'
+      'react-dom': 'react-dom'
     },
   ],
   plugins: [
