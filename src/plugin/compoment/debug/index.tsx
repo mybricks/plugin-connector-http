@@ -126,7 +126,7 @@ export default function Debug({ sidebarContext, panelForm, prefix }: any) {
       console.log(error);
       sidebarContext.formModel.outputSchema = void 0;
       sidebarContext.formModel.resultSchema = void 0;
-      setError(error);
+      setError(error?.message || error);
     }
   };
 
