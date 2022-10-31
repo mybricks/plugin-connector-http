@@ -4,7 +4,7 @@ import { evt, getPosition } from '@mybricks/rxui';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
 
-export default function ReturnShema({ value, onChange, schema }: any) {
+export default function ReturnShema({ value, onChange, schema, error }: any) {
   const parentEleRef = useRef();
   const keysRef = useRef(value || []);
   const [popMenuStyle, setStyle] = useState<any>();
@@ -99,6 +99,11 @@ export default function ReturnShema({ value, onChange, schema }: any) {
     setStyle(void 0);
   }, []);
 
+  if (error) {
+    return (
+      <div className={css.errorInfo}>{error}</div>
+    )
+  }
   return schema ? (
     <div
       className={css.returnParams}

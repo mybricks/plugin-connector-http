@@ -102,6 +102,7 @@ export class SidebarContext {
   editNow: any
   searchValue: string
   addActions: any[]
+  enableRenderPortal: boolean
   connector: { add: any, remove: any, update: any }
   editConnector(def: any) {
     this.editNow = def

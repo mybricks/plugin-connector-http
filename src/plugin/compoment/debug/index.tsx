@@ -27,7 +27,14 @@ function DataShow({ data }: any) {
   return isEmpty(data) ? null : (
     <div style={{ marginLeft: 87 }}>
       <div className={css.title}>标记后的返回结果示例</div>
-      <JSONView value={valueStr} language='json' />
+      <JSONView
+        value={valueStr}
+        language='json'
+        env={{
+          isNode: false,
+          isElectronRenderer: false,
+        }}
+      />
     </div>
   );
 }
@@ -55,15 +62,12 @@ function params2data(params: any) {
   return obj;
 }
 
-export default function Debug({
-  sidebarContext,
-  context,
-  panelForm
-}: any) {
+export default function Debug({ sidebarContext, panelForm }: any) {
   const [form] = Form.useForm();
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
   const allDataRef = useRef<any>();
+  const [errorInfo, setError] = useState('');
 
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
@@ -92,16 +96,19 @@ export default function Debug({
       const originParams = sidebarContext.formModel.paramsList?.[0].data || [];
       const params = params2data(originParams);
       setData([]);
-      const data = await sidebarContext.connector.test({
-        type: 'http',
-        script: getDecodeString(
-          getScript({
-            ...sidebarContext.formModel,
-            globalParamsFn: context.projectData.serviceTemplate.paramsFn,
-          })
-        )
-      }, params);
-      console.log(data, '1233213')
+      setError('');
+      const data = await sidebarContext.connector.test(
+        {
+          type: 'http',
+          script: getDecodeString(
+            getScript({
+              ...sidebarContext.formModel,
+              resultTransformDisabled: true,
+            })
+          ),
+        },
+        params
+      );
       allDataRef.current = data;
       const { outputKeys } = sidebarContext.formModel;
       const outputData = getDataByOutputKeys(data, outputKeys);
@@ -111,11 +118,15 @@ export default function Debug({
       const outputSchema = GenerateSchema('', outputData);
       formatSchema(outputSchema);
       const inputSchema = GenerateSchema('', params || {});
+      formatSchema(inputSchema);
       sidebarContext.formModel.outputSchema = outputSchema;
       sidebarContext.formModel.inputSchema = inputSchema;
       setSchema({ ...sidebarContext.formModel.resultSchema });
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      sidebarContext.formModel.outputSchema = void 0;
+      sidebarContext.formModel.resultSchema = void 0;
+      setError(error);
     }
   };
 
@@ -202,7 +213,7 @@ export default function Debug({
         <Params onDebugClick={onDebugClick} ctx={sidebarContext} />
       </Form.Item>
       <Form.Item label='返回数据' name='outputKeys'>
-        <ReturnShema schema={schema} />
+        <ReturnShema schema={schema} error={errorInfo} />
       </Form.Item>
       <DataShow data={remoteData} />
     </Form>

@@ -10,7 +10,7 @@ import { Dropdown, Input, Menu } from 'antd';
 const { Search } = Input;
 
 export default function ({ ctx }: any) {
-  const onAddClick = useCallback(async ({ key } = {}) => {
+  const onAddClick = useCallback(async ({ key = 'http' } = {}) => {
     ctx.type = key;
     ctx.activeId = void 0;
     ctx.isEdit = false;

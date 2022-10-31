@@ -7,6 +7,7 @@ module.exports = merge(commonCfg, {
   mode: 'production',
   entry: {
     plugin: './src/index.tsx',
+    ajax: './src/ajax/callConnectorHttp.ts'
   },
   output: {
     globalObject: 'this',

@@ -1,20 +1,22 @@
 import Plugin from './plugin';
-import { Icon } from './icon';
+import { icon } from './icon';
+import data from './data';
 
-function pluginEntry(context: any, config = {}) {
+function pluginEntry(config?: any) {
   return {
     name: '@mybricks/plugins/service',
     title: '连接器',
     description: '连接器',
+    data,
     contributes: {
       sliderView: {
         tab: {
           title: '连接器',
-          icon: Icon,
+          icon: icon,
           apiSet: ['connector'],
           render(args: any) {
             // @ts-ignore
-            return <Plugin context={context} {...config} {...args} />;
+            return <Plugin {...config} {...args} />;
           },
         },
       },

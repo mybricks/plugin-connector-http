@@ -19,11 +19,11 @@ const methodOpts = [
 
 export default function DefaultPanel({
   sidebarContext,
-  context,
   onValuesChange,
   onFinish,
   form,
-  prefix,
+  style,
+  prefix
 }: any) {
   const paramRef = useRef();
   const resultRef = useRef();
@@ -36,28 +36,27 @@ export default function DefaultPanel({
     sidebarContext.isEdit = false;
   }, []);
   const onServiceSubmit = useCallback(async () => {
-    if (!context.isLock) return;
     form.validateFields().then(() => {
       form.submit();
     });
   }, []);
 
   const onParamsEditorFullscreen = () => {
-    paramRef.current.classList.add(css['sidebar-panel-code-full']);
+    paramRef.current?.classList.add(css['sidebar-panel-code-full']);
     sidebarContext.fullscreenParamsEditor = true;
   };
 
   const onParamsEditorFullscreenExit = () => {
-    paramRef.current.classList.remove(css['sidebar-panel-code-full']);
+    paramRef.current?.classList.remove(css['sidebar-panel-code-full']);
     sidebarContext.fullscreenParamsEditor = false;
   };
   const onResultEditorFullscreen = () => {
     sidebarContext.fullscrenResultEditor = true;
-    resultRef.current.classList.add(css['sidebar-panel-code-full']);
+    resultRef.current?.classList.add(css['sidebar-panel-code-full']);
   };
   const onResultEditorFullscreenExit = () => {
     sidebarContext.fullscrenResultEditor = false;
-    resultRef.current.classList.remove(css['sidebar-panel-code-full']);
+    resultRef.current?.classList.remove(css['sidebar-panel-code-full']);
   };
 
   const onDocLinkClick = useCallback(() => {
@@ -89,7 +88,7 @@ export default function DefaultPanel({
 
   return ReactDOM.createPortal(
     <div
-      style={{ left: 361 }}
+      style={{ left: 361, ...style }}
       className={`${parenetCss['sidebar-panel-edit']} ${
         sidebarContext.panelVisible & DEFAULT_PANEL_VISIBLE
           ? parenetCss['sidebar-panel-edit-open']
@@ -104,7 +103,6 @@ export default function DefaultPanel({
               <Button
                 type='primary'
                 size='small'
-                disabled={!context.isLock}
                 onClick={() => onServiceSubmit()}
               >
                 保存
@@ -227,6 +225,10 @@ export default function DefaultPanel({
                         }
                       };
                     }}
+                    env={{
+                      isNode: false,
+                      isElectronRenderer: false,
+                    }}
                     onChange={(code: string) => {
                       sidebarContext.formModel.input = encodeURIComponent(code);
                     }}
@@ -287,6 +289,10 @@ export default function DefaultPanel({
                           onResultEditorFullscreenExit();
                         }
                       };
+                    }}
+                    env={{
+                      isNode: false,
+                      isElectronRenderer: false,
                     }}
                     onChange={(code: string) => {
                       sidebarContext.formModel.output = encodeURIComponent(code);
@@ -351,7 +357,6 @@ export default function DefaultPanel({
               style={{ position: 'relative' }}
             >
               <DebugForm
-                context={context}
                 sidebarContext={sidebarContext}
                 panelForm={form}
                 prefix={prefix}
