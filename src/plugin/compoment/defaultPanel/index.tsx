@@ -22,10 +22,7 @@ const methodOpts = [
 
 export default function DefaultPanel({
   sidebarContext,
-  onValuesChange,
-  onFinish,
   style,
-  prefix,
   onSubmit,
   setRender
 }: any) {

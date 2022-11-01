@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { uuid } from '../utils';
 import {
@@ -34,6 +34,7 @@ interface Iprops {
     connectors: any[],
     config: any
   };
+  serviceList: any[]
   serviceTemplate: any;
   prefix: string;
 }
@@ -50,7 +51,6 @@ const interfaceParams = [
   { key: 'content.title', name: '标题' },
   { key: 'content.method', name: '方法' },
   { key: 'content.path', name: '路径' },
-  { key: 'creatorName', name: '创建者' },
   { key: 'content.doc', name: '文档链接', link: true },
   { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
 ];
@@ -59,10 +59,9 @@ export default function Sidebar({
   contentType,
   addActions,
   connector,
-  prefix,
+  serviceList = [],
   data,
 }: Iprops) {
-  data.config = data.config || { paramsFn: encodeURIComponent(exampleParamsFunc) };
   const ref = useRef();
   const [sidebarContext, setContext] = useState({
     eidtVisible: false,
@@ -74,6 +73,7 @@ export default function Sidebar({
       interfaceMap: {},
     },
     tg: {},
+    type: 'http',
     comlibNavVisible: true,
     isEdit: false,
     formModel: {},
@@ -106,7 +106,7 @@ export default function Sidebar({
           const serviceList: any[] = data.connectors;
           const serviceItem = {
             id,
-            type: sidebarContext.type,
+            type: sidebarContext.type || 'http',
             content: {
               input: encodeURIComponent(exampleParamsFunc),
               output: encodeURIComponent(exampleResultFunc),
@@ -142,7 +142,7 @@ export default function Sidebar({
               sidebarContext.connector.update({
                 id,
                 title: others.title,
-                type: sidebarContext.type,
+                type: sidebarContext.type || 'http',
                 inputSchema: serviceItem.content.inputSchema,
                 outputSchema: serviceItem.content.outputSchema,
                 script: getScript({
@@ -368,7 +368,6 @@ export default function Sidebar({
           setRender={setRender}
           onValuesChange={onValuesChange}
           onSubmit={onFinish}
-          prefix={prefix}
           key={type}
           style={{ top: ref.current?.getBoundingClientRect().top }}
         />
@@ -437,7 +436,14 @@ export default function Sidebar({
     };
     updateService();
   };
+  const initData =  useCallback(() => {
+    data.config = data.config || { paramsFn: encodeURIComponent(exampleParamsFunc) };
+    data.connectors = data.connectors.length === 0 ? serviceList : data.connectors;
+  }, [])
 
+  useEffect(() => {
+    initData();
+  }, [])
   const list = data.connectors;
   return (
     <>
