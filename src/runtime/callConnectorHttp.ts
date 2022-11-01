@@ -10,7 +10,7 @@ interface IOptions {
 }
 
 interface IConfig {
-  beforeSend: (options: IOptions) => any;
+  before: (options: IOptions) => any;
 }
 
 const defaultFn = (options: IOptions, ...args: any) => ({
@@ -18,7 +18,7 @@ const defaultFn = (options: IOptions, ...args: any) => ({
   ...args,
 });
 
-export function callConnectorHttp(
+export function call(
   connector: { id: string; script: string; [key: string]: any },
   params: any,
   config?: IConfig
@@ -26,13 +26,13 @@ export function callConnectorHttp(
   return new Promise((resolve, reject) => {
     try {
       const fn = eval(`(${decodeURIComponent(connector.script)})`);
-      const { beforeSend = defaultFn } = config || {};
+      const { before = defaultFn } = config || {};
       fn(
         params,
         { then: resolve, onError: reject },
         {
           ajax(options: IOptions) {
-            const opts = beforeSend({ ...options });
+            const opts = before({ ...options });
             return axios(opts || options).then((res: any) => res.data);
           },
         }
