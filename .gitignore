@@ -2,7 +2,7 @@
 .idea/
 .DS_Store
 lib
-rt
+runtime
 node_modules
 src/**/*.js
 tags/*

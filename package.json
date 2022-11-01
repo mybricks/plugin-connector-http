@@ -3,7 +3,7 @@
   "version": "0.0.13",
   "author": "CheMingjun",
   "license": "",
-  "main": "rt/plugin.js",
+  "main": "runtime/plugin.js",
   "scripts": {
     "build": "webpack --config ./scripts/webpack.build.js && tsc --declaration",
     "publishToNpm": "npm run build && npm publish --registry=https://registry.npmjs.org --access=public"
@@ -12,7 +12,7 @@
     "type": "git"
   },
   "files": [
-    "rt",
+    "runtime",
     "Readme.md"
   ],
   "dependencies": {

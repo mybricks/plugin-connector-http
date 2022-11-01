@@ -7,12 +7,12 @@ module.exports = merge(commonCfg, {
   mode: 'production',
   entry: {
     plugin: './src/index.tsx',
-    index: './src/rt/callConnectorHttp.ts'
+    index: './src/runtime/callConnectorHttp.ts'
   },
   output: {
     globalObject: 'this',
     filename: '[name].js',
-    path: resolve(process.cwd(), 'rt'),
+    path: resolve(process.cwd(), 'runtime'),
     libraryTarget: 'umd',
   },
   externals: [
