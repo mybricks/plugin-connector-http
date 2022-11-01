@@ -61,7 +61,6 @@ export default function ({ ctx, setRender }: any) {
         <input
           type={'text'}
           placeholder={'请输入名称搜索服务接口'}
-          value={ctx.searchText}
           onChange={(e) => ctx.search(e.target.value)}
         />
       </div>

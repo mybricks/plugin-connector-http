@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { uuid } from '../utils';
 import {
@@ -19,6 +19,7 @@ import { getScript } from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
+import { UsageState } from 'webpack';
 
 interface Iprops {
   context: any;
@@ -63,6 +64,7 @@ export default function Sidebar({
   data,
 }: Iprops) {
   const ref = useRef();
+  const [searchValue, setSearchValue] = useState('');
   const [sidebarContext, setContext] = useState({
     eidtVisible: false,
     panelVisible: NO_PANEL_VISIBLE,
@@ -97,6 +99,9 @@ export default function Sidebar({
       },
       test: (...args: any) => connector.test(...args),
     },
+    search: (v: string) => {
+      setSearchValue(v);
+    }
   });
   const updateService = useCallback(
     async (action?: string) => {
@@ -441,9 +446,10 @@ export default function Sidebar({
     data.connectors = data.connectors.length === 0 ? serviceList : data.connectors;
   }, [])
 
-  useEffect(() => {
+  useMemo(() => {
     initData();
   }, [])
+
   const list = data.connectors;
   return (
     <>
@@ -463,12 +469,12 @@ export default function Sidebar({
                 {Icons.set}
               </div>
             </div>
-            <Toolbar ctx={sidebarContext} setRender={setRender} />
+            <Toolbar searchValue={searchValue} ctx={sidebarContext} setRender={setRender} />
           </div>
           <div className={css['sidebar-panel-list']}>
-            {(sidebarContext.searchValue
+            {(searchValue
               ? list.filter((item) =>
-                  item.content.title.includes(sidebarContext.searchValue)
+                  item.content.title.includes(searchValue)
                 )
               : list
             ).map((item) => {
