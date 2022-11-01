@@ -1,6 +1,6 @@
 {
   "name": "@mybricks/plugin-connector-http",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "author": "CheMingjun",
   "license": "",
   "main": "runtime/plugin.js",
