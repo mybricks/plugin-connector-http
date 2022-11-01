@@ -1,3 +1,5 @@
+@import '../../../theme.less';
+
 .ct {
   padding: 0 6px 0;
   border-radius: 6px;
@@ -29,19 +31,20 @@
     position: relative;
     padding-left: 6px;
 
-    &::after {
-      content: attr(data-err);
-      color: red;
-      position: absolute;
-      bottom: -20px;
-    }
   }
 
   .error {
     border: 1px solid #FF0000 !important;
-    padding: 2px;
+    padding: 0;
     margin-bottom: 4px;
+    &::after {
+      content: attr(data-err);
+      color: red;
+      position: absolute;
+      bottom: -17px;
+    }
   }
+
   .textEdt {
     input, textarea {
       border: 1px solid #DDD;
@@ -50,6 +53,9 @@
       background: #FFF;
       width: 100%;
       line-height: 1;
+      &:focus {
+        outline: 1px solid @color-primary;
+      }
     }
 
     textarea {

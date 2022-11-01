@@ -1,3 +1,5 @@
+@import '../../../theme.less';
+
 .item,
 .header {
   display: flex;
@@ -53,6 +55,10 @@
     background: #fff;
     padding-left: 2px;
     text-align: left !important;
+
+    &:focus {
+      outline: 1px solid @color-primary;
+    }
   }
 
   input[disabled] {

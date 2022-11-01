@@ -56,7 +56,7 @@ function merge(object: any, source: any, ctx: any) {
   }
 }
 
-function ParamsEdit({ onDebugClick, ctx }: any) {
+export default function ParamsEdit({ onDebugClick, ctx, params }: any) {
   const valueRef = useRef({});
   const [render, forceRender] = useState(0);
 
@@ -72,12 +72,12 @@ function ParamsEdit({ onDebugClick, ctx }: any) {
   }, []);
 
   useEffect(() => {
-    const params = cloneDeep(ctx.formModel.params);
+    const param = cloneDeep(params);
     valueRef.current = cloneDeep(ctx.formModel.paramsList?.[0].data);
-    merge(valueRef.current, params, ctx);
+    merge(valueRef.current, param, ctx);
     updateValue();
     forceRender(Math.random());
-  }, [ctx.formModel.params]);
+  }, [params]);
   const set = useCallback((item, key, val) => {
     item[key] = val;
     updateValue();
@@ -107,7 +107,7 @@ function ParamsEdit({ onDebugClick, ctx }: any) {
     const hide = isObject || isRoot || isArray;
 
     return (
-      <div className={css.ct} key={item.id}>
+      <div className={css.ct} key={item.id || 'root'}>
         <div className={`${css.item} ${isRoot ? css.rootItem : ''}`}>
           <div style={{ padding: '0 10px 0 2px' }}>
             {isArrayParent ? `[${item.name}]` : item.name}
@@ -115,7 +115,6 @@ function ParamsEdit({ onDebugClick, ctx }: any) {
           </div>
           {hide ? null : (
             <input
-              key={item.defaultValue}
               className={css.column}
               type={'text'}
               disabled={item.type === 'object' || item.type === 'array'}
@@ -144,7 +143,7 @@ function ParamsEdit({ onDebugClick, ctx }: any) {
   );
 }
 
-export default memo(ParamsEdit)
+// export default memo(ParamsEdit)
 
 function getTypeName(v: string) {
   switch (v) {

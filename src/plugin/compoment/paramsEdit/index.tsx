@@ -110,7 +110,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
             type={'text'}
             disabled={item.type === 'object' || item.type === 'array'}
             defaultValue={item.defaultValue}
-            onBlur={(e) => set(item, 'defaultValue', e.target.value)}
+            onChange={(e) => set(item, 'defaultValue', e.target.value)}
           />
           <div className={`${css.column4} ${css.flex}`}>
             <span

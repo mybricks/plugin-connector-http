@@ -1,18 +1,6 @@
 @color: #fa6400;
 
 .sidebar-panel {
-  :global {
-    .ant-btn-sm {
-      height: 24px;
-      padding: 0px 5px;
-      font-size: 12px;
-      border-radius: 2px;
-    }
-    .ant-btn > .anticon + span,
-    .ant-btn > span + .anticon {
-      margin-left: 3px;
-    }
-  }
 
   width: 320px;
   background-color: #f7f7f7;
@@ -41,27 +29,6 @@
     &-open {
       display: block;
     }
-    .sidebar-panel-title {
-      .actions {
-        :global {
-          .ant-btn {
-            font-size: 12px;
-            height: 22px;
-            line-height: 1;
-            border-radius: 3px;
-            + .ant-btn {
-              margin-left: 10px;
-            }
-          }
-        }
-      }
-    }
-
-    :global {
-      .ant-empty {
-        margin: 0;
-      }
-    }
   }
 
   &-open {
@@ -72,8 +39,8 @@
     font-size: 12px;
     font-weight: bold;
     padding: 0 10px;
-    line-height: 40px;
-    height: 40;
+    line-height: 50px;
+    height: 50px;
     background-color: #f7f7f7;
     display: flex;
     justify-content: space-between;
@@ -96,7 +63,7 @@
     &__title {
       font-size: 14px;
       font-weight: 666;
-      height: 40px;
+      height: 49px;
       padding: 0 4px;
       display: flex;
       justify-content: space-between;
@@ -154,88 +121,6 @@
           &:hover {
             color: @color;
           }
-        }
-      }
-    }
-  }
-
-  :global {
-    .ant-radio-button-wrapper,
-    .ant-form-item-label > label,
-    .ant-collapse-header,
-    .ant-tree-list,
-    .ant-radio-button {
-      font-size: 12px;
-    }
-    .ant-table {
-      &-tbody {
-        tr.ant-table-row {
-          height: 40px !important;
-          td {
-            padding: 0 0 0 6px;
-            height: 40px !important;
-          }
-
-          input {
-            padding: 0 7px;
-          }
-        }
-      }
-      &-cell {
-        .ant-select-selector {
-          height: 24px !important;
-
-          padding: 0 7px !important;
-        }
-        .ant-select-selection {
-          &-search {
-            height: 24px !important;
-          }
-          &-item {
-            height: 24px !important;
-            line-height: 24px !important;
-          }
-        }
-      }
-    }
-    .ant-table-thead > tr > th {
-      font-size: 12px;
-      font-weight: 400;
-    }
-    .ant-btn {
-      font-size: 12px;
-      height: 22px;
-      line-height: 1;
-      padding: 0 7px;
-      border-radius: 3px;
-    }
-    .ant-collapse-content-box {
-      padding: 0 !important;
-    }
-    .ant-form-item {
-      margin-bottom: 18px;
-    }
-    .ant-input-sm {
-      font-size: 12px;
-    }
-    .ant-input-number {
-      &-handler-wrap,
-      &-input-wrap,
-      &-input {
-        height: 24px;
-        line-height: 24px;
-      }
-    }
-    .ant-radio-button-wrapper {
-      &:hover {
-        color: inherit;
-      }
-      &-checked {
-        box-shadow: none !important;
-        background: #616c81 !important;
-        border-color: #616c81 !important;
-        &::before {
-          background: #616c81 !important;
         }
       }
     }
@@ -336,13 +221,6 @@
         right: 20px;
         top: -14px;
         transform: scale(0.8);
-        :global {
-          .ant-tag {
-            line-height: 1;
-            padding: 0;
-            border: none;
-          }
-        }
       }
     }
 
@@ -396,30 +274,6 @@
     right: 0;
     bottom: 0;
     top: 0;
-  }
-
-  :global {
-    .ant-collapse-header {
-      background-color: #f7f7f7;
-      padding: 6px 0 !important;
-      margin: 0;
-    }
-    .ant-collapse-arrow {
-      padding: 0 !important;
-      font-size: 10px !important;
-      margin-right: 6px !important;
-    }
-    .ant-collapse-item {
-      margin-bottom: 0;
-    }
-    .ant-collapse-content-box {
-      padding-left: 0 !important;
-      padding-right: 0 !important;
-    }
-    .ant-radio-button-wrapper {
-      height: 22px !important;
-      padding: 0 5px !important;
-    }
   }
 }
 

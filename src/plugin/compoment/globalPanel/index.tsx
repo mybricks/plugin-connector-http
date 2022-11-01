@@ -21,7 +21,7 @@ export default function GlobalPanel({ sidebarContext, closeTemplateForm, style }
       >
         <div className={css['sidebar-panel-title']}>
           <div>编辑全局配置</div>
-          <div className='fangzhou-theme'>
+          <div>
             <div className={css['actions']}>
               <Button
                 size='small'

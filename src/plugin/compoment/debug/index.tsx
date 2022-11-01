@@ -40,11 +40,12 @@ function DataShow({ data }: any) {
   );
 }
 
-export default function Debug({ sidebarContext, setRender }: any) {
+export default function Debug({ sidebarContext, validate, setRender }: any) {
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
   const allDataRef = useRef<any>();
   const [errorInfo, setError] = useState('');
+  const [params, setParams] = useState(sidebarContext.formModel.params);
   const [mock, setMock] = useState(sidebarContext.formModel.useMock);
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
@@ -56,19 +57,9 @@ export default function Debug({ sidebarContext, setRender }: any) {
     setSchema(sidebarContext.formModel.resultSchema);
   }, [sidebarContext.formModel.resultSchema]);
 
-  const validate = useCallback(() => {
-    if (!sidebarContext.formModel.path) {
-      sidebarContext.urlErr = '请填写完整的地址';
-      setRender(sidebarContext);
-      return false;
-    }
-    return true;
-  }, [])
-
   const onDebugClick = async () => {
     try {
-      // TODO
-      // if (!validate()) return;
+      if (!validate()) return;
       const originParams = sidebarContext.formModel.paramsList?.[0].data || [];
       const params = params2data(originParams);
       setData([]);
@@ -111,57 +102,58 @@ export default function Debug({ sidebarContext, setRender }: any) {
 
   const onParamsChange = useCallback((params) => {
     if (params !== void 0) {
-      const data = params2data(params.children || []);
-      sidebarContext.formModel.inputSchema = GenerateSchema(
-        sidebarContext.formModel.id,
-        data
-      );
+      const data = params2data(params || []);
+      const inputSchema = GenerateSchema('', data);
+      formatSchema(inputSchema);
+      sidebarContext.formModel.inputSchema = inputSchema
       sidebarContext.formModel.params = params;
-      setRender(sidebarContext)
+      setParams(params);
     }
   }, []);
 
-  const onOutputKeysChange = useCallback((outputKeys) => {
-    const { resultSchema } = sidebarContext.formModel;
-    if (outputKeys !== void 0) {
-      sidebarContext.formModel.outputKeys = outputKeys;
-      let outputSchema: any = {};
-      if (outputKeys.length === 0) {
-        outputSchema = sidebarContext.formModel.resultSchema;
-      } else if (outputKeys.length === 1) {
-        if (outputKeys[0] === '') {
-          outputSchema = { type: 'any' };
+  const onOutputKeysChange = useCallback(
+    (outputKeys) => {
+      const { resultSchema } = sidebarContext.formModel;
+      if (outputKeys !== void 0) {
+        sidebarContext.formModel.outputKeys = outputKeys;
+        let outputSchema: any = {};
+        if (outputKeys.length === 0) {
+          outputSchema = sidebarContext.formModel.resultSchema;
+        } else if (outputKeys.length === 1) {
+          if (outputKeys[0] === '') {
+            outputSchema = { type: 'any' };
+          } else {
+            outputSchema = get(
+              resultSchema.properties,
+              outputKeys[0].split('.').join('.properties.')
+            );
+          }
         } else {
-          outputSchema = get(
-            resultSchema.properties,
-            outputKeys[0].split('.').join('.properties.')
-          );
-        }
-      } else {
-        outputSchema = {
-          type: 'object',
-          properties: {},
-        };
-        outputKeys.forEach((key: string) => {
-          let subSchema = outputSchema.properties;
-          let subResultSchema = resultSchema.properties;
-          key.split('.').forEach((field) => {
-            subSchema[field] = { ...subResultSchema[field] };
-            subSchema = subSchema[field].properties;
-            subResultSchema = subResultSchema[field].properties;
+          outputSchema = {
+            type: 'object',
+            properties: {},
+          };
+          outputKeys.forEach((key: string) => {
+            let subSchema = outputSchema.properties;
+            let subResultSchema = resultSchema.properties;
+            key.split('.').forEach((field) => {
+              subSchema[field] = { ...subResultSchema[field] };
+              subSchema = subSchema[field].properties;
+              subResultSchema = subResultSchema[field].properties;
+            });
           });
-        });
-        if (Object.keys(outputSchema.properties).length === 1) {
-          outputSchema =
-            outputSchema.properties[Object.keys(outputSchema.properties)[0]];
+          if (Object.keys(outputSchema.properties).length === 1) {
+            outputSchema =
+              outputSchema.properties[Object.keys(outputSchema.properties)[0]];
+          }
         }
+        setData(getDataByOutputKeys(allDataRef.current, outputKeys));
+        sidebarContext.formModel.outputSchema = outputSchema;
       }
-      setData(getDataByOutputKeys(allDataRef.current, outputKeys));
+    },
+    [sidebarContext]
+  );
 
-      sidebarContext.formModel.outputSchema = outputSchema;
-      setRender(sidebarContext);
-    }
-  }, [sidebarContext]);
   return (
     <>
       <FormItem label='Mock'>
@@ -194,9 +186,9 @@ export default function Debug({ sidebarContext, setRender }: any) {
       </FormItem>
       <FormItem>
         <Params
-          value={sidebarContext.formModel.paramsReal}
           onDebugClick={onDebugClick}
           ctx={sidebarContext}
+          params={params}
         />
       </FormItem>
       <FormItem label='返回数据'>

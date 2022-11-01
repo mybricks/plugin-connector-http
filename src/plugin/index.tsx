@@ -124,7 +124,7 @@ export default function Sidebar({
 
           sidebarContext.connector.add({
             id,
-            type: sidebarContext.formModel.type,
+            type: sidebarContext.type,
             title: others.title,
             inputSchema: others.inputSchema,
             outputSchema: others.outputSchema,
@@ -146,7 +146,7 @@ export default function Sidebar({
               sidebarContext.connector.update({
                 id,
                 title: others.title,
-                type: sidebarContext.formModel.type,
+                type: sidebarContext.type,
                 inputSchema: serviceItem.content.inputSchema,
                 outputSchema: serviceItem.content.outputSchema,
                 script: getScript({

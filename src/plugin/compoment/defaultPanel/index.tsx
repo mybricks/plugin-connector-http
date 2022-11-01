@@ -31,7 +31,7 @@ export default function DefaultPanel({
 }: any) {
   const paramRef = useRef();
   const resultRef = useRef();
-  const addresRef = useRef();
+  const addresRef = useRef<any>();
   const [useMock, setUseMock] = useState(sidebarContext.formModel.useMock);
   const onClosePanel = useCallback(() => {
     sidebarContext.panelVisible = NO_PANEL_VISIBLE;
@@ -43,30 +43,39 @@ export default function DefaultPanel({
   }, []);
 
   const onParamsEditorFullscreen = () => {
-    paramRef.current?.classList.add(css['sidebar-panel-code-full']);
+    paramRef.current?.classList.add(parenetCss['sidebar-panel-code-full']);
     sidebarContext.fullscreenParamsEditor = true;
     setRender(sidebarContext);
   };
 
   const onParamsEditorFullscreenExit = () => {
-    paramRef.current?.classList.remove(css['sidebar-panel-code-full']);
+    paramRef.current?.classList.remove(parenetCss['sidebar-panel-code-full']);
     sidebarContext.fullscreenParamsEditor = false;
     setRender(sidebarContext);
   };
   const onResultEditorFullscreen = () => {
     sidebarContext.fullscrenResultEditor = true;
-    resultRef.current?.classList.add(css['sidebar-panel-code-full']);
+    resultRef.current?.classList.add(parenetCss['sidebar-panel-code-full']);
     setRender(sidebarContext);
   };
   const onResultEditorFullscreenExit = () => {
     sidebarContext.fullscrenResultEditor = false;
-    resultRef.current?.classList.remove(css['sidebar-panel-code-full']);
+    resultRef.current?.classList.remove(parenetCss['sidebar-panel-code-full']);
     setRender(sidebarContext);
   };
 
   useEffect(() => {
     setUseMock(sidebarContext.formModel.useMock);
   }, [sidebarContext.formModel.useMock]);
+
+  const validate = useCallback(() => {
+    if (sidebarContext.formModel.path) {
+      addresRef.current.classList.remove(css.error);
+      return true;
+    }
+    addresRef.current.classList.add(css.error);
+    return false;
+  }, [sidebarContext.formModel.path])
 
   return ReactDOM.createPortal(
     <div
@@ -79,7 +88,7 @@ export default function DefaultPanel({
     >
       <div className={parenetCss['sidebar-panel-title']}>
         <div>{sidebarContext.formModel?.title}</div>
-        <div className='fangzhou-theme'>
+        <div>
           <div className={parenetCss['actions']}>
             {!sidebarContext.isEidt && (
               <Button
@@ -128,22 +137,18 @@ export default function DefaultPanel({
                 </label>
                 <div
                   ref={addresRef}
-                  className={`${css.editor} ${css.textEdt} ${
-                    sidebarContext.urlErr ? css.error : ''
-                  }`}
-                  data-err={sidebarContext.urlErr}
+                  className={`${css.editor} ${css.textEdt}`}
+                  data-err='请填写完整的地址'
                 >
                   <textarea
-                    
                     defaultValue={sidebarContext.formModel.path}
                     key={sidebarContext.formModel.path}
                     placeholder={'接口的请求路径'}
                     onChange={(e) => {
-                      if (sidebarContext.urlErr) {
-                        sidebarContext.urlErr = void 0;
-                      }
                       sidebarContext.formModel.path = e.target.value;
-                      
+                      if (sidebarContext.formModel.path) {
+                        addresRef.current.classList.remove(css.error);
+                      }
                     }}
                   />
                 </div>
@@ -281,6 +286,7 @@ export default function DefaultPanel({
             <DebugForm
               sidebarContext={sidebarContext}
               setRender={setRender}
+              validate={validate}
             />
           </Collapse>
         </div>

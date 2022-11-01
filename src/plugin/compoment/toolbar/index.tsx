@@ -31,13 +31,13 @@ export default function ({ ctx, setRender }: any) {
   }, []);
 
   const renderAddActionList = useCallback(() => {
-    // if (!ctx.addActions || ctx.addActions.length === 1) {
-    //   return (
-    //     <div className={css.icon} onClick={onAddClick}>
-    //       {plus}
-    //     </div>
-    //   );
-    // }
+    if (!ctx.addActions || ctx.addActions.length === 1) {
+      return (
+        <div className={css.icon} onClick={() => onAddClick('http')}>
+          {plus}
+        </div>
+      );
+    }
     const menu = (
       <div className={css.ct}>
         {ctx.addActions.map(({ type, title }: any) => (
