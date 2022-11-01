@@ -1,19 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { uuid } from '../utils';
 import {
   exampleParamsFunc,
   exampleResultFunc,
   ServiceConfig,
-  SidebarContext,
-  templateResultFunc,
   SERVICE_TYPE,
   TG_PANEL_VISIBLE,
   DEFAULT_PANEL_VISIBLE,
   KDEV_PANEL_VISIBLE,
   NO_PANEL_VISIBLE,
 } from '../constant';
-import Editor from '@mybricks/code-editor';
 import css from '../style-cssModules.less';
 import { get } from '../utils/lodash';
 import { formatDate } from '../utils/moment';
@@ -21,10 +18,7 @@ import DefaultPanel from './compoment/defaultPanel';
 import { getScript } from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
-import Colp from '../components/Collapse';
-import Button from '../components/Button';
 import GlobalPanel from './compoment/globalPanel';
-// let sidebarContext: SidebarContext;
 
 interface Iprops {
   context: any;
@@ -36,7 +30,10 @@ interface Iprops {
   domainVisible: boolean;
   connector: Iconnector;
   addActions?: any[];
-  data: any[];
+  data: {
+    connectors: any[],
+    config: any
+  };
   serviceTemplate: any;
   prefix: string;
 }
@@ -60,13 +57,12 @@ const interfaceParams = [
 
 export default function Sidebar({
   contentType,
-  templateConfig = {},
   addActions,
   connector,
   prefix,
   data,
-  serviceTemplate = {},
 }: Iprops) {
+  data.config = data.config || { paramsFn: encodeURIComponent(exampleParamsFunc) };
   const ref = useRef();
   const [sidebarContext, setContext] = useState({
     eidtVisible: false,
@@ -408,6 +404,7 @@ export default function Sidebar({
         sidebarContext={sidebarContext}
         style={{ top: ref.current?.getBoundingClientRect().top }}
         closeTemplateForm={closeTemplateForm}
+        data={data}
       />
     );
   }, [sidebarContext]);

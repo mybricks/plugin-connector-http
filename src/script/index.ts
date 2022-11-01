@@ -75,7 +75,7 @@ function getScript(serviceItem) {
             then(outputData);
           })
           .catch((error) => {
-            onError(error);
+            onError(error && error.message || error);
           });
       } catch (error) {
         return onError(error);

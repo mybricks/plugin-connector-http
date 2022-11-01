@@ -5,7 +5,7 @@ import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
 import Editor from '@mybricks/code-editor';
 
-export default function GlobalPanel({ sidebarContext, closeTemplateForm, style }) {
+export default function GlobalPanel({ sidebarContext, closeTemplateForm, style, data }: any) {
   return (
     ReactDOM.createPortal(
       <div
@@ -44,7 +44,8 @@ export default function GlobalPanel({ sidebarContext, closeTemplateForm, style }
                 horizontalScrollbarSize: 2,
                 verticalScrollbarSize: 2,
               }}
-              // value={data.config.paramsFn}
+              value={decodeURIComponent(data.config.paramsFn)}
+              onChange={code => data.config.paramsFn = decodeURIComponent(code)}
               env={{
                 isNode: false,
                 isElectronRenderer: false,
