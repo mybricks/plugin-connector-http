@@ -1,6 +1,6 @@
-export const exampleParamsFunc = `export default function ({ params, data, headers }) {
+export const exampleParamsFunc = `export default function ({ params, data, headers, url, method }) {
   // 设置请求query、请求体、请求头
-  return { params, data, headers };
+  return { params, data, headers, url, method };
  }
 `
 

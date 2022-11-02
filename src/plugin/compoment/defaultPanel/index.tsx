@@ -68,10 +68,10 @@ export default function DefaultPanel({
 
   const validate = useCallback(() => {
     if (sidebarContext.formModel.path) {
-      addresRef.current.classList.remove(css.error);
+      addresRef.current?.classList.remove(css.error);
       return true;
     }
-    addresRef.current.classList.add(css.error);
+    addresRef.current?.classList.add(css.error);
     return false;
   }, [sidebarContext.formModel.path])
 
@@ -145,7 +145,7 @@ export default function DefaultPanel({
                     onChange={(e) => {
                       sidebarContext.formModel.path = e.target.value;
                       if (sidebarContext.formModel.path) {
-                        addresRef.current.classList.remove(css.error);
+                        addresRef.current?.classList.remove(css.error);
                       }
                     }}
                   />

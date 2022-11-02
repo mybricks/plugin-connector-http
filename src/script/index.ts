@@ -34,9 +34,10 @@ function getScript(serviceItem) {
         globalParamsFn = getDecodeString(globalParamsFn);
         const url = path;
         const newParams = eval(`(${globalParamsFn})`)(
-          method === 'GET' ? { params, url } : { data: params, url }
+          method === 'GET' ? { params, url, method } : { data: params, url, method }
         );
-        newParams.url = url;
+        newParams.url = newParams.url || url;
+        newParams.method = newParams.method || method;
         const options = eval(`(${inputFn})`)(newParams);
         options.method = options.method || method;
         options.url = mockAddress ? mockAddress : options.url || url;
