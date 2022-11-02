@@ -195,6 +195,9 @@ export default function Sidebar({
   const setRender = useCallback((value: any) => {
     setContext((ctx) => ({
       ...ctx,
+      formModel: {
+        ...ctx.formModel,
+      },
       ...value,
     }));
   }, []);

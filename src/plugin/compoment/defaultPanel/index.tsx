@@ -30,15 +30,15 @@ export default function DefaultPanel({
   const paramRef = useRef();
   const resultRef = useRef();
   const addresRef = useRef<any>();
-  const [useMock, setUseMock] = useState(sidebarContext.formModel.useMock);
   const onClosePanel = useCallback(() => {
     sidebarContext.panelVisible = NO_PANEL_VISIBLE;
     sidebarContext.isDebug = false;
     sidebarContext.activeId = void 0;
-    sidebarContext.formModel = {};
     sidebarContext.isEdit = false;
     setRender(sidebarContext);
   }, []);
+  const [paramsFn, setParamsFn] = useState(sidebarContext.formModel.input);
+  const [outputFn, setOutputFn] = useState(sidebarContext.formModel.output);
 
   const onParamsEditorFullscreen = () => {
     paramRef.current?.classList.add(parenetCss['sidebar-panel-code-full']);
@@ -62,10 +62,6 @@ export default function DefaultPanel({
     setRender(sidebarContext);
   };
 
-  useEffect(() => {
-    setUseMock(sidebarContext.formModel.useMock);
-  }, [sidebarContext.formModel.useMock]);
-
   const validate = useCallback(() => {
     if (sidebarContext.formModel.path) {
       addresRef.current?.classList.remove(css.error);
@@ -74,6 +70,19 @@ export default function DefaultPanel({
     addresRef.current?.classList.add(css.error);
     return false;
   }, [sidebarContext.formModel.path])
+
+  const onSaveClick = () => {
+    if (!validate()) return;
+    onSubmit();
+  }
+
+  useEffect(() => {
+    setParamsFn(sidebarContext.formModel.input);
+  }, [sidebarContext.formModel.input])
+
+  useEffect(() => {
+    setOutputFn(sidebarContext.formModel.output);
+  }, [sidebarContext.formModel.output])
 
   return ReactDOM.createPortal(
     <div
@@ -89,11 +98,7 @@ export default function DefaultPanel({
         <div>
           <div className={parenetCss['actions']}>
             {!sidebarContext.isEidt && (
-              <Button
-                type='primary'
-                size='small'
-                onClick={() => onSubmit()}
-              >
+              <Button type='primary' size='small' onClick={onSaveClick}>
                 保 存
               </Button>
             )}
@@ -108,9 +113,7 @@ export default function DefaultPanel({
           <div className={css.ct}>
             <Collapse header='基本信息' defaultFold={false}>
               <div className={css.item}>
-                <label>
-                  名称
-                </label>
+                <label>名称</label>
                 <div
                   className={`${css.editor} ${css.textEdt} ${
                     sidebarContext.titleErr ? css.error : ''
@@ -197,8 +200,9 @@ export default function DefaultPanel({
                 }}
                 onChange={(code: string) => {
                   sidebarContext.formModel.input = encodeURIComponent(code);
+                  setParamsFn(code)
                 }}
-                value={decodeURIComponent(sidebarContext.formModel.input)}
+                value={decodeURIComponent(paramsFn)}
                 width='100%'
                 height='100%'
                 minHeight={300}
@@ -245,8 +249,9 @@ export default function DefaultPanel({
                 }}
                 onChange={(code: string) => {
                   sidebarContext.formModel.output = encodeURIComponent(code);
+                  setOutputFn(encodeURIComponent(code));
                 }}
-                value={decodeURIComponent(sidebarContext.formModel.output)}
+                value={decodeURIComponent(outputFn)}
                 width='100%'
                 height='100%'
                 minHeight={300}
@@ -265,16 +270,23 @@ export default function DefaultPanel({
             <Collapse header='其他信息'>
               <FormItem label='接口描述'>
                 <Input
-                  value={sidebarContext.formModel.desc}
-                  onChange={(e) =>
+                  defaultValue={sidebarContext.formModel.desc}
+                  onBlur={(e) => {
                     (sidebarContext.formModel.desc = e.target.value)
+                    setRender(sidebarContext)
+                  }
                   }
                 />
               </FormItem>
-              <FormItem label="文档链接">
-                <TextArea  style={{ height: 80 }} onChange={e => {
-                  sidebarContext.formModel.doc = e.target.value;
-                }} value={sidebarContext.formModel.doc} />
+              <FormItem label='文档链接'>
+                <TextArea
+                  style={{ height: 80 }}
+                  onBlur={(e) => {
+                    sidebarContext.formModel.doc = e.target.value;
+                    setRender(sidebarContext)
+                  }}
+                  defaultValue={sidebarContext.formModel.doc}
+                />
               </FormItem>
             </Collapse>
           </div>

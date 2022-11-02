@@ -4,10 +4,12 @@ import css from './index.less';
 export default function Input({
   defaultValue,
   onChange,
+  onBlur,
   validateError = '',
   placeholder,
   type = 'input',
 }: any) {
+
   return (
     <div className={css.input}>
       <div
@@ -17,12 +19,20 @@ export default function Input({
         data-err={validateError}
       >
         {type === 'input' ? (
-          <input defaultValue={defaultValue} placeholder={placeholder} onChange={onChange} />
+          <input
+            key={defaultValue}
+            defaultValue={defaultValue}
+            placeholder={placeholder}
+            onBlur={onBlur}
+            onChange={onChange}
+          />
         ) : (
           <textarea
+            key={defaultValue}
             defaultValue={defaultValue}
             placeholder={placeholder}
             onChange={onChange}
+            onBlur={onBlur}
           />
         )}
       </div>
@@ -30,6 +40,6 @@ export default function Input({
   );
 }
 
-export function TextArea(...props: any) {
+export function TextArea(props: any) {
   return Input({ ...props, type: 'textarea' });
 }
