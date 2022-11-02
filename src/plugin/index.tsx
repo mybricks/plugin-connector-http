@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { uuid } from '../utils';
 import {
@@ -19,7 +19,6 @@ import { getScript } from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
-import { UsageState } from 'webpack';
 
 interface Iprops {
   context: any;
@@ -127,7 +126,7 @@ export default function Sidebar({
 
           sidebarContext.connector.add({
             id,
-            type: sidebarContext.type,
+            type: sidebarContext.type || 'http',
             title: others.title,
             inputSchema: others.inputSchema,
             outputSchema: others.outputSchema,
