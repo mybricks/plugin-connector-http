@@ -67,6 +67,8 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
       const data = await sidebarContext.connector.test(
         {
           type: sidebarContext.type,
+          mode: 'test',
+          id: sidebarContext.formModel.id,
           script: getDecodeString(
             getScript({
               ...sidebarContext.formModel,

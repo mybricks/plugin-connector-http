@@ -107,8 +107,10 @@ export default function Sidebar({
     async (action?: string) => {
       return new Promise((resolve) => {
         const { id = uuid(), ...others }: any = sidebarContext.formModel;
-        if (action === 'create') {
-          const serviceList: any[] = data.connectors;
+        if (action === 'create' || !sidebarContext.type) {
+          const serviceList: any[] = data.connectors.filter(
+            (item) => item.id !== sidebarContext.formModel.id
+          );
           const serviceItem = {
             id,
             type: sidebarContext.type || 'http',
