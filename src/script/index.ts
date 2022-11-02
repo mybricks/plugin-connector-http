@@ -91,7 +91,7 @@ function getScript(serviceItem) {
       .replace('__input__', '`' + serviceItem.input + '`')
       .replace('__output__', '`' + serviceItem.output + '`')
       .replace('__method__', serviceItem.method)
-      .replace('__path__', serviceItem.path)
+      .replace('__path__', serviceItem.path.trim())
       .replace('__outputKeys__', JSON.stringify(serviceItem.outputKeys))
       .replace(
         '__resultTransformDisabled__',

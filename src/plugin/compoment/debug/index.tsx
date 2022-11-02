@@ -66,11 +66,12 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
       setError('');
       const data = await sidebarContext.connector.test(
         {
-          type: 'http',
+          type: sidebarContext.type,
           script: getDecodeString(
             getScript({
               ...sidebarContext.formModel,
               globalParamsFn: globalConfig.paramsFn,
+              path: sidebarContext.formModel.path.trim(),
               mockAddress:
                 sidebarContext.formModel.useMock &&
                 sidebarContext.formModel.mockAddress,

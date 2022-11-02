@@ -75,7 +75,7 @@ export default function Sidebar({
       interfaceMap: {},
     },
     tg: {},
-    type: 'http',
+    type: '',
     comlibNavVisible: true,
     isEdit: false,
     formModel: {},

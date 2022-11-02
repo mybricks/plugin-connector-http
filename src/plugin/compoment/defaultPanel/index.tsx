@@ -109,7 +109,7 @@ export default function DefaultPanel({
             <Collapse header='基本信息' defaultFold={false}>
               <div className={css.item}>
                 <label>
-                  <i>*</i>名称
+                  名称
                 </label>
                 <div
                   className={`${css.editor} ${css.textEdt} ${
