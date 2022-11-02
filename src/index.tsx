@@ -2,9 +2,9 @@ import Plugin from './plugin';
 import { icon } from './icon';
 import data from './data';
 
-import { call } from './runtime/callConnectorHttp';
+export { call } from './runtime/callConnectorHttp'
 
-function pluginEntry(config?: any) {
+export default function pluginEntry(config?: any) {
   return {
     name: '@mybricks/plugins/service',
     title: '连接器',
@@ -26,6 +26,3 @@ function pluginEntry(config?: any) {
   };
 }
 
-export default pluginEntry;
-
-export { call }
