@@ -131,11 +131,12 @@ export default function Sidebar({
             outputSchema: others.outputSchema,
             script: getScript({
               ...serviceItem.content,
+              mockAddress: ''
             }),
           });
           data.connectors = [...serviceList];
         } else {
-          const list = [];
+          const list: any = [];
           data.connectors.forEach((service: any) => {
             if (service.id === id) {
               const serviceItem = {
@@ -152,6 +153,7 @@ export default function Sidebar({
                 outputSchema: serviceItem.content.outputSchema,
                 script: getScript({
                   ...serviceItem.content,
+                  mockAddress: '',
                 }),
               });
             } else {

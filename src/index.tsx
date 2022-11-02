@@ -2,6 +2,8 @@ import Plugin from './plugin';
 import { icon } from './icon';
 import data from './data';
 
+import { call } from './runtime/callConnectorHttp';
+
 function pluginEntry(config?: any) {
   return {
     name: '@mybricks/plugins/service',
@@ -25,3 +27,5 @@ function pluginEntry(config?: any) {
 }
 
 export default pluginEntry;
+
+export { call }

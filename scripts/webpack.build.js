@@ -21,6 +21,19 @@ module.exports = merge(commonCfg, {
       'react-dom': 'react-dom'
     },
   ],
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        defaultVendors: {
+          test: /axios/,
+          priority: -10,
+          reuseExistingChunk: true,
+          name: 'axios'
+        },
+      },
+    },
+  },
   plugins: [
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
