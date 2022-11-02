@@ -40,7 +40,7 @@ function DataShow({ data }: any) {
   );
 }
 
-export default function Debug({ sidebarContext, validate, setRender }: any) {
+export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
   const allDataRef = useRef<any>();
@@ -70,6 +70,7 @@ export default function Debug({ sidebarContext, validate, setRender }: any) {
           script: getDecodeString(
             getScript({
               ...sidebarContext.formModel,
+              globalParamsFn: globalConfig.paramsFn,
               mockAddress:
                 sidebarContext.formModel.useMock &&
                 sidebarContext.formModel.mockAddress,

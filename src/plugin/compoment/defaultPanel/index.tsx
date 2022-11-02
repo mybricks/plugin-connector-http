@@ -24,7 +24,8 @@ export default function DefaultPanel({
   sidebarContext,
   style,
   onSubmit,
-  setRender
+  setRender,
+  globalConfig
 }: any) {
   const paramRef = useRef();
   const resultRef = useRef();
@@ -284,6 +285,7 @@ export default function DefaultPanel({
               sidebarContext={sidebarContext}
               setRender={setRender}
               validate={validate}
+              globalConfig={globalConfig}
             />
           </Collapse>
         </div>

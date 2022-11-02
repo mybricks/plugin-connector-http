@@ -131,6 +131,7 @@ export default function Sidebar({
             outputSchema: others.outputSchema,
             script: getScript({
               ...serviceItem.content,
+              globalParamsFn: data.config.paramsFn,
               mockAddress: ''
             }),
           });
@@ -153,6 +154,7 @@ export default function Sidebar({
                 outputSchema: serviceItem.content.outputSchema,
                 script: getScript({
                   ...serviceItem.content,
+                  globalParamsFn: data.config.paramsFn,
                   mockAddress: '',
                 }),
               });
@@ -376,6 +378,7 @@ export default function Sidebar({
           onValuesChange={onValuesChange}
           onSubmit={onFinish}
           key={type}
+          globalConfig={data.config}
           style={{ top: ref.current?.getBoundingClientRect().top }}
         />
       ) : (
