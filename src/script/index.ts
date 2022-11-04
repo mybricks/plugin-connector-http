@@ -50,7 +50,6 @@ function getScript(serviceItem) {
         config
           .ajax(options)
           .then((response) => {
-            console.log(globalResultFn);
             if (globalResultFn) {
               const res = eval(`(${globalResultFn})`)(
                 { response, config: options },
@@ -105,7 +104,6 @@ function getScript(serviceItem) {
     }
     return serviceAgent(params, config);
   }
-  console.log(serviceItem);
   return encodeURIComponent(
     fetch
       .toString()
