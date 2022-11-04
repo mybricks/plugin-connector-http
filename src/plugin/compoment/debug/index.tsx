@@ -12,8 +12,6 @@ import ReturnShema from '../returnSchema';
 import { isEmpty } from '../../../utils/lodash';
 import ParamsEdit from '../paramsEdit';
 import Params from '../params';
-import Input from '../../../components/Input';
-import Switch from '../../../components/Switch';
 import FormItem from '../../../components/FormItem';
 import { getScript } from '../../../script';
 import css from './index.less';
@@ -44,7 +42,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const allDataRef = useRef<any>();
   const [errorInfo, setError] = useState('');
   const [params, setParams] = useState(sidebarContext.formModel.params);
-  const [mock, setMock] = useState(sidebarContext.formModel.useMock);
+  // const [mock, setMock] = useState(sidebarContext.formModel.useMock);
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
     name: 'root',
@@ -159,7 +157,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 
   return (
     <>
-      <FormItem label='Mock'>
+      {/* <FormItem label='Mock'>
         <Switch
           defaultChecked={sidebarContext.formModel.useMock}
           onChange={(checked: boolean) => {
@@ -178,7 +176,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
             }
           />
         </FormItem>
-      ) : null}
+      ) : null} */}
 
       <FormItem label='请求参数'>
         <ParamsEdit
