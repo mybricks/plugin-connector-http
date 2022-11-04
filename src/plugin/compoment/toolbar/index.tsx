@@ -14,12 +14,12 @@ export default function ({ ctx, setRender }: any) {
     ctx.templateVisible = false;
     ctx.formModel = { type };
     switch (type) {
-      case 'kdev':
+      case 'http-kdev':
         ctx.panelVisible = KDEV_PANEL_VISIBLE;
         setRender(ctx);
         break;
 
-      case 'tg':
+      case 'http-tg':
         ctx.panelVisible = TG_PANEL_VISIBLE;
         setRender(ctx);
         break;

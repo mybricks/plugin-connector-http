@@ -4,7 +4,7 @@ import { uuid } from '../utils';
 import {
   exampleParamsFunc,
   exampleResultFunc,
-  ServiceConfig,
+  templateResultFunc,
   SERVICE_TYPE,
   TG_PANEL_VISIBLE,
   DEFAULT_PANEL_VISIBLE,
@@ -21,22 +21,18 @@ import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
 
 interface Iprops {
-  context: any;
-  contentType: string;
-  displayTemplate: boolean;
-  templateConfig: any;
-  resultFnVisible: boolean;
-  tgAPIVisible?: boolean;
-  domainVisible: boolean;
   connector: Iconnector;
   addActions?: any[];
   data: {
-    connectors: any[],
-    config: any
+    connectors: any[];
+    config: { paramsFn: string; resultFn?: string };
   };
-  serviceList: any[]
+  ininitialValue: any;
+  serviceList: any[];
   serviceTemplate: any;
-  prefix: string;
+  onAdd: (item: any) => void;
+  onDelete: (item: any) => void;
+  onUpdate: (item: any) => void;
 }
 
 interface Iconnector {
@@ -56,16 +52,20 @@ const interfaceParams = [
 ];
 
 export default function Sidebar({
-  contentType,
   addActions,
   connector,
-  serviceList = [],
   data,
+  serviceList = [],
+  ininitialValue = {},
+  onAdd = () => {},
+  onDelete = () => {},
+  onUpdate = () => {},
 }: Iprops) {
   const ref = useRef();
   const [searchValue, setSearchValue] = useState('');
-  const [sidebarContext, setContext] = useState({
+  const [sidebarContext, setContext] = useState<any>({
     eidtVisible: false,
+    activeId: '',
     panelVisible: NO_PANEL_VISIBLE,
     kdev: {
       departmentOptions: [],
@@ -77,10 +77,8 @@ export default function Sidebar({
     type: '',
     comlibNavVisible: true,
     isEdit: false,
-    formModel: {},
+    formModel: { path: '', title: '', id: '', type: '', input: '', output: '' },
     isDebug: false,
-    currentClickMenu: 'comlib',
-    contentType,
     templateVisible: false,
     templateForm: {},
     leftWidth: 271,
@@ -100,16 +98,13 @@ export default function Sidebar({
     },
     search: (v: string) => {
       setSearchValue(v);
-    }
+    },
   });
   const updateService = useCallback(
     async (action?: string) => {
       return new Promise((resolve) => {
         const { id = uuid(), ...others }: any = sidebarContext.formModel;
-        if (action === 'create' || !sidebarContext.type) {
-          const serviceList: any[] = data.connectors.filter(
-            (item) => item.id !== sidebarContext.formModel.id
-          );
+        if (action === 'create') {
           const serviceItem = {
             id,
             type: sidebarContext.type || 'http',
@@ -122,21 +117,22 @@ export default function Sidebar({
             createTime: Date.now(),
             updateTime: Date.now(),
           };
-          serviceList.push(serviceItem);
-
+          data.connectors.push(serviceItem);
+          onAdd(serviceItem);
           sidebarContext.connector.add({
             id,
-            type: sidebarContext.type || 'http',
+            type:
+              sidebarContext.formModel.type || sidebarContext.type || 'http',
             title: others.title,
             inputSchema: others.inputSchema,
             outputSchema: others.outputSchema,
             script: getScript({
               ...serviceItem.content,
               globalParamsFn: data.config.paramsFn,
-              mockAddress: ''
+              globalResultFn: data.config.resultFn,
+              mockAddress: '',
             }),
           });
-          data.connectors = [...serviceList];
         } else {
           const list: any = [];
           data.connectors.forEach((service: any) => {
@@ -147,18 +143,25 @@ export default function Sidebar({
                 content: { ...others },
               };
               list.push(serviceItem);
-              sidebarContext.connector.update({
-                id,
-                title: others.title,
-                type: sidebarContext.type || 'http',
-                inputSchema: serviceItem.content.inputSchema,
-                outputSchema: serviceItem.content.outputSchema,
-                script: getScript({
-                  ...serviceItem.content,
-                  globalParamsFn: data.config.paramsFn,
-                  mockAddress: '',
-                }),
-              });
+              try {
+                onUpdate(serviceItem);
+                sidebarContext.connector.update({
+                  id,
+                  title: others.title,
+                  type:
+                    sidebarContext.formModel.type ||
+                    sidebarContext.type ||
+                    'http',
+                  inputSchema: serviceItem.content.inputSchema,
+                  outputSchema: serviceItem.content.outputSchema,
+                  script: getScript({
+                    ...serviceItem.content,
+                    globalParamsFn: data.config.paramsFn,
+                    globalResultFn: data.config.resultFn,
+                    mockAddress: '',
+                  }),
+                });
+              } catch (error) {}
             } else {
               list.push({ ...service });
             }
@@ -167,7 +170,6 @@ export default function Sidebar({
         }
         // @ts-ignore
         resolve('');
-        setRender({});
       });
     },
     [sidebarContext]
@@ -177,14 +179,16 @@ export default function Sidebar({
     return updateService('create');
   }, []);
 
-  const removeService = useCallback((id: string) => {
+  const removeService = useCallback((item: any) => {
     return new Promise((resolve) => {
       const list = data.connectors.filter((service) => {
-        return String(service.id) !== String(id);
+        return String(service.id) !== String(item.id);
       });
       data.connectors = list;
-      sidebarContext.connector.remove(id);
-      // message.success('删除成功');
+      try {
+        sidebarContext.connector.remove(item.id);
+      } catch (error) {}
+      onDelete(item);
       resolve('');
     });
   }, []);
@@ -210,11 +214,12 @@ export default function Sidebar({
     };
     if (item.type === SERVICE_TYPE.TG) {
       obj.panelVisible = TG_PANEL_VISIBLE;
-      obj.formModel = { id: item.id, ...item.content };
+      obj.formModel = { id: item.id, type: item.type, ...item.content };
     } else {
       obj.panelVisible = DEFAULT_PANEL_VISIBLE;
       obj.formModel = {
         ...item.content,
+        type: item.type,
         id: item.id,
         input: item.content.input
           ? decodeURIComponent(item.content.input)
@@ -236,7 +241,7 @@ export default function Sidebar({
 
   const onRemoveItem = useCallback(async (item) => {
     if (confirm(`确认删除 ${item.content.title} 吗`)) {
-      await removeService(String(item.id));
+      await removeService(item);
       sidebarContext.panelVisible = NO_PANEL_VISIBLE;
       setRender(sidebarContext);
     }
@@ -246,6 +251,7 @@ export default function Sidebar({
     sidebarContext.panelVisible = DEFAULT_PANEL_VISIBLE;
     sidebarContext.formModel = {
       title: '',
+      type: sidebarContext.formModel.type,
       path: '',
       desc: '',
       method: 'GET',
@@ -257,6 +263,7 @@ export default function Sidebar({
   }, []);
 
   sidebarContext.addDefaultService = addDefaultService;
+  sidebarContext.updateService = updateService;
 
   const onGlobalConfigClick = useCallback(() => {
     sidebarContext.templateVisible = true;
@@ -286,7 +293,7 @@ export default function Sidebar({
     setRender(sidebarContext);
   }, []);
 
-  const onFinish = async (values: ServiceConfig) => {
+  const onFinish = async () => {
     if (sidebarContext.isEdit) {
       await updateService();
     } else {
@@ -369,10 +376,10 @@ export default function Sidebar({
         case 'http':
           visible = DEFAULT_PANEL_VISIBLE;
           break;
-        case 'tg':
+        case 'http-tg':
           visible = TG_PANEL_VISIBLE;
           break;
-        case 'kdev':
+        case 'http-kdev':
           visible = KDEV_PANEL_VISIBLE;
       }
       return type === 'http' ? (
@@ -450,16 +457,22 @@ export default function Sidebar({
     };
     updateService();
   };
-  const initData =  useCallback(() => {
-    data.config = data.config || { paramsFn: encodeURIComponent(exampleParamsFunc) };
-    data.connectors = data.connectors.length === 0 ? serviceList : data.connectors;
-  }, [])
+  const initData = useCallback(() => {
+    data.config = data.config || {
+      paramsFn:
+        ininitialValue.paramsFn || encodeURIComponent(exampleParamsFunc),
+      resultFn: ininitialValue.resultFn,
+    };
+    data.connectors =
+      data.connectors.length === 0 && ininitialValue.serviceList?.length
+        ? ininitialValue.serviceList
+        : data.connectors;
+  }, []);
 
   useMemo(() => {
     initData();
-  }, [])
+  }, []);
 
-  const list = data.connectors;
   return (
     <>
       <div
@@ -478,14 +491,18 @@ export default function Sidebar({
                 {Icons.set}
               </div>
             </div>
-            <Toolbar searchValue={searchValue} ctx={sidebarContext} setRender={setRender} />
+            <Toolbar
+              searchValue={searchValue}
+              ctx={sidebarContext}
+              setRender={setRender}
+            />
           </div>
           <div className={css['sidebar-panel-list']}>
             {(searchValue
-              ? list.filter((item) =>
+              ? data.connectors.filter((item) =>
                   item.content.title.includes(searchValue)
                 )
-              : list
+              : data.connectors
             ).map((item) => {
               const expand = sidebarContext.expandId === item.id;
               item.updateTime = formatDate(item.updateTime || item.createTime);

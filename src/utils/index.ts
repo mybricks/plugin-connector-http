@@ -1,5 +1,4 @@
 import { isEmpty, get, set } from "../utils/lodash";
-import { CUSTOM_HANDLE_ERROR } from "../constant"
 
 export function getServiceUrl(uri: string) {
   return `/app/pcspa/desn/${uri}`
@@ -16,10 +15,6 @@ export function dispatchStatusCodeError(data: any) {
 }
 
 export function dispatchError(data: any, ...handleFns: any[]) {
-  // @ts-ignore
-  window['FZ_error_handle'] && window['FZ_error_handle'](data);
-  // @ts-ignore
-  window[`${CUSTOM_HANDLE_ERROR}`]?.(data);
   dispatchStatusCodeError(data);
   handleFns.forEach(fn => fn(data));
 }

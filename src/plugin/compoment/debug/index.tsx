@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { json as GenerateSchema } from 'generate-schema';
 import { get } from '../../../utils/lodash';
-import { getParams } from '../paramsEdit/utils';
-import { ROOTNAME } from '../../../constant';
 import {
   formatSchema,
   getDataByOutputKeys,
@@ -73,6 +71,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
             getScript({
               ...sidebarContext.formModel,
               globalParamsFn: globalConfig.paramsFn,
+              globalResultFn: globalConfig.resultFn,
               path: sidebarContext.formModel.path.trim(),
               mockAddress:
                 sidebarContext.formModel.useMock &&

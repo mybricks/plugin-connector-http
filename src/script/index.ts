@@ -5,10 +5,12 @@ import { exampleParamsFunc } from '../constant';
 function getScript(serviceItem) {
   function fetch(params, { then, onError }, config) {
     function getDecodeString(fn: string) {
-      return decodeURIComponent(fn).replace(
-        /export\s+default.*function.*\(/,
-        'function _RT_('
-      );
+      return fn
+        ? decodeURIComponent(fn).replace(
+            /export\s+default.*function.*\(/,
+            'function _RT_('
+          )
+        : fn;
     }
     function getLast(str) {
       return str.split('.').slice(-1)[0];
@@ -22,6 +24,7 @@ function getScript(serviceItem) {
       const input = __input__;
       const output = __output__;
       let globalParamsFn = __globalParamsFn__;
+      let globalResultFn = __globalResultFn__;
       const method = `__method__`;
       const path = `__path__`;
       const outputKeys = __outputKeys__;
@@ -32,9 +35,12 @@ function getScript(serviceItem) {
         const inputFn = getDecodeString(input);
         const outputFn = getDecodeString(output);
         globalParamsFn = getDecodeString(globalParamsFn);
+        globalResultFn = getDecodeString(globalResultFn);
         const url = path;
         const newParams = eval(`(${globalParamsFn})`)(
-          method === 'GET' ? { params, url, method } : { data: params, url, method }
+          method === 'GET'
+            ? { params, url, method }
+            : { data: params, url, method }
         );
         newParams.url = newParams.url || url;
         newParams.method = newParams.method || method;
@@ -43,6 +49,21 @@ function getScript(serviceItem) {
         options.url = mockAddress ? mockAddress : options.url || url;
         config
           .ajax(options)
+          .then((response) => {
+            console.log(globalResultFn);
+            if (globalResultFn) {
+              const res = eval(`(${globalResultFn})`)(
+                { response, config: options },
+                {
+                  throwStatusCodeError: (data: any) => {
+                    onError(data);
+                  },
+                }
+              );
+              return res;
+            }
+            return response;
+          })
           .then((response) => {
             const res = eval(`(${outputFn})`)(
               response,
@@ -76,7 +97,7 @@ function getScript(serviceItem) {
             then(outputData);
           })
           .catch((error) => {
-            onError(error && error.message || error);
+            onError((error && error.message) || error);
           });
       } catch (error) {
         return onError(error);
@@ -84,12 +105,18 @@ function getScript(serviceItem) {
     }
     return serviceAgent(params, config);
   }
-
+  console.log(serviceItem);
   return encodeURIComponent(
     fetch
       .toString()
       .replace('__input__', '`' + serviceItem.input + '`')
       .replace('__output__', '`' + serviceItem.output + '`')
+      .replace(
+        '__globalResultFn__',
+        serviceItem.globalResultFn
+          ? '`' + serviceItem.globalResultFn + '`'
+          : void 0
+      )
       .replace('__method__', serviceItem.method)
       .replace('__path__', serviceItem.path.trim())
       .replace('__outputKeys__', JSON.stringify(serviceItem.outputKeys))
