@@ -110,7 +110,10 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
   }, []);
 
   if (error) {
-    return <div className={css.errorInfo}>{error}</div>;
+    return <div className={css.errorInfo}>
+      <span>{error}</span>
+      <div>{getErrorTips(error)}</div>
+    </div>;
   }
   return schema ? (
     <div
@@ -145,4 +148,14 @@ function getTypeName(v: string) {
     case 'array':
       return '列表';
   }
+}
+
+function getErrorTips(message: string) {
+  if (message.includes('Network Error')) {
+    return '请检查网络是否正常、当前请求是否存在跨域'
+  }
+  if (message.includes('404')) {
+    return '请检查请求地址是否拼写错误'
+  }
+  return ''
 }

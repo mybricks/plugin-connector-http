@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { json as GenerateSchema } from 'generate-schema';
 import { get } from '../../../utils/lodash';
 import {
   formatSchema,
   getDataByOutputKeys,
   getDecodeString,
+  jsonToSchema,
   params2data,
 } from '../../../utils';
 import JSONView from '@mybricks/code-editor';
@@ -62,7 +62,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
       setError('');
       const data = await sidebarContext.connector.test(
         {
-          type: sidebarContext.type,
+          type: sidebarContext.formModel.type || 'http',
           mode: 'test',
           id: sidebarContext.formModel.id,
           script: getDecodeString(
@@ -84,11 +84,11 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
       const { outputKeys } = sidebarContext.formModel;
       const outputData = getDataByOutputKeys(data, outputKeys);
       setData(outputData);
-      sidebarContext.formModel.resultSchema = GenerateSchema('', data);
+      sidebarContext.formModel.resultSchema = jsonToSchema(data);
       formatSchema(sidebarContext.formModel.resultSchema);
-      const outputSchema = GenerateSchema('', outputData);
+      const outputSchema = jsonToSchema(outputData);
       formatSchema(outputSchema);
-      const inputSchema = GenerateSchema('', params || {});
+      const inputSchema = jsonToSchema(params || {});
       formatSchema(inputSchema);
       sidebarContext.formModel.outputSchema = outputSchema;
       sidebarContext.formModel.inputSchema = inputSchema;
@@ -104,7 +104,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const onParamsChange = useCallback((params) => {
     if (params !== void 0) {
       const data = params2data(params || []);
-      const inputSchema = GenerateSchema('', data);
+      const inputSchema = jsonToSchema(data);
       formatSchema(inputSchema);
       sidebarContext.formModel.inputSchema = inputSchema
       sidebarContext.formModel.params = params;

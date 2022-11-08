@@ -33,7 +33,9 @@ export function call(
         {
           ajax(options: IOptions) {
             const opts = before({ ...options });
-            return axios(opts || options).then((res: any) => res.data);
+            return axios(opts || options).then((res: any) => res.data).catch(error => {
+              reject(error)
+            })
           },
         }
       );
