@@ -116,40 +116,42 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
     (outputKeys) => {
       const { resultSchema } = sidebarContext.formModel;
       if (outputKeys !== void 0) {
-        sidebarContext.formModel.outputKeys = outputKeys;
-        let outputSchema: any = {};
-        if (outputKeys.length === 0) {
-          outputSchema = sidebarContext.formModel.resultSchema;
-        } else if (outputKeys.length === 1) {
-          if (outputKeys[0] === '') {
-            outputSchema = { type: 'any' };
+        try {
+          sidebarContext.formModel.outputKeys = outputKeys;
+          let outputSchema: any = {};
+          if (outputKeys.length === 0) {
+            outputSchema = sidebarContext.formModel.resultSchema;
+          } else if (outputKeys.length === 1) {
+            if (outputKeys[0] === '') {
+              outputSchema = { type: 'any' };
+            } else {
+              outputSchema = get(
+                resultSchema.properties,
+                outputKeys[0].split('.').join('.properties.')
+              );
+            }
           } else {
-            outputSchema = get(
-              resultSchema.properties,
-              outputKeys[0].split('.').join('.properties.')
-            );
-          }
-        } else {
-          outputSchema = {
-            type: 'object',
-            properties: {},
-          };
-          outputKeys.forEach((key: string) => {
-            let subSchema = outputSchema.properties;
-            let subResultSchema = resultSchema.properties;
-            key.split('.').forEach((field) => {
-              subSchema[field] = { ...subResultSchema[field] };
-              subSchema = subSchema[field].properties;
-              subResultSchema = subResultSchema[field].properties;
+            outputSchema = {
+              type: 'object',
+              properties: {},
+            };
+            outputKeys.forEach((key: string) => {
+              let subSchema = outputSchema.properties;
+              let subResultSchema = resultSchema.properties;
+              key.split('.').forEach((field) => {
+                subSchema[field] = { ...subResultSchema[field] };
+                subSchema = subSchema[field].properties;
+                subResultSchema = subResultSchema[field].properties;
+              });
             });
-          });
-          if (Object.keys(outputSchema.properties).length === 1) {
-            outputSchema =
-              outputSchema.properties[Object.keys(outputSchema.properties)[0]];
+            if (Object.keys(outputSchema.properties).length === 1) {
+              outputSchema =
+                outputSchema.properties[Object.keys(outputSchema.properties)[0]];
+            }
           }
-        }
-        setData(getDataByOutputKeys(allDataRef.current, outputKeys));
-        sidebarContext.formModel.outputSchema = outputSchema;
+          setData(getDataByOutputKeys(allDataRef.current, outputKeys));
+          sidebarContext.formModel.outputSchema = outputSchema;
+        } catch (error) {}
       }
     },
     [sidebarContext]
