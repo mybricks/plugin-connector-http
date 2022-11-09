@@ -86,14 +86,14 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
       item.type === 'array';
 
     return (
-      <div key={item.name} className={css.ct}>
+      <div className={css.ct}>
         <div className={css.item}>
           <input
-            style={{ width: 270 - depth * 20, paddingLeft: 2 }}
+            style={{ width: 270 - depth * 20 }}
             type='text'
-            defaultValue={isArray ? `[${item.name}]` : item.name}
+            value={isArray ? `[${item.name}]` : item.name}
             disabled={isArray}
-            onBlur={(e) => set(item, 'name', e.target.value)}
+            onChange={(e) => set(item, 'name', e.target.value)}
           />
           <select
             className={css.column2}
@@ -109,7 +109,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
             className={css.column3}
             type={'text'}
             disabled={item.type === 'object' || item.type === 'array'}
-            defaultValue={item.defaultValue}
+            value={item.defaultValue}
             onChange={(e) => set(item, 'defaultValue', e.target.value)}
           />
           <div className={`${css.column4} ${css.flex}`}>
