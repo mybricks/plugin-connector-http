@@ -3,14 +3,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
 
+const emptyAry: any[] = []
+
 export default function ReturnShema({ value, onChange, schema, error }: any) {
   const parentEleRef = useRef();
   const curKeyRef = useRef('');
-  const [keys, setKeys] = useState(value || []);
+  const [keys, setKeys] = useState(value || emptyAry);
   const [popMenuStyle, setStyle] = useState<any>();
 
   useEffect(() => {
-    setKeys(value);
+    setKeys(value || emptyAry);
   }, [value]);
 
   const markAsReturn = useCallback(() => {
