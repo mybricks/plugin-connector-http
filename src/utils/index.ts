@@ -122,15 +122,20 @@ export function jsonToSchema(json: any): any {
 
 function proItem({ schema, val, key, fromAry }: { schema: any; val: any; key?: string; fromAry?: any[] }) {
   if (Array.isArray(val)) {
-    const items = {};
+    const items = val.length ? {} : void 0 ;
     if (key) {
       schema[key] = {
         type: 'array',
         items
       };
+      if (items) {
+        schema[key].items = items;
+      }
     } else {
       schema.type = 'array';
-      schema.items = items;
+      if (items) {
+        schema.items = items;
+      }
     }
 
     proAry(items, val);
@@ -175,6 +180,7 @@ function proObj(curSchema: any, obj: any) {
 }
 
 function proAry(curSchema, ary) {
+  if (!curSchema) return;
   let sample;
   if (ary.length > 0) {
     sample = ary[0];
