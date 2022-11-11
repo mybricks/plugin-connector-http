@@ -12,8 +12,11 @@ import ReturnShema from '../returnSchema';
 import { isEmpty } from '../../../utils/lodash';
 import ParamsEdit from '../paramsEdit';
 import Params from '../params';
+import OutputSchemaMock from '../outputSchemaMock';
+import Switch from '../../../components/Switch';
 import FormItem from '../../../components/FormItem';
 import { getScript } from '../../../script';
+import { DEFAULT_SCHEMA } from '../../../constant';
 import css from './index.less';
 
 function DataShow({ data }: any) {
@@ -31,6 +34,7 @@ function DataShow({ data }: any) {
           isNode: false,
           isElectronRenderer: false,
         }}
+        readOnly
       />
     </div>
   );
@@ -42,7 +46,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const allDataRef = useRef<any>();
   const [errorInfo, setError] = useState('');
   const [params, setParams] = useState(sidebarContext.formModel.params);
-  // const [mock, setMock] = useState(sidebarContext.formModel.useMock);
+  const [useMock, setMock] = useState(sidebarContext.formModel.useMock);
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
     name: 'root',
@@ -71,9 +75,6 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
               globalParamsFn: globalConfig.paramsFn,
               globalResultFn: globalConfig.resultFn,
               path: sidebarContext.formModel.path.trim(),
-              mockAddress:
-                sidebarContext.formModel.useMock &&
-                sidebarContext.formModel.mockAddress,
               resultTransformDisabled: true,
             })
           ),
@@ -106,7 +107,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
       const data = params2data(params || []);
       const inputSchema = jsonToSchema(data);
       formatSchema(inputSchema);
-      sidebarContext.formModel.inputSchema = inputSchema
+      sidebarContext.formModel.inputSchema = inputSchema;
       sidebarContext.formModel.params = params;
       setParams(params);
     }
@@ -157,6 +158,10 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
     [sidebarContext]
   );
 
+  const onMockSchemaChange = useCallback((schema) => {
+    sidebarContext.formModel.resultSchema = schema;
+  }, []);
+
   return (
     <>
       {/* <FormItem label='Mock'>
@@ -164,45 +169,54 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
           defaultChecked={sidebarContext.formModel.useMock}
           onChange={(checked: boolean) => {
             sidebarContext.formModel.useMock = checked;
+            if (checked) {
+              sidebarContext.formModel.outputSchema =
+                sidebarContext.formModel.outputSchema || DEFAULT_SCHEMA;
+              sidebarContext.formModel.resultSchema =
+                sidebarContext.formModel.resultSchema || DEFAULT_SCHEMA;
+            }
             setMock(checked);
           }}
         />
-      </FormItem>
+      </FormItem> */}
 
-      {mock ? (
-        <FormItem label='mock地址'>
-          <Input
-            defaultValue={sidebarContext.formModel.mockAddress}
-            onChange={(e) =>
-              (sidebarContext.formModel.mockAddress = e.target.value)
-            }
-          />
-        </FormItem>
-      ) : null} */}
-
-      <FormItem label='请求参数'>
-        <ParamsEdit
-          value={sidebarContext.formModel.params}
-          ctx={sidebarContext}
-          onChange={onParamsChange}
-        />
-      </FormItem>
-      <FormItem>
-        <Params
-          onDebugClick={onDebugClick}
-          ctx={sidebarContext}
-          params={params}
-        />
-      </FormItem>
-      <FormItem label='返回数据'>
-        <ReturnShema
-          value={sidebarContext.formModel.outputKeys}
-          onChange={onOutputKeysChange}
-          schema={schema}
-          error={errorInfo}
-        />
-      </FormItem>
-      <DataShow data={remoteData} />
+      {useMock ? (
+        <>
+          <FormItem label='Mock规则'>
+            <OutputSchemaMock
+              schema={sidebarContext.formModel.resultSchema}
+              ctx={sidebarContext}
+              onChange={onMockSchemaChange}
+            />
+          </FormItem>
+        </>
+      ) : (
+        <>
+          <FormItem label='请求参数'>
+            <ParamsEdit
+              value={sidebarContext.formModel.params}
+              ctx={sidebarContext}
+              onChange={onParamsChange}
+            />
+          </FormItem>
+          <FormItem>
+            <Params
+              onDebugClick={onDebugClick}
+              ctx={sidebarContext}
+              params={params}
+            />
+          </FormItem>
+          <FormItem label='返回数据'>
+            <ReturnShema
+              value={sidebarContext.formModel.outputKeys}
+              onChange={onOutputKeysChange}
+              schema={schema}
+              error={errorInfo}
+            />
+          </FormItem>
+          <DataShow data={remoteData} />
+        </>
+      )}
     </>
   );
 }

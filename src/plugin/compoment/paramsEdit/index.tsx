@@ -86,7 +86,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
       item.type === 'array';
 
     return (
-      <div className={css.ct}>
+      <div key={item.id} className={css.ct}>
         <div className={css.item}>
           <input
             style={{ width: 270 - depth * 20 }}

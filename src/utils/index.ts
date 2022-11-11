@@ -1,52 +1,38 @@
-import { isEmpty, get, set } from "../utils/lodash";
+import { isEmpty, get, set } from '../utils/lodash';
 
 export function getServiceUrl(uri: string) {
-  return `/app/pcspa/desn/${uri}`
+  return `/app/pcspa/desn/${uri}`;
 }
 
 export function getDecodeString(fn: string) {
-  return (decodeURIComponent(fn)).replace(/export\s+default.*function.*\(/, 'function _RT_(');
-}
-
-export function dispatchStatusCodeError(data: any) {
-  window.dispatchEvent?.(new CustomEvent('statusCodeError', {
-    detail: data
-  }))
-}
-
-export function dispatchError(data: any, ...handleFns: any[]) {
-  dispatchStatusCodeError(data);
-  handleFns.forEach(fn => fn(data));
+  return decodeURIComponent(fn).replace(
+    /export\s+default.*function.*\(/,
+    'function _RT_('
+  );
 }
 
 export function getLast(list: any[]) {
   return list[list.length - 1];
 }
 
-export function log(...args: any[]) {
-  if (location?.search.includes('debug=true')) {
-    console.log(...args)
-  }
-}
-
 export function formatSchema(schema: any) {
   if (!schema) return;
   if (schema.type === 'object') {
-    Object.values(schema.properties).forEach(item => {
-      formatSchema(item)
-    })
+    Object.values(schema.properties).forEach((item) => {
+      formatSchema(item);
+    });
   } else if (schema.type === 'array') {
     if (isEmpty(schema.items)) {
       Object.defineProperty(schema, 'type', {
         writable: true,
-        value: 'array'
-      })
+        value: 'array',
+      });
       Reflect.deleteProperty(schema, 'items');
     } else {
       if (schema.items.type === 'object') {
-        Object.values(schema.items.properties).forEach(item => {
-          formatSchema(item)
-        })
+        Object.values(schema.items.properties).forEach((item) => {
+          formatSchema(item);
+        });
       }
       // TODO oneOf
     }
@@ -54,8 +40,8 @@ export function formatSchema(schema: any) {
     // TODO support null and undefined
     Object.defineProperty(schema, 'type', {
       writable: true,
-      value: 'string'
-    })
+      value: 'string',
+    });
   }
 }
 
@@ -70,7 +56,7 @@ export function getDataByOutputKeys(data, outputKeys) {
       set(outputData, key, get(data, key));
     });
     if (Object.keys(outputData).length === 1) {
-      outputData = outputData[Object.keys(outputData)[0]]
+      outputData = outputData[Object.keys(outputData)[0]];
     }
   }
   return outputData;
@@ -99,15 +85,76 @@ export function params2data(params: any) {
   return obj;
 }
 
-export function uuid() {
-  let len = 6,
-    seed = "abcdefhijkmnprstwxyz",
-    maxPos = seed.length;
-  let rtn = "";
+export function uuid(len = 6) {
+  const seed = 'abcdefhijkmnprstwxyz';
+  const maxPos = seed.length;
+  let rtn = '';
   for (let i = 0; i < len; i++) {
     rtn += seed.charAt(Math.floor(Math.random() * maxPos));
   }
-  return "u_" + rtn;
+  return 'u_' + rtn;
+}
+
+export function schema2data(schema: any) {
+  function getBasicData(schema: any) {
+    const { type } = schema;
+
+    if (schema.default !== void 0 && schema.default !== '') {
+      return schema.default;
+    }
+
+    if (type === 'string') {
+      const { minLength = 0, maxLength = 8 } = schema;
+      const min = +minLength;
+      const max = +maxLength;
+      const str = uuid(max).slice(
+        max - Math.round(min + Math.random() * (max - min))
+      );
+      return str;
+    } else {
+      const { minimum = 0, maximum = 100 } = schema;
+      const min = +minimum;
+      const max = +maximum;
+      return min + Math.round(Math.random() * (max - min));
+    }
+  }
+  function uuid(len = 6) {
+    const seed = 'abcdefhijkmnprstwxyz';
+    const maxPos = seed.length;
+    let rtn = '';
+    for (let i = 0; i < len; i++) {
+      rtn += seed.charAt(Math.floor(Math.random() * maxPos));
+    }
+    return rtn;
+  }
+  function mockSchemaData(schema: any) {
+    if (!schema) return;
+    let obj: any;
+    const { type } = schema;
+    if (type === 'string' || type === 'number') {
+      return getBasicData(schema);
+    }
+
+    if (type === 'array') {
+      obj = [];
+      const { minItems = 1, maxItems = 5 } = schema;
+      const len = minItems + Math.round(Math.random() * (maxItems - minItems));
+      for (let i = 0; i < len; i++) {
+        const value = schema2data(schema.items);
+        if (value !== null && value !== void 0) {
+          obj.push(value);
+        }
+      }
+    }
+    if (schema.type === 'object') {
+      obj = {};
+      Object.keys(schema.properties || {}).forEach((key) => {
+        obj[key] = schema2data(schema.properties[key]);
+      });
+    }
+    return obj;
+  }
+  return mockSchemaData(schema);
 }
 
 export function jsonToSchema(json: any): any {

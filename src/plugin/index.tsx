@@ -4,7 +4,6 @@ import { uuid } from '../utils';
 import {
   exampleParamsFunc,
   exampleResultFunc,
-  templateResultFunc,
   SERVICE_TYPE,
   TG_PANEL_VISIBLE,
   DEFAULT_PANEL_VISIBLE,
@@ -129,7 +128,6 @@ export default function Sidebar({
               ...serviceItem.content,
               globalParamsFn: data.config.paramsFn,
               globalResultFn: data.config.resultFn,
-              mockAddress: '',
             }),
           });
         } else {
@@ -157,7 +155,6 @@ export default function Sidebar({
                     ...serviceItem.content,
                     globalParamsFn: data.config.paramsFn,
                     globalResultFn: data.config.resultFn,
-                    mockAddress: '',
                   }),
                 });
               } catch (error) {}
@@ -477,7 +474,6 @@ export default function Sidebar({
             ...item.content,
             globalParamsFn: data.config.paramsFn,
             globalResultFn: data.config.resultFn,
-            mockAddress: '',
           }),
         });
       });
