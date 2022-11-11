@@ -2,7 +2,7 @@ export const exampleParamsFunc = `export default function ({ params, data, heade
   // 设置请求query、请求体、请求头
   return { params, data, headers, url, method };
  }
-`
+`;
 
 export const exampleResultFunc = `export default function (result, { method, url, params, data, headers }) {
   // return {
@@ -13,19 +13,50 @@ export const exampleResultFunc = `export default function (result, { method, url
   // }
   return result;
 }
-`
+`;
 
 export const templateResultFunc = `export default function ({ response, config }, { throwStatusCodeError }) {
   return response.data
 }
-`
+`;
 
 export const SERVICE_TYPE = {
   HTTP: 'http',
   TG: 'http-tg',
-  KDEV: 'http-kdev'
-}
+  KDEV: 'http-kdev',
+};
 
+export const DEFAULT_SCHEMA = {
+  type: 'object',
+  required: [],
+  properties: {
+    code: {
+      type: 'number',
+    },
+    message: {
+      type: 'string',
+    },
+    data: {
+      type: 'object',
+      properties: {
+        list: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              label: {
+                type: 'string',
+              },
+              value: {
+                type: 'number',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
 export const NO_PANEL_VISIBLE = 0;
 export const DEFAULT_PANEL_VISIBLE = 0b01;
 export const TG_PANEL_VISIBLE = 0b10;

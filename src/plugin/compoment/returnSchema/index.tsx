@@ -1,15 +1,34 @@
 import css from './index.less';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
 
+const emptyAry: any[] = []
+
 export default function ReturnShema({ value, onChange, schema, error }: any) {
   const parentEleRef = useRef();
-  const keysRef = useRef(value || []);
+  const curKeyRef = useRef('');
+  const [keys, setKeys] = useState(value || emptyAry);
   const [popMenuStyle, setStyle] = useState<any>();
 
+  useEffect(() => {
+    setKeys(value || emptyAry);
+  }, [value]);
+
   const markAsReturn = useCallback(() => {
-    onChange([...keysRef.current]);
+    setKeys((keys: any[]) => {
+      const outputkeys = [
+        ...keys.filter(
+          (key: string) =>
+            !(
+              key.includes(curKeyRef.current) || curKeyRef.current.includes(key)
+            )
+        ),
+        curKeyRef.current,
+      ].filter((key) => key !== '');
+      onChange([...outputkeys]);
+      return outputkeys;
+    });
   }, []);
 
   function proAry(items) {
@@ -40,9 +59,9 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
       }
     }
 
-    const hasReturnSchema = !isEmpty(value);
+    const hasReturnSchema = !isEmpty(keys);
     const markedAsReturn =
-      (!hasReturnSchema && root) || (hasReturnSchema && value?.includes(xpath));
+      (!hasReturnSchema && root) || (hasReturnSchema && keys?.includes(xpath));
 
     return (
       <div
@@ -65,7 +84,7 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
               标记
             </button>
           ) : null}
-          {markedAsReturn ? (
+          {markedAsReturn && !root ? (
             <button
               onClick={(e) => {
                 cancelMark(e, xpath);
@@ -85,12 +104,7 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
     const btnEle = e.currentTarget;
     const parentPos = parentEleRef.current.getBoundingClientRect();
     const currentPos = btnEle.getBoundingClientRect();
-    keysRef.current = [
-      ...keysRef.current.filter(
-        (key: string) => !(key.includes(xpath) || xpath.includes(key))
-      ),
-      xpath,
-    ];
+    curKeyRef.current = xpath;
     setStyle({
       display: 'block',
       left: currentPos.x - parentPos.x,
@@ -99,10 +113,13 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
   }, []);
 
   const cancelMark = useCallback((e, xpath) => {
-    keysRef.current = [
-      ...keysRef.current.filter((key: string) => key !== xpath),
-    ];
-    markAsReturn();
+    setKeys((keys: any[]) => {
+      const outputkeys = [
+        ...keys.filter((key: string) => key !== xpath),
+      ].filter((key) => key !== '');
+      onChange(outputkeys);
+      return outputkeys;
+    });
   }, []);
 
   const resetPopMenuStyle = useCallback(() => {
@@ -110,7 +127,12 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
   }, []);
 
   if (error) {
-    return <div className={css.errorInfo}>{error}</div>;
+    return (
+      <div className={css.errorInfo}>
+        <span>{error}</span>
+        <div>{getErrorTips(error)}</div>
+      </div>
+    );
   }
   return schema ? (
     <div
@@ -145,4 +167,14 @@ function getTypeName(v: string) {
     case 'array':
       return '列表';
   }
+}
+
+function getErrorTips(message: string) {
+  if (message.includes('Network Error')) {
+    return '请检查网络是否正常、当前请求是否存在跨域';
+  }
+  if (message.includes('404')) {
+    return '请检查请求地址是否拼写错误';
+  }
+  return '';
 }

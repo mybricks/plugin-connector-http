@@ -29,7 +29,6 @@ function getScript(serviceItem) {
       const path = `__path__`;
       const outputKeys = __outputKeys__;
       const resultTransformDisabled = __resultTransformDisabled__;
-      const mockAddress = __mockAddress__;
 
       try {
         const inputFn = getDecodeString(input);
@@ -46,7 +45,6 @@ function getScript(serviceItem) {
         newParams.method = newParams.method || method;
         const options = eval(`(${inputFn})`)(newParams);
         options.method = options.method || method;
-        options.url = mockAddress ? mockAddress : options.url || url;
         config
           .ajax(options)
           .then((response) => {
@@ -121,10 +119,6 @@ function getScript(serviceItem) {
       .replace(
         '__resultTransformDisabled__',
         serviceItem.resultTransformDisabled
-      )
-      .replace(
-        '__mockAddress__',
-        serviceItem.mockAddress ? `'${serviceItem.mockAddress}'` : false
       )
       .replace(
         '__globalParamsFn__',

@@ -62,14 +62,14 @@ export default function DefaultPanel({
     setRender(sidebarContext);
   };
 
-  const validate = useCallback(() => {
+  const validate = () => {
     if (sidebarContext.formModel.path) {
       addresRef.current?.classList.remove(css.error);
       return true;
     }
     addresRef.current?.classList.add(css.error);
     return false;
-  }, [sidebarContext.formModel.path])
+  }
 
   const onSaveClick = () => {
     if (!validate()) return;

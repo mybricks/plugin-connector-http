@@ -5,46 +5,65 @@
   display: flex;
   font-size: 12px;
 
-  .column {
+  .fieldName {
+    width: 162px;
+  }
+  .type {
     text-align: center;
-    width: 78px;
+    width: 45px;
+    border: none;
+    background-color: transparent;
+  }
+
+  .defaultValue {
+    text-align: center;
+    width: 48px;
+  }
+  .range {
+    text-align: center;
+    width: 121px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 0 10px;
+    input {
+      width: 60px;
+    }
+    .min {
+      margin-right: 1px;
+    }
+    .max {
+      margin-left: 1px;
+    }
+    .error {
+      border: 1px solid red;
+    }
+  }
+  .operate {
+    width: 40px;
+    text-align: center;
   }
 
   p {
     margin-bottom: 0;
   }
+
 }
 
 .content {
   display: flex;
-  margin-left: -30px;
 }
 
 .item {
   display: flex;
   align-items: center;
-  margin-top: 4px;
-  position: relative;
-
-  &::before {
-    position: absolute;
-    left: -14px;
-    width: 12px;
-    top: 10px;
-    border-bottom: 1px solid #aaa;
-    content: '';
-  }
+  margin-top: 10px;
+  height: 20px;
 
   .label {
     text-align: right;
     padding: 0 5px;
     color: #777;
-  }
-
-  .type {
-    width: 30px;
-    text-align: left;
-    padding-right: 5px;
   }
 
   input {
@@ -83,7 +102,7 @@
     align-items: center;
     justify-content: center;
     padding-bottom: 3px;
-    margin-left: 5px;
+    margin-left: 2px;
     margin-bottom: 3px;
 
     &:hover {
@@ -93,42 +112,13 @@
   }
 }
 
-.rootItem {
-  &::before {
-    display: none;
-  }
-}
-
 .ct {
-  position: relative;
   width: 100%;
-  margin-left: 12px;
-  padding: 0 5px 0 15px;
-
-  &::before {
-    position: absolute;
-    left: 0;
-    top: -2px;
-    bottom: -2px;
-    border-left: 1px solid #aaa;
-    content: '';
-  }
-
-  &:first-child {
-    &::before {
-      display: none;
-    }
-  }
-
-  &:last-child {
-    &::before {
-      height: 13px;
-    }
-  }
+  margin-left: 20px;
 }
 
 .list {
-  margin-left: -12px;
+  margin-left: -20px;
   display: flex;
   flex-wrap: wrap;
 }
@@ -137,16 +127,6 @@
   display: flex;
   align-items: center;
 }
-
-.typeName {
-  font-style: italic;
-  color: #777;
-  padding-left: 3px;
-}
-
-.debug {
-  border-top: 1px solid #eee;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.mockData {
+  margin: 0 10px 0 -80px;
 }

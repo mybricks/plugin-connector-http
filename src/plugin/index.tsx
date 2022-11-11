@@ -4,7 +4,6 @@ import { uuid } from '../utils';
 import {
   exampleParamsFunc,
   exampleResultFunc,
-  templateResultFunc,
   SERVICE_TYPE,
   TG_PANEL_VISIBLE,
   DEFAULT_PANEL_VISIBLE,
@@ -55,7 +54,6 @@ export default function Sidebar({
   addActions,
   connector,
   data,
-  serviceList = [],
   ininitialValue = {},
   onAdd = () => {},
   onDelete = () => {},
@@ -130,7 +128,6 @@ export default function Sidebar({
               ...serviceItem.content,
               globalParamsFn: data.config.paramsFn,
               globalResultFn: data.config.resultFn,
-              mockAddress: '',
             }),
           });
         } else {
@@ -158,7 +155,6 @@ export default function Sidebar({
                     ...serviceItem.content,
                     globalParamsFn: data.config.paramsFn,
                     globalResultFn: data.config.resultFn,
-                    mockAddress: '',
                   }),
                 });
               } catch (error) {}
@@ -463,10 +459,25 @@ export default function Sidebar({
         ininitialValue.paramsFn || encodeURIComponent(exampleParamsFunc),
       resultFn: ininitialValue.resultFn,
     };
-    data.connectors =
-      data.connectors.length === 0 && ininitialValue.serviceList?.length
-        ? ininitialValue.serviceList
-        : data.connectors;
+
+    if (data.connectors.length === 0 && ininitialValue.serviceList?.length) {
+      data.connectors = ininitialValue.serviceList;
+      ininitialValue.serviceList.forEach((item: any) => {
+        const { title, inputSchema, outputSchema } = item.content || {};
+        sidebarContext.connector.add({
+          id: item.id,
+          type: sidebarContext.formModel.type || sidebarContext.type || 'http',
+          title,
+          inputSchema,
+          outputSchema,
+          script: getScript({
+            ...item.content,
+            globalParamsFn: data.config.paramsFn,
+            globalResultFn: data.config.resultFn,
+          }),
+        });
+      });
+    }
   }, []);
 
   useMemo(() => {
