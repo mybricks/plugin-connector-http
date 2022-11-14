@@ -44,6 +44,11 @@ function getScript(serviceItem) {
         newParams.url = newParams.url || url;
         newParams.method = newParams.method || method;
         const options = eval(`(${inputFn})`)(newParams);
+        options.url = (options.url || url).replace(/{(\w+)}/g, (match, key) => {
+          const param = params[key] || '';
+          Reflect.deleteProperty(options.params || {}, key);
+          return param;
+        })
         options.method = options.method || method;
         config
           .ajax(options)
