@@ -27,11 +27,6 @@ interface Iprops {
     config: { paramsFn: string; resultFn?: string };
   };
   ininitialValue: any;
-  serviceList: any[];
-  serviceTemplate: any;
-  onAdd: (item: any) => void;
-  onDelete: (item: any) => void;
-  onUpdate: (item: any) => void;
 }
 
 interface Iconnector {
@@ -54,10 +49,7 @@ export default function Sidebar({
   addActions,
   connector,
   data,
-  ininitialValue = {},
-  onAdd = () => {},
-  onDelete = () => {},
-  onUpdate = () => {},
+  ininitialValue = {}
 }: Iprops) {
   const ref = useRef();
   const [searchValue, setSearchValue] = useState('');
@@ -116,7 +108,6 @@ export default function Sidebar({
             updateTime: Date.now(),
           };
           data.connectors.push(serviceItem);
-          onAdd(serviceItem);
           sidebarContext.connector.add({
             id,
             type:
@@ -131,17 +122,15 @@ export default function Sidebar({
             }),
           });
         } else {
-          const list: any = [];
-          data.connectors.forEach((service: any) => {
+          data.connectors.forEach((service: any, index: number) => {
             if (service.id === id) {
               const serviceItem = {
                 ...service,
                 updateTime: Date.now(),
                 content: { ...others },
               };
-              list.push(serviceItem);
+              data.connectors[index] = serviceItem;
               try {
-                onUpdate(serviceItem);
                 sidebarContext.connector.update({
                   id,
                   title: others.title,
@@ -158,10 +147,7 @@ export default function Sidebar({
                   }),
                 });
               } catch (error) {}
-            } else {
-              list.push({ ...service });
             }
-            data.connectors = list;
           });
         }
         // @ts-ignore
@@ -177,14 +163,13 @@ export default function Sidebar({
 
   const removeService = useCallback((item: any) => {
     return new Promise((resolve) => {
-      const list = data.connectors.filter((service) => {
-        return String(service.id) !== String(item.id);
+      const index = data.connectors.findIndex((service) => {
+        return String(service.id) === String(item.id);
       });
-      data.connectors = list;
+      data.connectors.splice(index, 1);
       try {
         sidebarContext.connector.remove(item.id);
       } catch (error) {}
-      onDelete(item);
       resolve('');
     });
   }, []);
@@ -192,7 +177,7 @@ export default function Sidebar({
   const clickRef = useRef();
 
   const setRender = useCallback((value: any) => {
-    setContext((ctx) => ({
+    setContext((ctx: any) => ({
       ...ctx,
       formModel: {
         ...ctx.formModel,
@@ -252,8 +237,8 @@ export default function Sidebar({
       desc: '',
       method: 'GET',
       useMock: false,
-      input: exampleParamsFunc,
-      output: exampleResultFunc,
+      input: encodeURIComponent(exampleParamsFunc),
+      output: encodeURIComponent(exampleResultFunc),
     };
     setRender(sidebarContext);
   }, []);
@@ -282,13 +267,6 @@ export default function Sidebar({
   }, []);
   sidebarContext.onCancel = onCancel;
 
-  const setParams = useCallback((values) => {
-    sidebarContext.formModel = { ...sidebarContext.formModel, ...values };
-    sidebarContext.formModel.input = encodeURIComponent(values.input);
-    sidebarContext.formModel.output = encodeURIComponent(values.output);
-    setRender(sidebarContext);
-  }, []);
-
   const onFinish = async () => {
     if (sidebarContext.isEdit) {
       await updateService();
@@ -301,10 +279,6 @@ export default function Sidebar({
     sidebarContext.isEdit = false;
     setRender(sidebarContext);
   };
-
-  const onValuesChange = useCallback((_, values) => {
-    setParams(values);
-  }, []);
 
   const onItemClick = useCallback((e: any, item: any) => {
     if (item.id === sidebarContext.expandId) {
@@ -382,7 +356,6 @@ export default function Sidebar({
         <DefaultPanel
           sidebarContext={sidebarContext}
           setRender={setRender}
-          onValuesChange={onValuesChange}
           onSubmit={onFinish}
           key={type}
           globalConfig={data.config}
