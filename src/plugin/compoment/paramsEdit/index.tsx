@@ -5,7 +5,7 @@
 import React, { useCallback, useRef } from 'react';
 import css from './index.less';
 import * as Icons from '../../../icon';
-import { uuid } from '../../../utils'
+import { uuid } from '../../../utils';
 export default function ParamsEdit({ value, onChange, ctx }: any) {
   const valueRef = useRef(value);
   valueRef.current = value;
@@ -134,12 +134,26 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
     );
   }, []);
 
+  const pushItemToRoot = useCallback(() => {
+    valueRef.current.children.push({
+      type: 'string',
+      id: uuid(),
+      name: `name${valueRef.current.children.length + 1}`
+    });
+    updateValue()
+  }, []);
+
   return (
     <>
       <div>
         {value?.children?.length === 0 ? (
           <div className={css.adder}>
-            <span style={{cursor: 'pointer'}} onClick={() => addItem(value, value)}>+</span>
+            <span
+              style={{ cursor: 'pointer' }}
+              onClick={() => addItem(value, value)}
+            >
+              +
+            </span>
           </div>
         ) : (
           <>
@@ -152,6 +166,11 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
             <div className={css.content}>{processItem(value, value)}</div>
           </>
         )}
+        {value?.children?.every(({ type }: any) => type ==='object' || type === 'array')? (
+          <span className={css.iconRootAdder} onClick={() => pushItemToRoot()}>
+            +
+          </span>
+        ) : null}
       </div>
     </>
   );

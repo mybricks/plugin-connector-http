@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
 
-const emptyAry: any[] = []
+const emptyAry: any[] = [];
 
 export default function ReturnShema({ value, onChange, schema, error }: any) {
   const parentEleRef = useRef();

@@ -564,7 +564,7 @@ export default function Sidebar({
                             >
                               {param.name}:
                             </span>
-                            <span>{renderParam(item, param)}</span>
+                            <span className={css['sidebar-panel-list-item__content']}>{renderParam(item, param)}</span>
                           </div>
                         );
                       })}

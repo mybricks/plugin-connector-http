@@ -57,7 +57,7 @@
     padding: 5px;
     line-height: 1;
     text-align: left !important;
-
+    box-sizing: border-box;
     &:focus {
       outline: 1px solid @color-primary;
     }
@@ -73,6 +73,9 @@
 
   .iconRemove {
     cursor: pointer;
+    &:hover {
+      color: @color-primary;
+    }
   }
 
   .iconAdder {
@@ -90,8 +93,7 @@
     margin-bottom: 3px;
 
     &:hover {
-      color: rgb(255, 255, 255);
-      background-color: #fa6400;
+      color: @color-primary;
     }
   }
 }
@@ -110,4 +112,20 @@
 .flex {
   display: flex;
   align-items: center;
+}
+
+.iconRootAdder {
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: normal;
+  color: #555;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+
+  &:hover {
+    color: @color-primary;
+  }
 }

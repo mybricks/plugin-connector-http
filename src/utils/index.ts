@@ -67,7 +67,7 @@ export function params2data(params: any) {
   let obj: any = {};
 
   if (params.type === 'string') {
-    return params.defaultValue;
+    return params.defaultValue || '';
   }
   if (params.type === 'number') {
     return +params.defaultValue;
