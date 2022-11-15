@@ -437,7 +437,7 @@ export default function Sidebar({
       data.connectors = ininitialValue.serviceList;
       ininitialValue.serviceList.forEach((item: any) => {
         const { title, inputSchema, outputSchema } = item.content || {};
-        sidebarContext.connector.add({
+        const ctr = {
           id: item.id,
           type: sidebarContext.formModel.type || sidebarContext.type || 'http',
           title,
@@ -448,7 +448,13 @@ export default function Sidebar({
             globalParamsFn: data.config.paramsFn,
             globalResultFn: data.config.resultFn,
           }),
-        });
+        }
+        try {
+          sidebarContext.connector.update(ctr);
+        } catch (error) {
+          sidebarContext.connector.add(ctr);
+        }
+        
       });
     }
   }, []);
