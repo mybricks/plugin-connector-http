@@ -147,14 +147,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
     <>
       <div>
         {value?.children?.length === 0 ? (
-          <div className={css.adder}>
-            <span
-              style={{ cursor: 'pointer' }}
-              onClick={() => addItem(value, value)}
-            >
-              +
-            </span>
-          </div>
+          null
         ) : (
           <>
             <div className={css.header}>
