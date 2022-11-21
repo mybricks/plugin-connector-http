@@ -2,10 +2,10 @@
  * 使用树形选择器完成字段映射
  */
 
-import React, { useCallback, useEffect, useRef, useState, memo} from 'react';
-import css from './index.less';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { cloneDeep } from '../../../utils/lodash';
-import Button from '../../../components/Button'
+import Button from '../../../components/Button';
+import css from './index.less';
 
 function merge(object: any, source: any, ctx: any) {
   if (!object || !source) return;
@@ -23,7 +23,6 @@ function merge(object: any, source: any, ctx: any) {
     }
   });
 
-
   if (!source.children) {
     object.children = [];
     return;
@@ -36,7 +35,7 @@ function merge(object: any, source: any, ctx: any) {
       }
       return obj;
     }, {});
-    const newObjectChildren : any= [];
+    const newObjectChildren: any = [];
     source.children.forEach((child: any, index: number) => {
       newObjectChildren.push(objectIdMap[child.id]);
     });
@@ -91,7 +90,7 @@ export default function ParamsEdit({ onDebugClick, ctx, params }: any) {
 
   const processItem = useCallback((item, parent, depth = -1) => {
     if (!item) return null;
-    if (item.type === 'root' && (!item.children)) return null;
+    if (item.type === 'root' && !item.children) return null;
     let jsx;
     if (item.type === 'root') {
       item.name = '';
@@ -127,14 +126,16 @@ export default function ParamsEdit({ onDebugClick, ctx, params }: any) {
       </div>
     );
   }, []);
-  
-  return valueRef.current?.children?.length === 0 ? null : (
+
+  return (
     <div className={css.debug}>
       <div className={css.content}>
-        {valueRef.current?.children?.length && processItem(
-          { type: 'root', ...valueRef.current },
-          { type: 'root', ...valueRef.current }
-        )}
+        {valueRef.current?.children?.length
+          ? processItem(
+              { type: 'root', ...valueRef.current },
+              { type: 'root', ...valueRef.current }
+            )
+          : null}
       </div>
       <Button onClick={onDebugClick} type='primary' style={{ marginTop: 12 }}>
         连接测试
@@ -142,8 +143,6 @@ export default function ParamsEdit({ onDebugClick, ctx, params }: any) {
     </div>
   );
 }
-
-// export default memo(ParamsEdit)
 
 function getTypeName(v: string) {
   switch (v) {

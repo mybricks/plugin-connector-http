@@ -49,7 +49,7 @@ export default function Sidebar({
   addActions,
   connector,
   data,
-  ininitialValue = {}
+  ininitialValue = {},
 }: Iprops) {
   const ref = useRef();
   const [searchValue, setSearchValue] = useState('');
@@ -363,24 +363,25 @@ export default function Sidebar({
         />
       ) : (
         ReactDOM.createPortal(
-          <div
-            style={{ left: 361, top: ref.current?.getBoundingClientRect().top }}
-            key={type}
-            className={`${css['sidebar-panel-edit']} ${
-              sidebarContext.panelVisible & visible
-                ? css['sidebar-panel-edit-open']
-                : ''
-            }`}
-          >
-            <Compnent
-              panelCtx={sidebarContext}
-              constant={{
-                exampleParamsFunc,
-                exampleResultFunc,
-                NO_PANEL_VISIBLE,
+          sidebarContext.panelVisible & visible ? (
+            <div
+              style={{
+                left: 361,
+                top: ref.current?.getBoundingClientRect().top,
               }}
-            />
-          </div>,
+              key={type}
+              className={`${css['sidebar-panel-edit']}`}
+            >
+              <Compnent
+                panelCtx={sidebarContext}
+                constant={{
+                  exampleParamsFunc,
+                  exampleResultFunc,
+                  NO_PANEL_VISIBLE,
+                }}
+              />
+            </div>
+          ) : null,
           document.body
         )
       );
@@ -433,7 +434,7 @@ export default function Sidebar({
       resultFn: ininitialValue.resultFn,
     };
     if (ininitialValue.resultFn && !data.config.resultFn) {
-      data.config.resultFn = ininitialValue.resultFn
+      data.config.resultFn = ininitialValue.resultFn;
     }
     if (data.connectors.length === 0 && ininitialValue.serviceList?.length) {
       data.connectors = ininitialValue.serviceList;
@@ -450,13 +451,12 @@ export default function Sidebar({
             globalParamsFn: data.config.paramsFn,
             globalResultFn: data.config.resultFn,
           }),
-        }
+        };
         try {
           sidebarContext.connector.update(ctr);
         } catch (error) {
           sidebarContext.connector.add(ctr);
         }
-        
       });
     }
   }, []);
@@ -566,7 +566,13 @@ export default function Sidebar({
                             >
                               {param.name}:
                             </span>
-                            <span className={css['sidebar-panel-list-item__content']}>{renderParam(item, param)}</span>
+                            <span
+                              className={
+                                css['sidebar-panel-list-item__content']
+                              }
+                            >
+                              {renderParam(item, param)}
+                            </span>
                           </div>
                         );
                       })}

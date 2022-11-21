@@ -1,32 +1,30 @@
 import React from 'react';
-import ReactDOM from  'react-dom';
+import ReactDOM from 'react-dom';
 import css from '../../../../src/style-cssModules.less';
 import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
 import Editor from '@mybricks/code-editor';
 
-export default function GlobalPanel({ sidebarContext, closeTemplateForm, style, data }: any) {
-  return (
-    ReactDOM.createPortal(
+export default function GlobalPanel({
+  sidebarContext,
+  closeTemplateForm,
+  style,
+  data,
+}: any) {
+  return ReactDOM.createPortal(
+    sidebarContext.templateVisible ? (
       <div
         style={{
           left: 361,
-          ...style
+          ...style,
         }}
-        className={`${css['sidebar-panel-edit']} ${
-          sidebarContext.templateVisible
-            ? css['sidebar-panel-edit-open']
-            : ''
-        }`}
+        className={`${css['sidebar-panel-edit']}`}
       >
         <div className={css['sidebar-panel-title']}>
           <div>编辑全局配置</div>
           <div>
             <div className={css['actions']}>
-              <Button
-                size='small'
-                onClick={() => closeTemplateForm()}
-              >
+              <Button size='small' onClick={() => closeTemplateForm()}>
                 关 闭
               </Button>
             </div>
@@ -45,7 +43,9 @@ export default function GlobalPanel({ sidebarContext, closeTemplateForm, style, 
                 verticalScrollbarSize: 2,
               }}
               value={decodeURIComponent(data.config.paramsFn)}
-              onChange={code => data.config.paramsFn = decodeURIComponent(code)}
+              onChange={(code) =>
+                (data.config.paramsFn = decodeURIComponent(code))
+              }
               env={{
                 isNode: false,
                 isElectronRenderer: false,
@@ -54,9 +54,8 @@ export default function GlobalPanel({ sidebarContext, closeTemplateForm, style, 
             />
           </Collapse>
         </div>
-      </div>,
-      document.body
-    )
-  )
-
+      </div>
+    ) : null,
+    document.body
+  );
 }
