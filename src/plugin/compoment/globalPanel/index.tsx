@@ -10,6 +10,7 @@ export default function GlobalPanel({
   closeTemplateForm,
   style,
   data,
+  onChange,
 }: any) {
   return ReactDOM.createPortal(
     sidebarContext.templateVisible ? (
@@ -34,7 +35,7 @@ export default function GlobalPanel({
           <Collapse header='请求参数处理函数'>
             <Editor
               width='100%'
-              height='260px'
+              height='100%'
               language='javascript'
               theme='light'
               lineNumbers='off'
@@ -43,9 +44,10 @@ export default function GlobalPanel({
                 verticalScrollbarSize: 2,
               }}
               value={decodeURIComponent(data.config.paramsFn)}
-              onChange={(code) =>
-                (data.config.paramsFn = decodeURIComponent(code))
-              }
+              onChange={(code) => {
+                data.config.paramsFn = decodeURIComponent(code);
+                onChange({ paramsFn: code });
+              }}
               env={{
                 isNode: false,
                 isElectronRenderer: false,

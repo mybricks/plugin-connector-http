@@ -84,6 +84,12 @@ export default function DefaultPanel({
     setOutputFn(sidebarContext.formModel.output);
   }, [sidebarContext.formModel.output]);
 
+  useEffect(() => {
+    if (sidebarContext.formModel.path) {
+      addresRef.current?.classList.remove(css.error);
+    }
+  }, [sidebarContext.formModel.path])
+  
   return ReactDOM.createPortal(
     sidebarContext.panelVisible & DEFAULT_PANEL_VISIBLE ? (
       <div
@@ -270,7 +276,7 @@ export default function DefaultPanel({
                     defaultValue={sidebarContext.formModel.desc}
                     onBlur={(e) => {
                       sidebarContext.formModel.desc = e.target.value;
-                      setRender(sidebarContext);
+                      // setRender(sidebarContext);
                     }}
                   />
                 </FormItem>

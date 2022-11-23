@@ -122,17 +122,21 @@ export default function Sidebar({
             }),
           });
         } else {
+          const updateAll = action === 'updateAll';
           data.connectors.forEach((service: any, index: number) => {
-            if (service.id === id) {
-              const serviceItem = {
-                ...service,
-                updateTime: Date.now(),
-                content: { ...others },
-              };
-              data.connectors[index] = serviceItem;
+            if (service.id === id || updateAll) {
+              let serviceItem = data.connectors[index];
+              if (!updateAll) {
+                serviceItem = {
+                  ...service,
+                  updateTime: Date.now(),
+                  content: { ...others },
+                };
+                data.connectors[index] = serviceItem;
+              }
               try {
                 sidebarContext.connector.update({
-                  id,
+                  id: updateAll ? serviceItem.id : id,
                   title: others.title,
                   type:
                     sidebarContext.formModel.type ||
@@ -388,6 +392,10 @@ export default function Sidebar({
     });
   }, [sidebarContext]);
 
+  const onGlobalConfigChange = useCallback(() => {
+    updateService('updateAll');
+  }, []);
+
   const renderGlobalPanel = useCallback(() => {
     return (
       <GlobalPanel
@@ -395,6 +403,7 @@ export default function Sidebar({
         style={{ top: ref.current?.getBoundingClientRect().top }}
         closeTemplateForm={closeTemplateForm}
         data={data}
+        onChange={onGlobalConfigChange}
       />
     );
   }, [sidebarContext]);
@@ -471,11 +480,7 @@ export default function Sidebar({
         ref={ref}
         className={`${css['sidebar-panel']} ${css['sidebar-panel-open']}`}
       >
-        <div
-          className={`${css['sidebar-panel-view']} ${
-            sidebarContext.isEdit ? css.disabled : ''
-          }`}
-        >
+        <div className={`${css['sidebar-panel-view']}`}>
           <div className={css['sidebar-panel-header']}>
             <div className={css['sidebar-panel-header__title']}>
               <span>服务连接</span>
@@ -505,6 +510,12 @@ export default function Sidebar({
                     key={item.id}
                     className={`${css['sidebar-panel-list-item']} ${
                       sidebarContext.activeId === item.id ? css.active : ''
+                    } ${
+                      sidebarContext.isEdit
+                        ? sidebarContext.activeId === item.id
+                          ? css.chose
+                          : css.disabled
+                        : ''
                     }`}
                   >
                     <div>
