@@ -462,9 +462,9 @@ export default function Sidebar({
           }),
         };
         try {
-          sidebarContext.connector.update(ctr);
-        } catch (error) {
           sidebarContext.connector.add(ctr);
+        } catch (error) {
+         console.log(error);
         }
       });
     }
