@@ -235,3 +235,11 @@ function proAry(curSchema, ary) {
 
   proItem({ schema: curSchema, val: sample, fromAry: true });
 }
+
+export function safeDecode(code: string) {
+  try {
+    return decodeURIComponent(code);
+  } catch (error) {
+    return code;
+  }
+}

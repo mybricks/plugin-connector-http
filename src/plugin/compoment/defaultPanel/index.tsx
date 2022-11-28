@@ -12,6 +12,7 @@ import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
 import FormItem from '../../../components/FormItem';
 import Input, { TextArea } from '../../../components/Input';
+import { safeDecode } from '../../../utils';
 
 const methodOpts = [
   { title: 'GET', value: 'GET' },
@@ -205,7 +206,7 @@ export default function DefaultPanel({
                     sidebarContext.formModel.input = encodeURIComponent(code);
                     setParamsFn(code);
                   }}
-                  value={decodeURIComponent(paramsFn)}
+                  value={safeDecode(paramsFn)}
                   width='100%'
                   height='100%'
                   minHeight={300}
@@ -254,7 +255,7 @@ export default function DefaultPanel({
                     sidebarContext.formModel.output = encodeURIComponent(code);
                     setOutputFn(encodeURIComponent(code));
                   }}
-                  value={decodeURIComponent(outputFn)}
+                  value={safeDecode(outputFn)}
                   width='100%'
                   height='100%'
                   minHeight={300}
