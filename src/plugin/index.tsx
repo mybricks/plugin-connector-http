@@ -206,12 +206,8 @@ export default function Sidebar({
         ...item.content,
         type: item.type,
         id: item.id,
-        input: item.content.input
-          ? decodeURIComponent(item.content.input)
-          : exampleParamsFunc,
-        output: item.content.output
-          ? decodeURIComponent(item.content.output)
-          : exampleResultFunc,
+        input: item.content.input || exampleParamsFunc,
+        output: item.content.output || exampleResultFunc,
       };
     }
     setRender(obj);
