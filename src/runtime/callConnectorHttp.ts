@@ -45,7 +45,7 @@ export function call(
   });
 }
 
-export function callMock(
+export function mock(
   connector: { id: string; script: string; [key: string]: any },
 ) {
   return new Promise((resolve, reject) => {
