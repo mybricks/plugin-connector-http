@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import { schema2data } from '../utils';
 interface IOptions {
   method: string;
   url: string;
@@ -41,6 +41,27 @@ export function call(
       );
     } catch (ex) {
       reject(`连接器script错误.`);
+    }
+  });
+}
+
+export function callMock(
+  connector: { id: string; script: string; [key: string]: any },
+) {
+  return new Promise((resolve, reject) => {
+    if (connector.type === 'http') {
+      try {
+        if (connector.outputSchema) {
+          // use mock data
+          return resolve(schema2data(connector.outputSchema))
+        } else {
+          reject(`connector has no outputSchema`)
+        }
+      } catch (ex) {
+        reject(`connecotr mock error.`);
+      }
+    } else {
+      reject(`error connecotr type`);
     }
   });
 }
