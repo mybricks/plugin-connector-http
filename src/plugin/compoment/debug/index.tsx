@@ -46,7 +46,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const allDataRef = useRef<any>();
   const [errorInfo, setError] = useState('');
   const [params, setParams] = useState(sidebarContext.formModel.params);
-  const [useMock, setMock] = useState(sidebarContext.formModel.useMock);
+  const [useMock, setMock] = useState(false);
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
     name: 'root',

@@ -5,7 +5,7 @@
   "license": "",
   "main": "runtime/plugin.js",
   "scripts": {
-    "build": "webpack --config ./scripts/webpack.build.js",
+    "build": "webpack --config ./scripts/webpack.build.js && cp ./types/** ./runtime",
     "publishToNpm": "npm run build && npm publish --registry=https://registry.npmjs.org --access=public"
   },
   "repository": {

@@ -18,6 +18,7 @@ import { getScript } from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
+import { cloneDeep } from '../utils/lodash/cloneDeep';
 
 interface Iprops {
   connector: Iconnector;
@@ -214,7 +215,7 @@ export default function Sidebar({
   }, []);
 
   const onCopyItem = useCallback(async (item) => {
-    sidebarContext.formModel = { ...item.content };
+    sidebarContext.formModel = cloneDeep(item.content);
     sidebarContext.formModel.title += ' 复制';
     setRender(sidebarContext);
     await createService();
@@ -460,7 +461,7 @@ export default function Sidebar({
         try {
           sidebarContext.connector.add(ctr);
         } catch (error) {
-         console.log(error);
+          console.log(error);
         }
       });
     }
