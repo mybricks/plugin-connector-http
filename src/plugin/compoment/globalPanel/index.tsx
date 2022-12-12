@@ -4,6 +4,7 @@ import css from '../../../../src/style-cssModules.less';
 import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
 import Editor from '@mybricks/code-editor';
+import curCss from './index.less';
 
 export default function GlobalPanel({
   sidebarContext,
@@ -22,7 +23,7 @@ export default function GlobalPanel({
         className={`${css['sidebar-panel-edit']}`}
       >
         <div className={css['sidebar-panel-title']}>
-          <div>编辑全局配置</div>
+          <div>全局配置</div>
           <div>
             <div className={css['actions']}>
               <Button size='small' onClick={() => closeTemplateForm()}>
@@ -31,11 +32,11 @@ export default function GlobalPanel({
             </div>
           </div>
         </div>
-        <div className={css['sidebar-panel-content']}>
-          <Collapse header='请求参数处理函数'>
+        <div className={curCss.item}>
+          <Collapse header='当开始请求'>
             <Editor
               width='100%'
-              height='100%'
+              height={400}
               language='javascript'
               theme='light'
               lineNumbers='off'
@@ -56,6 +57,33 @@ export default function GlobalPanel({
             />
           </Collapse>
         </div>
+        {data.config.resultFn ? (
+          <div className={curCss.item}>
+            <Collapse header='当返回响应'>
+              <Editor
+                width='100%'
+                height={400}
+                language='javascript'
+                theme='light'
+                lineNumbers='off'
+                scrollbar={{
+                  horizontalScrollbarSize: 2,
+                  verticalScrollbarSize: 2,
+                }}
+                value={decodeURIComponent(data.config.resultFn)}
+                onChange={(code) => {
+                  data.config.resultFn = decodeURIComponent(code);
+                  onChange({ resultFn: code });
+                }}
+                env={{
+                  isNode: false,
+                  isElectronRenderer: false,
+                }}
+                minimap={{ enabled: false }}
+              />
+            </Collapse>
+          </div>
+        ) : null}
       </div>
     ) : null,
     document.body

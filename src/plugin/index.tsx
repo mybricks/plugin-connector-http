@@ -9,6 +9,7 @@ import {
   DEFAULT_PANEL_VISIBLE,
   KDEV_PANEL_VISIBLE,
   NO_PANEL_VISIBLE,
+  templateResultFunc,
 } from '../constant';
 import css from '../style-cssModules.less';
 import { get } from '../utils/lodash';
@@ -437,7 +438,7 @@ export default function Sidebar({
     data.config = data.config || {
       paramsFn:
         ininitialValue.paramsFn || encodeURIComponent(exampleParamsFunc),
-      resultFn: ininitialValue.resultFn,
+      resultFn: ininitialValue.resultFn || templateResultFunc,
     };
     if (ininitialValue.resultFn && !data.config.resultFn) {
       data.config.resultFn = ininitialValue.resultFn;

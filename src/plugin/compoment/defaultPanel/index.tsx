@@ -173,7 +173,7 @@ export default function DefaultPanel({
               </Collapse>
             </div>
             <div className={css.ct}>
-              <Collapse header='请求参数处理函数'>
+              <Collapse header='当开始请求'>
                 {sidebarContext.fullscreenParamsEditor ? (
                   <div
                     onClick={onParamsEditorFullscreenExit}
@@ -222,7 +222,7 @@ export default function DefaultPanel({
               </Collapse>
             </div>
             <div className={css.ct}>
-              <Collapse header='返回结果处理函数'>
+              <Collapse header='当返回响应'>
                 {sidebarContext.fullscrenResultEditor ? (
                   <div
                     onClick={onResultEditorFullscreenExit}
