@@ -440,9 +440,8 @@ export default function Sidebar({
         ininitialValue.paramsFn || encodeURIComponent(exampleParamsFunc),
       resultFn: ininitialValue.resultFn || templateResultFunc,
     };
-    if (ininitialValue.resultFn && !data.config.resultFn) {
-      data.config.resultFn = ininitialValue.resultFn;
-    }
+    data.config.resultFn =
+      data.config.resultFn || ininitialValue.resultFn || templateResultFunc;
     if (data.connectors.length === 0 && ininitialValue.serviceList?.length) {
       data.connectors = ininitialValue.serviceList;
       ininitialValue.serviceList.forEach((item: any) => {

@@ -16,7 +16,9 @@ export const exampleResultFunc = `export default function (result, { method, url
 `;
 
 export const templateResultFunc = `export default function ({ response, config }) {
-  // 默认返回全部后端接口数据
+  // if (response.code !== 0) {
+  //    throw new Error(response.errMsg)
+  // }
   return response
 }
 `;
