@@ -139,7 +139,7 @@ export default function Sidebar({
               try {
                 sidebarContext.connector.update({
                   id: updateAll ? serviceItem.id : id,
-                  title: others.title,
+                  title: others.title || serviceItem.content.title,
                   type:
                     sidebarContext.formModel.type ||
                     sidebarContext.type ||
