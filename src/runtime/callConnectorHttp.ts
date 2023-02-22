@@ -55,7 +55,7 @@ export function mock(
           // use mock data
           return resolve(schema2data(connector.outputSchema))
         } else {
-          reject(`connector has no outputSchema`)
+          reject(`当前接口不存在返回值schema，不支持Mock`)
         }
       } catch (ex) {
         reject(`connecotr mock error.`);
