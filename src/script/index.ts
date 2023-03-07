@@ -30,7 +30,7 @@ function getScript(serviceItem) {
       try {
         const url = path;
         const newParams = __globalParamsFn__(
-          method === 'GET'
+          method.startsWith('GET')
             ? { params, url, method }
             : { data: params, url, method }
         );
