@@ -2,6 +2,7 @@ import css from './index.less';
 import { plus } from '../../../icon'
 import React, { useCallback } from 'react';
 import {
+	DOMAIN_PANEL_VISIBLE,
 	KDEV_PANEL_VISIBLE, SQL_PANEL_VISIBLE,
 	TG_PANEL_VISIBLE,
 } from '../../../constant';
@@ -26,6 +27,10 @@ export default function ({ ctx, setRender }: any) {
 		
 		  case 'http-sql':
 			  ctx.panelVisible = SQL_PANEL_VISIBLE;
+			  setRender(ctx);
+			  break;
+		  case 'domain':
+			  ctx.panelVisible = DOMAIN_PANEL_VISIBLE;
 			  setRender(ctx);
 			  break;
 		  default:

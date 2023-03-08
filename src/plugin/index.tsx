@@ -1,8 +1,8 @@
 import React, {ReactNode, useCallback, useMemo, useRef, useState} from 'react';
 import ReactDOM from 'react-dom';
-import {parseQuery, uuid} from '../utils';
+import {uuid} from '../utils';
 import {
-	DEFAULT_PANEL_VISIBLE,
+	DEFAULT_PANEL_VISIBLE, DOMAIN_PANEL_VISIBLE,
 	exampleParamsFunc,
 	exampleResultFunc,
 	KDEV_PANEL_VISIBLE,
@@ -21,7 +21,7 @@ import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
 import SQLPanel from './compoment/sqlPanel';
-import axios from "axios";
+import DomainPanel from './compoment/domainPanel';
 
 interface Iprops {
   connector: Iconnector;
@@ -394,6 +394,19 @@ export default function Sidebar({
 			        onSubmit={onFinish}
 			        serviceListUrl={serviceListUrl}
 			        key='http-sql'
+			        data={data}
+			        style={{ top: ref.current?.getBoundingClientRect().top }}
+		        />
+	        );
+          break;
+        case 'domain':
+          visible = DOMAIN_PANEL_VISIBLE;
+	        node = (
+		        <DomainPanel
+			        sidebarContext={sidebarContext}
+			        setRender={setRender}
+			        onSubmit={onFinish}
+			        key='domain'
 			        data={data}
 			        style={{ top: ref.current?.getBoundingClientRect().top }}
 		        />

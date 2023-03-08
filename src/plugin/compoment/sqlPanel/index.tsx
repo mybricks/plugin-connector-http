@@ -1,14 +1,15 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
-import css from '../../../../src/style-cssModules.less';
 import Button from '../../../components/Button';
-import curCss from './index.less';
 import {NO_PANEL_VISIBLE, SQL_PANEL_VISIBLE} from '../../../constant';
 import Collapse from '../../../components/Collapse';
-import { chose } from '../../../icon';
+import { choose } from '../../../icon';
 import Loading from '../loading';
 import { parseQuery, uuid } from '../../../utils';
+
+import css from '../../../../src/style-cssModules.less';
+import curCss from './index.less';
 
 export default function SQLPanel({ sidebarContext, style, data, serviceListUrl, setRender }: any) {
   const [originSQLList, setOriginSQList] = useState([]);
@@ -135,8 +136,8 @@ export default function SQLPanel({ sidebarContext, style, data, serviceListUrl, 
 			.finally(() => setLoading(false));
 		}
 		
-		fetchServiceList();
-	}, []);
+		(sidebarContext.panelVisible & SQL_PANEL_VISIBLE) && fetchServiceList();
+	}, [sidebarContext.panelVisible]);
 	
   return ReactDOM.createPortal(
     sidebarContext.panelVisible & SQL_PANEL_VISIBLE ? (
@@ -173,7 +174,7 @@ export default function SQLPanel({ sidebarContext, style, data, serviceListUrl, 
 				          onClick={() => onItemClick({ ...item, fileId: sql.fileId })}
 			          >
 				          <div>{item.title}</div>
-				          <div className={curCss.right}>{chose}</div>
+				          <div className={curCss.right}>{choose}</div>
 			          </div>
 		          ))}
 	          </Collapse>
