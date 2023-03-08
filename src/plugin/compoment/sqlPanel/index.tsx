@@ -2,7 +2,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 import Button from '../../../components/Button';
-import {NO_PANEL_VISIBLE, SQL_PANEL_VISIBLE} from '../../../constant';
+import {exampleSQLParamsFunc, NO_PANEL_VISIBLE, SQL_PANEL_VISIBLE} from '../../../constant';
 import Collapse from '../../../components/Collapse';
 import { choose } from '../../../icon';
 import Loading from '../loading';
@@ -11,7 +11,15 @@ import { parseQuery, uuid } from '../../../utils';
 import css from '../../../../src/style-cssModules.less';
 import curCss from './index.less';
 
-export default function SQLPanel({ sidebarContext, style, data, serviceListUrl, setRender }: any) {
+export default function SQLPanel({
+  sidebarContext,
+  style,
+  data,
+  updateService,
+  serviceListUrl,
+  callServiceUrl,
+  setRender,
+}: any) {
   const [originSQLList, setOriginSQList] = useState([]);
   const [selectedSQLList, setSelectedSQLList] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -68,52 +76,52 @@ export default function SQLPanel({ sidebarContext, style, data, serviceListUrl, 
 				defaultValue: item.debugValue,
 			}));
 			
-			// updateService('create', {
-			// 	id: item.serviceId,
-			// 	title: item.title,
-			// 	method: 'POST',
-			// 	type: TYPE,
-			// 	inputSchema: {
-			// 		type: 'object',
-			// 		properties: {
-			// 			...inputSchema,
-			// 		},
-			// 	},
-			// 	resultSchema: {
-			// 		type: 'object',
-			// 		properties: {
-			// 			code: {
-			// 				type: 'number',
-			// 			},
-			// 			data: {
-			// 				type: 'object',
-			// 			},
-			// 			msg: {
-			// 				type: 'string',
-			// 			},
-			// 		},
-			// 	},
-			// 	domainServiceMap: {
-			// 		serviceId: item.serviceId,
-			// 		relativePath: relativePath,
-			// 		baseFileId: baseFileId
-			// 	},
-			// 	params: debugParams
-			// 		? {
-			// 			type: 'root',
-			// 			name: 'root',
-			// 			children: debugParams,
-			// 		}
-			// 		: void 0,
-			// 	input: encodeURIComponent(
-			// 		exampleSQLParamsFunc
-			// 		.replace('__serviceId__', item.serviceId)
-			// 		.replace('__relativePath__', relativePath)
-			// 		// .replace('__fileId__', item.fileId)
-			// 		// .replace('__baseFileId__', baseFileId)
-			// 	),
-			// 	path: callServiceUrl || `/api/system/domain/run`,
-			// });
+			updateService('create', {
+        id: item.serviceId,
+        title: item.title,
+        method: 'POST',
+        type: 'http-sql',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            ...inputSchema,
+          },
+        },
+        resultSchema: {
+          type: 'object',
+          properties: {
+            code: {
+              type: 'number',
+            },
+            data: {
+              type: 'object',
+            },
+            msg: {
+              type: 'string',
+            },
+          },
+        },
+        domainServiceMap: {
+          serviceId: item.serviceId,
+          relativePath: relativePath,
+          baseFileId: baseFileId
+        },
+        params: debugParams
+          ? {
+              type: 'root',
+              name: 'root',
+              children: debugParams,
+            }
+          : void 0,
+        input: encodeURIComponent(
+          exampleSQLParamsFunc
+            .replace('__serviceId__', item.serviceId)
+            .replace('__relativePath__', relativePath)
+            // .replace('__fileId__', item.fileId)
+            // .replace('__baseFileId__', baseFileId)
+        ),
+        path: callServiceUrl || `/api/system/domain/run`,
+      });
 		}
 	}, []);
 	

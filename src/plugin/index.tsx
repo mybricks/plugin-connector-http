@@ -26,6 +26,7 @@ import DomainPanel from './compoment/domainPanel';
 interface Iprops {
   connector: Iconnector;
 	serviceListUrl?: string;
+  callServiceUrl?: string;
   addActions?: any[];
   data: {
     connectors: any[];
@@ -55,6 +56,7 @@ export default function Sidebar({
   connector,
   data,
 	serviceListUrl,
+  callServiceUrl,
   ininitialValue = {},
 }: Iprops) {
   const ref = useRef<HTMLDivElement>(null);
@@ -97,9 +99,9 @@ export default function Sidebar({
     },
   });
   const updateService = useCallback(
-    async (action?: string) => {
+    async (action: string, item: any) => {
       return new Promise((resolve) => {
-        const { id = uuid(), ...others }: any = sidebarContext.formModel;
+        const { id = uuid(), ...others }: any = item || sidebarContext.formModel;
         if (action === 'create') {
           const serviceItem = {
             id,
@@ -393,6 +395,8 @@ export default function Sidebar({
 			        setRender={setRender}
 			        onSubmit={onFinish}
 			        serviceListUrl={serviceListUrl}
+              callServiceUrl={callServiceUrl}
+              updateService={updateService}
 			        key='http-sql'
 			        data={data}
 			        style={{ top: ref.current?.getBoundingClientRect().top }}
