@@ -1,28 +1,31 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {ReactNode, useCallback, useMemo, useRef, useState} from 'react';
 import ReactDOM from 'react-dom';
-import { uuid } from '../utils';
+import {parseQuery, uuid} from '../utils';
 import {
-  exampleParamsFunc,
-  exampleResultFunc,
-  SERVICE_TYPE,
-  TG_PANEL_VISIBLE,
-  DEFAULT_PANEL_VISIBLE,
-  KDEV_PANEL_VISIBLE,
-  NO_PANEL_VISIBLE,
-  templateResultFunc,
+	DEFAULT_PANEL_VISIBLE,
+	exampleParamsFunc,
+	exampleResultFunc,
+	KDEV_PANEL_VISIBLE,
+	NO_PANEL_VISIBLE,
+	SERVICE_TYPE,
+	SQL_PANEL_VISIBLE,
+	templateResultFunc,
+	TG_PANEL_VISIBLE,
 } from '../constant';
 import css from '../style-cssModules.less';
-import { get } from '../utils/lodash';
-import { formatDate } from '../utils/moment';
+import {cloneDeep, get} from '../utils/lodash';
+import {formatDate} from '../utils/moment';
 import DefaultPanel from './compoment/defaultPanel';
-import { getScript } from '../script';
+import {getScript} from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
-import { cloneDeep } from '../utils/lodash/cloneDeep';
+import SQLPanel from './compoment/sqlPanel';
+import axios from "axios";
 
 interface Iprops {
   connector: Iconnector;
+	serviceListUrl?: string;
   addActions?: any[];
   data: {
     connectors: any[];
@@ -51,9 +54,10 @@ export default function Sidebar({
   addActions,
   connector,
   data,
+	serviceListUrl,
   ininitialValue = {},
 }: Iprops) {
-  const ref = useRef();
+  const ref = useRef<HTMLDivElement>(null);
   const [searchValue, setSearchValue] = useState('');
   const [sidebarContext, setContext] = useState<any>({
     eidtVisible: false,
@@ -78,8 +82,8 @@ export default function Sidebar({
     addActions: addActions
       ? addActions.some(({ type }: any) => type === 'defalut')
         ? addActions
-        : [{ type: 'http', title: '默认' }].concat(addActions)
-      : [{ type: 'http', title: '默认' }],
+        : [{ type: 'http', title: '普通接口' }].concat(addActions)
+      : [{ type: 'http', title: '普通接口' }],
     connector: {
       add: (args: any) => connector.add({ ...args }),
       remove: (id: string) => connector.remove(id),
@@ -230,22 +234,20 @@ export default function Sidebar({
     }
   }, []);
 
-  const addDefaultService = useCallback(async () => {
-    sidebarContext.panelVisible = DEFAULT_PANEL_VISIBLE;
-    sidebarContext.formModel = {
-      title: '',
-      type: sidebarContext.formModel.type,
-      path: '',
-      desc: '',
-      method: 'GET',
-      useMock: false,
-      input: encodeURIComponent(exampleParamsFunc),
-      output: encodeURIComponent(exampleResultFunc),
-    };
-    setRender(sidebarContext);
+	sidebarContext.addDefaultService = useCallback(async () => {
+	  sidebarContext.panelVisible = DEFAULT_PANEL_VISIBLE;
+	  sidebarContext.formModel = {
+		  title: '',
+		  type: sidebarContext.formModel.type,
+		  path: '',
+		  desc: '',
+		  method: 'GET',
+		  useMock: false,
+		  input: encodeURIComponent(exampleParamsFunc),
+		  output: encodeURIComponent(exampleResultFunc),
+	  };
+	  setRender(sidebarContext);
   }, []);
-
-  sidebarContext.addDefaultService = addDefaultService;
   sidebarContext.updateService = updateService;
 
   const onGlobalConfigClick = useCallback(() => {
@@ -260,14 +262,13 @@ export default function Sidebar({
     setRender(sidebarContext);
   }, []);
 
-  const onCancel = useCallback(() => {
-    sidebarContext.panelVisible = NO_PANEL_VISIBLE;
-    sidebarContext.isDebug = false;
-    sidebarContext.activeId = void 0;
-    sidebarContext.isEdit = false;
-    setRender(sidebarContext);
+	sidebarContext.onCancel = useCallback(() => {
+	  sidebarContext.panelVisible = NO_PANEL_VISIBLE;
+	  sidebarContext.isDebug = false;
+	  sidebarContext.activeId = void 0;
+	  sidebarContext.isEdit = false;
+	  setRender(sidebarContext);
   }, []);
-  sidebarContext.onCancel = onCancel;
 
   const onFinish = async () => {
     if (sidebarContext.isEdit) {
@@ -344,51 +345,67 @@ export default function Sidebar({
   const renderAddActions = useCallback(() => {
     return sidebarContext.addActions.map(({ type, render: Compnent }: any) => {
       let visible = 0;
-      switch (type) {
+			let node: ReactNode = ReactDOM.createPortal(
+				sidebarContext.panelVisible & visible ? (
+					<div
+						style={{
+							left: 361,
+							top: ref.current?.getBoundingClientRect().top,
+						}}
+						key={type}
+						className={`${css['sidebar-panel-edit']}`}
+					>
+						<Compnent
+							panelCtx={sidebarContext}
+							constant={{
+								exampleParamsFunc,
+								exampleResultFunc,
+								NO_PANEL_VISIBLE,
+							}}
+						/>
+					</div>
+				) : null,
+				document.body
+			);
+	
+	    switch (type) {
         case 'http':
           visible = DEFAULT_PANEL_VISIBLE;
+					node = (
+						<DefaultPanel
+							sidebarContext={sidebarContext}
+							setRender={setRender}
+							onSubmit={onFinish}
+							key={type}
+							globalConfig={data.config}
+							style={{ top: ref.current?.getBoundingClientRect().top }}
+						/>
+					);
           break;
         case 'http-tg':
           visible = TG_PANEL_VISIBLE;
           break;
+        case 'http-sql':
+          visible = SQL_PANEL_VISIBLE;
+	        node = (
+		        <SQLPanel
+			        sidebarContext={sidebarContext}
+			        setRender={setRender}
+			        onSubmit={onFinish}
+			        serviceListUrl={serviceListUrl}
+			        key='http-sql'
+			        data={data}
+			        style={{ top: ref.current?.getBoundingClientRect().top }}
+		        />
+	        );
+          break;
         case 'http-kdev':
           visible = KDEV_PANEL_VISIBLE;
       }
-      return type === 'http' ? (
-        <DefaultPanel
-          sidebarContext={sidebarContext}
-          setRender={setRender}
-          onSubmit={onFinish}
-          key={type}
-          globalConfig={data.config}
-          style={{ top: ref.current?.getBoundingClientRect().top }}
-        />
-      ) : (
-        ReactDOM.createPortal(
-          sidebarContext.panelVisible & visible ? (
-            <div
-              style={{
-                left: 361,
-                top: ref.current?.getBoundingClientRect().top,
-              }}
-              key={type}
-              className={`${css['sidebar-panel-edit']}`}
-            >
-              <Compnent
-                panelCtx={sidebarContext}
-                constant={{
-                  exampleParamsFunc,
-                  exampleResultFunc,
-                  NO_PANEL_VISIBLE,
-                }}
-              />
-            </div>
-          ) : null,
-          document.body
-        )
-      );
+			
+      return node;
     });
-  }, [sidebarContext]);
+  }, [sidebarContext, serviceListUrl]);
 
   const onGlobalConfigChange = useCallback(() => {
     updateService('updateAll');

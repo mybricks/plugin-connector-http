@@ -2,58 +2,62 @@ import css from './index.less';
 import { plus } from '../../../icon'
 import React, { useCallback } from 'react';
 import {
-  KDEV_PANEL_VISIBLE,
-  TG_PANEL_VISIBLE,
+	KDEV_PANEL_VISIBLE, SQL_PANEL_VISIBLE,
+	TG_PANEL_VISIBLE,
 } from '../../../constant';
 import Dropdown from '../../../components/Dropdown';
 export default function ({ ctx, setRender }: any) {
-  const onAddClick = useCallback(async (type = 'http') => {
-    ctx.type = type;
-    ctx.activeId = void 0;
-    ctx.isEdit = false;
-    ctx.templateVisible = false;
-    ctx.formModel = { type };
-    switch (type) {
-      case 'http-kdev':
-        ctx.panelVisible = KDEV_PANEL_VISIBLE;
-        setRender(ctx);
-        break;
+  const onAddClick = async (type = 'http') => {
+	  ctx.type = type;
+	  ctx.activeId = void 0;
+	  ctx.isEdit = false;
+	  ctx.templateVisible = false;
+	  ctx.formModel = { type };
+	  switch (type) {
+		  case 'http-kdev':
+			  ctx.panelVisible = KDEV_PANEL_VISIBLE;
+			  setRender(ctx);
+			  break;
+		
+		  case 'http-tg':
+			  ctx.panelVisible = TG_PANEL_VISIBLE;
+			  setRender(ctx);
+			  break;
+		
+		  case 'http-sql':
+			  ctx.panelVisible = SQL_PANEL_VISIBLE;
+			  setRender(ctx);
+			  break;
+		  default:
+			  setRender(ctx);
+			  ctx.addDefaultService();
+	  }
+  };
 
-      case 'http-tg':
-        ctx.panelVisible = TG_PANEL_VISIBLE;
-        setRender(ctx);
-        break;
-
-      default:
-        setRender(ctx);
-        ctx.addDefaultService();
-    }
-  }, []);
-
-  const renderAddActionList = useCallback(() => {
-    if (!ctx.addActions || ctx.addActions.length === 1) {
-      return (
-        <div className={css.icon} onClick={() => onAddClick('http')}>
-          {plus}
-        </div>
-      );
-    }
-    const menu = (
-      <div className={css.ct}>
-        {ctx.addActions.map(({ type, title }: any) => (
-          <div className={css.item} onClick={() => onAddClick(type)} key={type}>{title}</div>
-        ))}
-      </div>
-    );
-
-    return (
-      <Dropdown overlay={menu} trigger={['click']}>
-        <div className={css.icon}>
-          {plus}
-        </div>
-      </Dropdown>
-    );
-  }, []);
+  const renderAddActionList = () => {
+	  if (!ctx.addActions || ctx.addActions.length === 1) {
+		  return (
+			  <div className={css.icon} onClick={() => onAddClick('http')}>
+				  {plus}
+			  </div>
+		  );
+	  }
+	  const menu = (
+		  <div className={css.ct}>
+			  {ctx.addActions.map(({ type, title }: any) => (
+				  <div className={css.item} onClick={() => onAddClick(type)} key={type}>{title}</div>
+			  ))}
+		  </div>
+	  );
+	
+	  return (
+		  <Dropdown dropDownStyle={ctx.panelVisible ? { right: 0 } : undefined} overlay={menu} trigger={['click']}>
+			  <div className={css.icon}>
+				  {plus}
+			  </div>
+		  </Dropdown>
+	  );
+  };
 
   return (
     <div className={css.toolbar}>

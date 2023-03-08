@@ -1,0 +1,35 @@
+.ct {
+  padding: 3px 12px 3px 12px;
+  flex: 1;
+  overflow: auto;
+  cursor: pointer;
+  user-select: none;
+
+  .right {
+    display: none;
+  }
+
+  .selected {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    color: #FA6400;
+    margin-left: 12px;
+    height: 28px;
+    .right {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .item {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #ccc;
+    align-items: center;
+    margin-left: 12px;
+    height: 28px;
+  }
+}
+

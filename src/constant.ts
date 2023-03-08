@@ -63,4 +63,5 @@ export const DEFAULT_SCHEMA = {
 export const NO_PANEL_VISIBLE = 0;
 export const DEFAULT_PANEL_VISIBLE = 0b01;
 export const TG_PANEL_VISIBLE = 0b10;
+export const SQL_PANEL_VISIBLE = 0b1000;
 export const KDEV_PANEL_VISIBLE = 0b100;

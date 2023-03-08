@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import css from './index.less';
 
-export default function Input({
+export default function Dropdown({
+	dropDownStyle,
   children,
   overlay
 }: any) {
@@ -16,7 +17,7 @@ export default function Input({
   return (
     <div className={css.dropdown}>
       <div onClick={onClick}>{children}</div>
-      <div className={css.content} onClick={hideContent}>
+      <div style={dropDownStyle} className={css.content} onClick={hideContent}>
         {visible ? overlay : null}
       </div>
     </div>
