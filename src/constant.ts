@@ -15,6 +15,21 @@ export const exampleResultFunc = `export default function (result, { method, url
 }
 `;
 
+export const exampleSQLParamsFunc = `export default function ({ params, data, headers, url, method }) {
+  const domainInfo = {
+    serviceId: '__serviceId__',
+    relativePath: '__relativePath__'
+  }
+  // 设置请求query、请求体、请求头
+  return { params, data: {
+    params: {
+      ...data
+    },
+    ...domainInfo,
+  }, headers, url, method };
+ }
+`;
+
 export const templateResultFunc = `export default function ({ response, config }) {
   // if (response.code !== 0) {
   //    throw new Error(response.errMsg)
