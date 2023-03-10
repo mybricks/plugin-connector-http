@@ -1,7 +1,7 @@
 import React, {CSSProperties, FC, useCallback, useEffect, useMemo, useState} from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
-import {DOMAIN_PANEL_VISIBLE} from '../../../constant';
+import {DOMAIN_PANEL_VISIBLE, NO_PANEL_VISIBLE} from '../../../constant';
 import Button from '../../../components/Button';
 import {parseQuery} from '../../../utils';
 import Loading from '../loading';
@@ -14,7 +14,7 @@ interface DomainPanelProps {
 	style: CSSProperties;
 	setRender(value: Record<string, unknown>): void;
 	sidebarContext: Record<string, unknown>;
-	onSubmit(): void;
+	updateService(action: string, entity: any): void;
 	data: any;
 }
 
@@ -29,17 +29,31 @@ interface Entity {
 	isSystem: boolean;
 	domainFileId: number;
 	domainFileName: string;
+	[key: string]: any;
 }
 
 const DomainPanel: FC<DomainPanelProps> = props => {
-	const { style, setRender, data, onSubmit, sidebarContext } = props;
+	const { style, setRender, data, updateService, sidebarContext } = props;
 	const [domainList, setDomainList] = useState<Domain[]>([]);
 	const [selectedEntityList, setSelectedEntityList] = useState<Entity[]>([]);
 	const [loading, setLoading] = useState(false);
 	const baseFileId = useMemo(() => parseQuery(location.search)?.id, []);
 	
 	const onSave = useCallback(() => {
-		setSelectedEntityList([]);
+		setSelectedEntityList((entityList => {
+			entityList.forEach(item => {
+				updateService('create', {
+					id: item.id,
+					type: 'domain',
+					title: item.desc,
+					script: JSON.stringify(item)
+				})
+			})
+			setRender({
+				panelVisible: NO_PANEL_VISIBLE,
+			});
+			return [];
+		}));
 	}, []);
 	
 	const onItemClick = useCallback((item) => {

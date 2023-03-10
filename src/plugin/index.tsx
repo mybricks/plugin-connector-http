@@ -83,7 +83,7 @@ export default function Sidebar({
     enableRenderPortal: true,
     addActions: addActions
       ? addActions.some(({ type }: any) => type === 'defalut')
-        ? addActions
+        ? addActions 
         : [{ type: 'http', title: '普通接口' }].concat(addActions)
       : [{ type: 'http', title: '普通接口' }],
     connector: {
@@ -99,9 +99,9 @@ export default function Sidebar({
     },
   });
   const updateService = useCallback(
-    async (action: string, item: any) => {
+    async (action: string, item?: any) => {
       return new Promise((resolve) => {
-        const { id = uuid(), ...others }: any = item || sidebarContext.formModel;
+        const { id = uuid(), script, ...others }: any = item || sidebarContext.formModel;
         if (action === 'create') {
           const serviceItem = {
             id,
@@ -112,6 +112,7 @@ export default function Sidebar({
               inputSchema: { type: 'object' },
               ...others,
             },
+            script,
             createTime: Date.now(),
             updateTime: Date.now(),
           };
@@ -123,7 +124,7 @@ export default function Sidebar({
             title: others.title,
             inputSchema: others.inputSchema,
             outputSchema: others.outputSchema,
-            script: getScript({
+            script: script || getScript({
               ...serviceItem.content,
               globalParamsFn: data.config.paramsFn,
               globalResultFn: data.config.resultFn,
@@ -152,7 +153,7 @@ export default function Sidebar({
                     'http',
                   inputSchema: serviceItem.content.inputSchema,
                   outputSchema: serviceItem.content.outputSchema,
-                  script: getScript({
+                  script: serviceItem.script || getScript({
                     ...serviceItem.content,
                     globalParamsFn: data.config.paramsFn,
                     globalResultFn: data.config.resultFn,
@@ -409,7 +410,7 @@ export default function Sidebar({
 		        <DomainPanel
 			        sidebarContext={sidebarContext}
 			        setRender={setRender}
-			        onSubmit={onFinish}
+			        updateService={updateService}
 			        key='domain'
 			        data={data}
 			        style={{ top: ref.current?.getBoundingClientRect().top }}
