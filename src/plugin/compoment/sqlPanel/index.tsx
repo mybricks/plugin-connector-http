@@ -40,31 +40,14 @@ export default function SQLPanel({
     setSelectedSQLList([]);
   }
 	const baseFileId = parseQuery(location.search)?.id;
-	const fetchRelativePath = useCallback(async (relativeId): Promise<unknown> => {
-		return new Promise((resolve) => {
-			axios({
-				url: serviceListUrl || '/paas/api/file/getRelativePathBetweenFileId',
-				method: 'POST',
-				data: {
-					baseFileId: baseFileId,
-					relativeId
-				}
-			})
-			.then((res) => res.data)
-			.then((res) => {
-				if (res.code === 1) {
-					resolve(res.data)
-				}
-			});
-		})
-	}, [])
 	const onSaveSQl = useCallback(async (sqlList: any[]) => {
 		setRender({
 			panelVisible: NO_PANEL_VISIBLE,
 		});
 		for(let l = sqlList.length, i=0; i<l; i++) {
 			const item = sqlList[i]
-			const relativePath: string = (await fetchRelativePath(item.fileId)) as string;
+			const fileId = item.fileId;
+			
 			const inputSchema = item.paramAry?.reduce((obj, cur) => {
 				obj[cur.name] = { type: cur.type };
 				return obj;
@@ -103,8 +86,8 @@ export default function SQLPanel({
         },
         domainServiceMap: {
           serviceId: item.serviceId,
-          relativePath: relativePath,
-          baseFileId: baseFileId
+	        fileId,
+	        baseFileId
         },
         params: debugParams
           ? {
@@ -116,8 +99,7 @@ export default function SQLPanel({
         input: encodeURIComponent(
           exampleSQLParamsFunc
             .replace('__serviceId__', item.serviceId)
-            .replace('__relativePath__', relativePath)
-            // .replace('__fileId__', item.fileId)
+            .replace('__fileId__', item.fileId)
             // .replace('__baseFileId__', baseFileId)
         ),
         path: callServiceUrl || `/api/system/domain/run`,
