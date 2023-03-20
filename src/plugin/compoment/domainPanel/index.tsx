@@ -1,12 +1,10 @@
-import React, {CSSProperties, FC, useCallback, useEffect, useMemo, useState} from 'react';
+import React, {CSSProperties, FC, useCallback, useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
-import {DOMAIN_PANEL_VISIBLE, NO_PANEL_VISIBLE, SQL_PANEL_VISIBLE} from '../../../constant';
+import {DOMAIN_PANEL_VISIBLE, NO_PANEL_VISIBLE} from '../../../constant';
 import Button from '../../../components/Button';
-import {parseQuery} from '../../../utils';
 import Loading from '../loading';
 import {choose} from '../../../icon';
-import Collapse from '../../../components/Collapse';
 
 import styles from './index.less';
 
@@ -75,7 +73,7 @@ const DomainPanel: FC<DomainPanelProps> = props => {
 	
 	useEffect(() => {
 		if (sidebarContext.panelVisible & DOMAIN_PANEL_VISIBLE) {
-			sidebarContext.openFileSelector()
+			sidebarContext.openFileSelector?.()
 			.then(file => {
 				setDomainFile(file);
 				

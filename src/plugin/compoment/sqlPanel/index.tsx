@@ -3,10 +3,9 @@ import ReactDOM from 'react-dom';
 import axios from 'axios';
 import Button from '../../../components/Button';
 import {exampleSQLParamsFunc, NO_PANEL_VISIBLE, SQL_PANEL_VISIBLE} from '../../../constant';
-import Collapse from '../../../components/Collapse';
 import { choose } from '../../../icon';
 import Loading from '../loading';
-import { parseQuery, uuid } from '../../../utils';
+import { uuid } from '../../../utils';
 
 import css from '../../../../src/style-cssModules.less';
 import curCss from './index.less';
@@ -120,7 +119,7 @@ export default function SQLPanel({
 	
 	useEffect(() => {
 		if (sidebarContext.panelVisible & SQL_PANEL_VISIBLE) {
-			sidebarContext.openFileSelector()
+			sidebarContext.openFileSelector?.()
 			.then(file => {
 				setDomainFile(file);
 				
