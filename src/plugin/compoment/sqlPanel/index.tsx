@@ -20,14 +20,15 @@ export default function SQLPanel({
   callServiceUrl,
   setRender,
 }: any) {
+  const [domainFile, setDomainFile] = useState(null);
   const [originSQLList, setOriginSQList] = useState([]);
   const [selectedSQLList, setSelectedSQLList] = useState([]);
   const [loading, setLoading] = useState(false);
   const onItemClick = useCallback((item) => {
-    if (data.connectors.some(({ id }) => item.serviceId === id)) return;
+    if (data.connectors.some(({ id }) => item.id === id)) return;
     setSelectedSQLList((sql) => {
-      if (sql.some(({ serviceId }) => item.serviceId === serviceId)) {
-        sql = sql.filter(({ serviceId }) => serviceId !== item.serviceId);
+      if (sql.some(({ id }) => item.id === id)) {
+        sql = sql.filter(({ id }) => id !== item.id);
       } else {
         sql.push(item);
       }
@@ -39,11 +40,9 @@ export default function SQLPanel({
     onSaveSQl(selectedSQLList).catch(e => console.log(e));
     setSelectedSQLList([]);
   }
-	const baseFileId = parseQuery(location.search)?.id;
 	const onSaveSQl = useCallback(async (sqlList: any[]) => {
-		setRender({
-			panelVisible: NO_PANEL_VISIBLE,
-		});
+		setDomainFile(null);
+		
 		for(let l = sqlList.length, i=0; i<l; i++) {
 			const item = sqlList[i]
 			const fileId = item.fileId;
@@ -54,13 +53,13 @@ export default function SQLPanel({
 			}, {});
 			const debugParams = item.paramAry?.map((item) => ({
 				id: uuid(),
-				name: item.name,
+				name: item.title,
 				type: item.type,
 				defaultValue: item.debugValue,
 			}));
 			
 			updateService('create', {
-        id: item.serviceId,
+        id: item.id,
         title: item.title,
         method: 'POST',
         type: 'http-sql',
@@ -85,9 +84,8 @@ export default function SQLPanel({
           },
         },
         domainServiceMap: {
-          serviceId: item.serviceId,
-	        fileId,
-	        baseFileId
+          serviceId: item.id,
+	        fileId
         },
         params: debugParams
           ? {
@@ -98,7 +96,7 @@ export default function SQLPanel({
           : void 0,
         input: encodeURIComponent(
           exampleSQLParamsFunc
-            .replace('__serviceId__', item.serviceId)
+            .replace('__serviceId__', item.id)
             .replace('__fileId__', item.fileId)
             // .replace('__baseFileId__', baseFileId)
         ),
@@ -106,38 +104,37 @@ export default function SQLPanel({
       });
 		}
 	}, []);
-	
-	useEffect(() => {
-		function fetchServiceList() {
+	const getBundle = useCallback((fileId: number) => {
 			setLoading(true);
-			axios({
-				url: serviceListUrl || '/paas/api/system/domain/list',
-				method: 'POST',
-				data: {
-					fileId: baseFileId
-				}
-			})
-			.then((res) => res.data)
+			axios.get(`/paas/api/domain/bundle?fileId=${fileId}`)
 			.then((res) => {
-				if (res.code === 1) {
-					setOriginSQList(res.data);
+				if (res.data.code === 1) {
+					setOriginSQList([
+						...res.data.data.service,
+						...res.data.data.entityAry.filter(entity => entity.isOpen).map(entity => ({ id: entity.id, title: `${entity.name}的领域服务` }))
+					]);
 				}
 			})
 			.finally(() => setLoading(false));
+		}, [])
+	
+	useEffect(() => {
+		if (sidebarContext.panelVisible & SQL_PANEL_VISIBLE) {
+			sidebarContext.openFileSelector()
+			.then(file => {
+				setDomainFile(file);
+				
+				file && getBundle(file.id);
+			})
+			.finally(() => {
+				setRender({ panelVisible: NO_PANEL_VISIBLE });
+			});
 		}
-		
-		(sidebarContext.panelVisible & SQL_PANEL_VISIBLE) && fetchServiceList();
-	}, [sidebarContext.panelVisible]);
+	}, [sidebarContext.panelVisible, setRender]);
 	
   return ReactDOM.createPortal(
-    sidebarContext.panelVisible & SQL_PANEL_VISIBLE ? (
-      <div
-        style={{
-          left: 361,
-          ...style,
-        }}
-        className={`${css['sidebar-panel-edit']}`}
-      >
+	  !!domainFile ? (
+      <div style={{ left: 361, ...style }} className={`${css['sidebar-panel-edit']}`}>
         <div className={css['sidebar-panel-title']}>
           <div>接口选择</div>
           <div>
@@ -150,24 +147,18 @@ export default function SQLPanel({
         </div>
         <div className={curCss.ct}>
           {loading ? <Loading /> : originSQLList?.map((sql) => (
-	          <Collapse header={sql.fileName} defaultFold={false}>
-		          {sql.serviceList.map((item) => (
-			          <div
-				          key={item.serviceId}
-				          className={
-					          selectedSQLList.some(
-						          ({ serviceId }) => item.serviceId === serviceId
-					          ) || data.connectors.some(({ id }) => item.serviceId === id)
-						          ? curCss.selected
-						          : curCss.item
-				          }
-				          onClick={() => onItemClick({ ...item, fileId: sql.fileId })}
-			          >
-				          <div>{item.title}</div>
-				          <div className={curCss.right}>{choose}</div>
-			          </div>
-		          ))}
-	          </Collapse>
+	          <div
+		          key={sql.id}
+		          className={
+			          selectedSQLList.some(({ id }) => sql.id === id) || data.connectors.some(({ id }) => sql.id === id)
+				          ? curCss.selected
+				          : curCss.item
+		          }
+		          onClick={() => onItemClick({ ...sql, fileId: domainFile.id })}
+	          >
+		          <div>{sql.title}</div>
+		          <div className={curCss.right}>{choose}</div>
+	          </div>
           ))}
         </div>
       </div>

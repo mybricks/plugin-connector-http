@@ -33,6 +33,7 @@ interface Iprops {
     config: { paramsFn: string; resultFn?: string };
   };
   ininitialValue: any;
+	openFileSelector?(): Promise<unknown>;
 }
 
 interface Iconnector {
@@ -57,11 +58,13 @@ export default function Sidebar({
   data,
 	serviceListUrl,
   callServiceUrl,
+	openFileSelector = () => Promise.resolve(null),
   ininitialValue = {},
 }: Iprops) {
   const ref = useRef<HTMLDivElement>(null);
   const [searchValue, setSearchValue] = useState('');
   const [sidebarContext, setContext] = useState<any>({
+	  openFileSelector,
     eidtVisible: false,
     activeId: '',
     panelVisible: NO_PANEL_VISIBLE,
@@ -235,7 +238,7 @@ export default function Sidebar({
       sidebarContext.panelVisible = NO_PANEL_VISIBLE;
       setRender(sidebarContext);
     }
-  }, []);
+  }, [sidebarContext]);
 
 	sidebarContext.addDefaultService = useCallback(async () => {
 	  sidebarContext.panelVisible = DEFAULT_PANEL_VISIBLE;
@@ -294,7 +297,7 @@ export default function Sidebar({
     }
     sidebarContext.expandId = item.id;
     setRender(sidebarContext);
-  }, []);
+  }, [setRender, sidebarContext]);
 
   const onLinkClick = useCallback((url: string) => {
     window.open(url);
@@ -527,103 +530,162 @@ export default function Sidebar({
             />
           </div>
           <div className={css['sidebar-panel-list']}>
-            {(searchValue
-              ? data.connectors.filter((item) =>
-                  item.content.title.includes(searchValue)
-                )
-              : data.connectors
-            ).map((item) => {
-              const expand = sidebarContext.expandId === item.id;
-              item.updateTime = formatDate(item.updateTime || item.createTime);
-              const { useMock } = item.content;
-              return (
-                <div key={item.id}>
-                  <div
-                    key={item.id}
-                    className={`${css['sidebar-panel-list-item']} ${
-                      sidebarContext.activeId === item.id ? css.active : ''
-                    } ${
-                      sidebarContext.isEdit
-                        ? sidebarContext.activeId === item.id
-                          ? css.chose
-                          : css.disabled
-                        : ''
-                    }`}
-                  >
-                    <div>
-                      <div
-                        onClick={(e) => onItemClick(e, item)}
-                        className={css['sidebar-panel-list-item__left']}
-                      >
-                        <div
-                          className={`${css.icon} ${
-                            expand ? css.iconExpand : ''
-                          }`}
-                        >
-                          {Icons.arrowR}
-                        </div>
-                        <div
-                          className={css.tag}
-                          onClick={(e) => onServiceItemTitleClick(e, item)}
-                        >
-                          {useMock ? 'Mock' : '接口'}
-                        </div>
-                        <div className={css.name}>
-                          <span>{item.content.title}</span>
-                        </div>
-                      </div>
-                      <div className={css['sidebar-panel-list-item__right']}>
-                        <div
-                          ref={clickRef}
-                          className={css.action}
-                          onClick={() => onEditItem(item)}
-                        >
-                          {Icons.edit}
-                        </div>
-                        <div
-                          className={css.action}
-                          onClick={() => onCopyItem(item)}
-                        >
-                          {Icons.copy}
-                        </div>
-                        <div
-                          className={css.action}
-                          onClick={() => onRemoveItem(item)}
-                        >
-                          {Icons.remove}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {expand ? (
-                    <div className={css['sidebar-panel-list-item__expand']}>
-                      {getInterfaceParams(item).map((param: any) => {
-                        return (
-                          <div
-                            className={css['sidebar-panel-list-item__param']}
-                            key={param.key}
-                          >
-                            <span
-                              className={css['sidebar-panel-list-item__name']}
-                              style={{ width: param.width }}
-                            >
-                              {param.name}:
-                            </span>
-                            <span
-                              className={
-                                css['sidebar-panel-list-item__content']
-                              }
-                            >
-                              {renderParam(item, param)}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
+            {
+							data.connectors
+								.filter((item) => item.content.type !== 'domain')
+		            .filter((item) => searchValue ? item.content.title.includes(searchValue) : true)
+		            .map((item) => {
+		              const expand = sidebarContext.expandId === item.id;
+		              item.updateTime = formatDate(item.updateTime || item.createTime);
+		              const { useMock } = item.content;
+		              return (
+		                <div key={item.id}>
+		                  <div
+		                    key={item.id}
+		                    className={`${css['sidebar-panel-list-item']} ${
+		                      sidebarContext.activeId === item.id ? css.active : ''
+		                    } ${
+		                      sidebarContext.isEdit
+		                        ? sidebarContext.activeId === item.id
+		                          ? css.chose
+		                          : css.disabled
+		                        : ''
+		                    }`}
+		                  >
+		                    <div>
+		                      <div
+		                        onClick={(e) => onItemClick(e, item)}
+		                        className={css['sidebar-panel-list-item__left']}
+		                      >
+		                        <div
+		                          className={`${css.icon} ${
+		                            expand ? css.iconExpand : ''
+		                          }`}
+		                        >
+		                          {Icons.arrowR}
+		                        </div>
+		                        <div
+		                          className={css.tag}
+		                          onClick={(e) => onServiceItemTitleClick(e, item)}
+		                        >
+		                          {useMock ? 'Mock' : '接口'}
+		                        </div>
+		                        <div className={css.name}>
+		                          <span>{item.content.title}</span>
+		                        </div>
+		                      </div>
+		                      <div className={css['sidebar-panel-list-item__right']}>
+		                        <div
+		                          ref={clickRef}
+		                          className={css.action}
+		                          onClick={() => onEditItem(item)}
+		                        >
+		                          {Icons.edit}
+		                        </div>
+		                        <div
+		                          className={css.action}
+		                          onClick={() => onCopyItem(item)}
+		                        >
+		                          {Icons.copy}
+		                        </div>
+		                        <div
+		                          className={css.action}
+		                          onClick={() => onRemoveItem(item)}
+		                        >
+		                          {Icons.remove}
+		                        </div>
+		                      </div>
+		                    </div>
+		                  </div>
+		                  {expand ? (
+		                    <div className={css['sidebar-panel-list-item__expand']}>
+		                      {getInterfaceParams(item).map((param: any) => {
+		                        return (
+		                          <div
+		                            className={css['sidebar-panel-list-item__param']}
+		                            key={param.key}
+		                          >
+		                            <span
+		                              className={css['sidebar-panel-list-item__name']}
+		                              style={{ width: param.width }}
+		                            >
+		                              {param.name}:
+		                            </span>
+		                            <span
+		                              className={
+		                                css['sidebar-panel-list-item__content']
+		                              }
+		                            >
+		                              {renderParam(item, param)}
+		                            </span>
+		                          </div>
+		                        );
+		                      })}
+		                    </div>
+		                  ) : null}
+		                </div>
+		              );
+		            })
+						}
+	          {
+		          data.connectors
+		          .filter((item) => item.content.type === 'domain')
+		          .filter((item) => searchValue ? item.content.title.includes(searchValue) : true)
+		          .map((item) => {
+			          const expand = sidebarContext.expandId === item.id;
+			          item.updateTime = formatDate(item.updateTime || item.createTime);
+								let entity: Record<string, unknown> = {};
+								try {
+									entity = JSON.parse(item.script);
+								} catch {}
+								
+			          return (
+				          <div key={item.id}>
+					          <div key={item.id} className={css['sidebar-panel-list-item']}>
+						          <div>
+							          <div
+								          onClick={(e) => onItemClick(e, item)}
+								          className={css['sidebar-panel-list-item__left']}
+							          >
+								          <div className={`${css.icon} ${expand ? css.iconExpand : ''}`}>
+									          {Icons.arrowR}
+								          </div>
+								          <div className={css.tag}>领域模型</div>
+								          <div className={css.name}>
+									          <span>{item.content.title}</span>
+								          </div>
+							          </div>
+							          <div className={css['sidebar-panel-list-item__right']}>
+								          <div></div>
+								          <div
+									          className={css.action}
+									          onClick={() => onRemoveItem(item)}
+								          >
+									          {Icons.remove}
+								          </div>
+							          </div>
+						          </div>
+					          </div>
+					          {expand ? (
+						          <div className={css['sidebar-panel-list-item__expand']}>
+							          <div className={css['sidebar-panel-list-item__param']}>
+                          <span className={css['sidebar-panel-list-item__name']}>标识:</span>
+								          <span className={css['sidebar-panel-list-item__content']}>{item.id}</span>
+							          </div>
+							          <div className={css['sidebar-panel-list-item__param']}>
+								          <span className={css['sidebar-panel-list-item__name']}>模型:</span>
+								          <span className={css['sidebar-panel-list-item__content']}>{entity.domainFileName}</span>
+							          </div>
+							          <div className={css['sidebar-panel-list-item__param']}>
+								          <span className={css['sidebar-panel-list-item__name']}>实体:</span>
+								          <span className={css['sidebar-panel-list-item__content']}>{entity.name}</span>
+							          </div>
+						          </div>
+					          ) : null}
+				          </div>
+			          );
+		          })
+	          }
           </div>
         </div>
         {renderAddActions()}
