@@ -9,27 +9,23 @@
     display: none;
   }
 
-  .selected {
+  .item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #ccc;
-    color: #FA6400;
     margin-left: 12px;
-    height: 28px;
+    line-height: 36px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .selected {
+    color: #FA6400;
+    justify-content: space-between;
+
     .right {
       display: flex;
       align-items: center;
     }
-  }
-
-  .item {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid #ccc;
-    align-items: center;
-    margin-left: 12px;
-    height: 28px;
   }
 }
 
