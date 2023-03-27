@@ -36,14 +36,12 @@ function DataShow({ data }: any) {
 
 export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
   const valueRef = useRef(value);
-  const [mockData, setMockData] = useState<any>();
   const [params, setParams] = useState({ children: [] });
   valueRef.current = params;
   const updateValue = useCallback(() => {
     setParams({ ...valueRef.current });
     const schema = params2schema(valueRef.current);
     onChange(schema);
-    setMockData(schema2data(schema));
   }, []);
 
   const resetValue = useCallback((item) => {
@@ -69,9 +67,9 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
   }, []);
 
   useEffect(() => {
-    setMockData(schema2data(schema));
-    setParams(schema2params(schema));
+    setParams(schema ? schema2params(schema) : void 0);
   }, [schema]);
+
   const removeItem = (item, parent) => {
     parent.children = parent.children.filter(({ name }) => name !== item.name);
     if (parent.type === 'array') {
@@ -120,7 +118,8 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
     }
 
     const isArray = parent.type === 'array';
-    const hasDefaultValue = item.defaultValue !== void 0 && item.defaultValue !== '';
+    const hasDefaultValue =
+      item.defaultValue !== void 0 && item.defaultValue !== '';
 
     const addAble =
       (depth === 0 &&
@@ -137,11 +136,12 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
         item.name === 'items' &&
         (type === 'object' || type === 'array'));
 
+    const removeAble = !(isArray && item.name === 'items');
     return (
       <div key={item.id} className={css.ct}>
         <div className={css.item}>
           <input
-            style={{ width: 162 - depth * 20 }}
+            style={{ width: 331 - depth * 20 }}
             type='text'
             value={
               isArray && item.name !== 'items' ? `[${item.name}]` : item.name
@@ -159,7 +159,7 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
             <option label={'对象'} value={'object'} />
             <option label={'列表'} value={'array'} />
           </select>
-          <input
+          {/* <input
             className={css.defaultValue}
             type='text'
             disabled={type === 'object' || type === 'array'}
@@ -172,8 +172,8 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
                 value === '' ? void 0 : type === 'number' ? +value : value
               );
             }}
-          />
-          <div className={css.range}>
+          /> */}
+          {/* <div className={css.range}>
             <input
               className={`${css.min} ${item.minError ? css.error : ''}`}
               type='text'
@@ -197,14 +197,16 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
                 set(item, getKey(item, true), value == '' ? void 0 : +value);
               }}
             />
-          </div>
+          </div> */}
           <div className={`${css.operate} ${css.flex}`}>
-            <span
-              className={`${css.iconRemove}`}
-              onClick={(e) => removeItem(item, parent)}
-            >
-              {Icons.remove}
-            </span>
+            {removeAble ? (
+              <span
+                className={`${css.iconRemove}`}
+                onClick={(e) => removeItem(item, parent)}
+              >
+                {Icons.remove}
+              </span>
+            ) : null}
             {addAble ? (
               <span
                 className={css.iconAdder}
@@ -222,34 +224,38 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
 
   return (
     <>
-      <div>
-        {params?.children?.length === 0 ? (
-          <div className={css.adder}>
-            <span
-              style={{ cursor: 'pointer' }}
-              onClick={() => addItem(valueRef.current, valueRef.current)}
-            >
-              +
-            </span>
-          </div>
-        ) : (
-          <>
-            <div className={css.header}>
-              <p className={css.fieldName}>字段名</p>
-              <p className={css.type}>类型</p>
-              <p className={css.defaultValue}>默认值</p>
-              <p className={css.range}>自定义范围</p>
-              <p className={css.operate}>操作</p>
+      {schema ? (
+        <div>
+          {params?.children?.length === 0 ? (
+            <div className={css.adder}>
+              <span
+                style={{ cursor: 'pointer' }}
+                onClick={() => addItem(valueRef.current, valueRef.current)}
+              >
+                +
+              </span>
             </div>
-            <div className={css.content}>
-              {processItem(valueRef.current, valueRef.current)}
-            </div>
-          </>
-        )}
-      </div>
-      <div className={css.mockData}>
+          ) : (
+            <>
+              <div className={css.header}>
+                <p className={css.fieldName}>字段名</p>
+                <p className={css.type}>类型</p>
+                {/* <p className={css.defaultValue}>默认值</p>
+              <p className={css.range}>自定义范围</p> */}
+                <p className={css.operate}>操作</p>
+              </div>
+              <div className={css.content}>
+                {processItem(valueRef.current, valueRef.current)}
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className={css.empty}>类型无效</div>
+      )}
+      {/* <div className={css.mockData}>
         <DataShow data={mockData} />
-      </div>
+      </div> */}
     </>
   );
 }
