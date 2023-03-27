@@ -80,6 +80,20 @@ export default function SQLPanel({
             ...inputSchema,
           },
         },
+        outputSchema: {
+          type: 'object',
+          properties: {
+            code: {
+              type: 'number',
+            },
+            data: {
+              type: 'object',
+            },
+            msg: {
+              type: 'string',
+            },
+          },
+        },
         resultSchema: {
           type: 'object',
           properties: {

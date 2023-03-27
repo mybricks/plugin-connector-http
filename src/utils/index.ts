@@ -36,8 +36,7 @@ export function formatSchema(schema: any) {
       }
       // TODO oneOf
     }
-  } else if (schema.type === 'null' || schema.type === 'undefined') {
-    // TODO support null and undefined
+  } else if (schema.type === 'unknown') {
     Object.defineProperty(schema, 'type', {
       writable: true,
       value: 'string',
@@ -287,12 +286,65 @@ function proObj(curSchema: any, obj: any) {
 
 function proAry(curSchema, ary) {
   if (!curSchema) return;
-  let sample;
+	
+	const schemaList = [];
   if (ary.length > 0) {
-    sample = ary[0];
+	  ary.forEach(item => {
+			const schema = JSON.parse(JSON.stringify(curSchema));
+		  proItem({ schema, val: item, fromAry: true });
+		  schemaList.push(schema);
+	  })
   }
+	mergeSchemaTypeBySchemaList(curSchema, schemaList);
+}
 
-  proItem({ schema: curSchema, val: sample, fromAry: true });
+const mergeSchemaTypeBySchemaList = (schema, schemaList) => {
+	if (!schemaList) {
+		return schema;
+	}
+	
+	let curSchema = null;
+	for (let index	= 0; index < schemaList.length; index++){
+		const item = schemaList[index];
+		
+		if (!item) {
+			continue;
+		}
+		
+		if (!curSchema) {
+			if (item.type !== 'unknown') {
+				if (item.type === 'object' || item.type === 'array') {
+					curSchema = item;
+					Object.assign(schema, item);
+				} else {
+					delete schema.properties;
+					Object.assign(schema, item);
+					break;
+				}
+			} else {
+				delete schema.properties;
+				Object.assign(schema, item);
+			}
+		} else {
+			if (schema.type === 'object' && item.type === 'object') {
+				Object.keys(item.properties || {}).forEach((key) => {
+					const property = schema.properties[key];
+					
+					if ((!property && item.properties[key]) || (property.type === 'unknown' && item.properties[key].type !== 'unknown')) {
+						schema.properties[key] = item.properties[key];
+					} else {
+						mergeSchemaTypeBySchemaList(schema.properties[key], schemaList.map(item => item.properties[key]));
+					}
+				})
+			} else if (schema.type === 'array' && item.type === 'array') {
+				if (!schema.properties.items) {
+					schema.properties.items = {};
+				}
+				
+				mergeSchemaTypeBySchemaList(schema.properties['items'], schemaList.map(item => item.properties.items));
+			}
+		}
+	}
 }
 
 export function safeDecode(code: string) {
@@ -301,25 +353,4 @@ export function safeDecode(code: string) {
   } catch (error) {
     return code;
   }
-}
-
-export function parseQuery(query): Record<string, unknown> {
-	const res = {}
-	query = query.trim().replace(/^(\?|#|&)/, '')
-	if (!query) {
-		return res
-	}
-	query.split('&').forEach((param) => {
-		const parts = param.replace(/\+/g, ' ').split('=')
-		const key = decodeURIComponent(parts.shift())
-		const val = parts.length > 0 ? decodeURIComponent(parts.join('=')) : null
-		if (res[key] === undefined) {
-			res[key] = val
-		} else if (Array.isArray(res[key])) {
-			res[key].push(val)
-		} else {
-			res[key] = [res[key], val]
-		}
-	})
-	return res
 }

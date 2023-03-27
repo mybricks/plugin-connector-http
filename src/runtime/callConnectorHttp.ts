@@ -49,7 +49,7 @@ export function mock(
   connector: { id: string; script: string; [key: string]: any },
 ) {
   return new Promise((resolve, reject) => {
-    if (connector.type === 'http') {
+    if (connector.type === 'http' || connector.type === 'http-sql') {
       try {
         if (connector.outputSchema) {
           // use mock data
