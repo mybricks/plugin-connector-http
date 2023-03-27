@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { get } from '../../../utils/lodash';
 import {
   formatSchema,
   getDataByOutputKeys,
+  getDataByExcludeKeys,
   getDecodeString,
   jsonToSchema,
   params2data,
@@ -13,17 +13,19 @@ import { isEmpty } from '../../../utils/lodash';
 import ParamsEdit from '../paramsEdit';
 import Params from '../params';
 import OutputSchemaMock from '../outputSchemaMock';
-import Switch from '../../../components/Switch';
 import FormItem from '../../../components/FormItem';
 import { getScript } from '../../../script';
-import { DEFAULT_SCHEMA } from '../../../constant';
 import css from './index.less';
+import { cloneDeep } from '../../../utils/lodash/cloneDeep';
+import Button from '../../../components/Button';
 
 function DataShow({ data }: any) {
   let valueStr = '';
   try {
     valueStr = JSON.stringify(data, null, 2);
-  } catch (error) {}
+  } catch (error) {
+    console.log(error, 'error');
+  }
   return isEmpty(data) ? null : (
     <div style={{ marginLeft: 87 }}>
       <div className={css.title}>标记后的返回结果示例</div>
@@ -46,13 +48,12 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const allDataRef = useRef<any>();
   const [errorInfo, setError] = useState('');
   const [params, setParams] = useState(sidebarContext.formModel.params);
-  const [useMock, setMock] = useState(false);
+  const [edit, setEdit] = useState(false);
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
     name: 'root',
     children: [],
   };
-
   useEffect(() => {
     setSchema(sidebarContext.formModel.resultSchema);
   }, [sidebarContext.formModel.resultSchema]);
@@ -82,10 +83,11 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
         params
       );
       allDataRef.current = data;
-      const { outputKeys } = sidebarContext.formModel;
+      const { outputKeys, excludeKeys } = sidebarContext.formModel;
       const outputData = getDataByOutputKeys(data, outputKeys);
-      setData(outputData);
       sidebarContext.formModel.resultSchema = jsonToSchema(data);
+      setData(getDataByExcludeKeys(outputData, excludeKeys));
+
       formatSchema(sidebarContext.formModel.resultSchema);
       const outputSchema = jsonToSchema(outputData);
       formatSchema(outputSchema);
@@ -113,47 +115,81 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
     }
   }, []);
 
+  const onKeysChange = useCallback((outputKeys, excludeKeys) => {
+    const { resultSchema } = sidebarContext.formModel;
+    try {
+      sidebarContext.formModel.outputKeys = outputKeys;
+      let outputSchema: any = {};
+      if (outputKeys.length === 0) {
+        outputSchema = sidebarContext.formModel.resultSchema;
+      } else if (outputKeys.length === 1 && outputKeys[0] === '') {
+        outputSchema = { type: 'any' };
+      } else {
+        outputSchema = {
+          type: 'object',
+          properties: {},
+        };
+        outputKeys.forEach((key: string) => {
+          let subSchema = outputSchema.properties;
+          let subResultSchema = resultSchema.properties;
+          key.split('.').forEach((field) => {
+            subSchema[field] = { ...subResultSchema[field] };
+            const { type } = subSchema[field];
+            if (type === 'array') {
+              subSchema = subSchema[field].items.properties;
+              subResultSchema = subResultSchema[field].items.properties;
+            } else {
+              subSchema = subSchema[field].properties;
+              subResultSchema = subResultSchema[field].properties;
+            }
+          });
+        });
+        if (Object.keys(outputSchema.properties).length === 1) {
+          outputSchema =
+            outputSchema.properties[Object.keys(outputSchema.properties)[0]];
+        }
+      }
+      let newOutputSchma = cloneDeep(outputSchema);
+      excludeKeys?.forEach((key: string) => {
+        const keys = key.split('.');
+        const len = keys.length;
+        let schema = newOutputSchma;
+        const start = outputKeys && outputKeys.length === 1 ? 1 : 0;
+        for (let i = start; i < len - 1; i++) {
+          schema = (schema.properties || schema.items.properties)[keys[i]];
+        }
+        try {
+          Reflect.deleteProperty(
+            schema.properties || schema.items.properties,
+            keys[len - 1]
+          );
+        } catch (error) {}
+      });
+      sidebarContext.formModel.outputSchema = newOutputSchma;
+      try {
+        const cloneData = cloneDeep(allDataRef.current);
+        const remanentData = getDataByExcludeKeys(cloneData, excludeKeys);
+        const res = getDataByOutputKeys(remanentData, outputKeys);
+        if (res !== void 0) {
+          setData(res);
+        }
+      } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
   const onOutputKeysChange = useCallback(
     (outputKeys) => {
-      const { resultSchema } = sidebarContext.formModel;
-      if (outputKeys !== void 0) {
-        try {
-          sidebarContext.formModel.outputKeys = outputKeys;
-          let outputSchema: any = {};
-          if (outputKeys.length === 0) {
-            outputSchema = sidebarContext.formModel.resultSchema;
-          } else if (outputKeys.length === 1) {
-            if (outputKeys[0] === '') {
-              outputSchema = { type: 'any' };
-            } else {
-              outputSchema = get(
-                resultSchema.properties,
-                outputKeys[0].split('.').join('.properties.')
-              );
-            }
-          } else {
-            outputSchema = {
-              type: 'object',
-              properties: {},
-            };
-            outputKeys.forEach((key: string) => {
-              let subSchema = outputSchema.properties;
-              let subResultSchema = resultSchema.properties;
-              key.split('.').forEach((field) => {
-                subSchema[field] = { ...subResultSchema[field] };
-                subSchema = subSchema[field].properties;
-                subResultSchema = subResultSchema[field].properties;
-              });
-            });
-            if (Object.keys(outputSchema.properties).length === 1) {
-              outputSchema =
-                outputSchema.properties[Object.keys(outputSchema.properties)[0]];
-            }
-          }
-          setData(getDataByOutputKeys(allDataRef.current, outputKeys));
-          sidebarContext.formModel.outputSchema = outputSchema;
-        } catch (error) {}
-      }
+      onKeysChange(outputKeys, sidebarContext.formModel.excludeKeys);
+    },
+    [sidebarContext]
+  );
+
+  const onExcludeKeysChange = useCallback(
+    (excludeKeys) => {
+      sidebarContext.formModel.excludeKeys = excludeKeys;
+      onKeysChange(sidebarContext.formModel.outputKeys, excludeKeys);
     },
     [sidebarContext]
   );
@@ -161,28 +197,39 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const onMockSchemaChange = useCallback((schema) => {
     sidebarContext.formModel.resultSchema = schema;
   }, []);
-
+  const editSchema = () => {
+    setEdit(true);
+  };
+  const saveSchema = () => {
+    setEdit(false);
+  };
   return (
     <>
-      {/* <FormItem label='Mock'>
-        <Switch
-          defaultChecked={sidebarContext.formModel.useMock}
-          onChange={(checked: boolean) => {
-            sidebarContext.formModel.useMock = checked;
-            if (checked) {
-              sidebarContext.formModel.outputSchema =
-                sidebarContext.formModel.outputSchema || DEFAULT_SCHEMA;
-              sidebarContext.formModel.resultSchema =
-                sidebarContext.formModel.resultSchema || DEFAULT_SCHEMA;
-            }
-            setMock(checked);
-          }}
+      <FormItem label='请求参数'>
+        <ParamsEdit
+          value={sidebarContext.formModel.params}
+          ctx={sidebarContext}
+          onChange={onParamsChange}
         />
-      </FormItem> */}
-
-      {useMock ? (
+      </FormItem>
+      <FormItem>
+        <Params
+          onDebugClick={onDebugClick}
+          ctx={sidebarContext}
+          params={params}
+        />
+      </FormItem>
+      {edit ? (
         <>
-          <FormItem label='Mock规则'>
+          <FormItem label='返回数据'>
+            {sidebarContext.formModel.resultSchema ? (
+              <Button
+                style={{ margin: 0, marginBottom: 6 }}
+                onClick={saveSchema}
+              >
+                保存
+              </Button>
+            ) : null}
             <OutputSchemaMock
               schema={sidebarContext.formModel.resultSchema}
               ctx={sidebarContext}
@@ -192,24 +239,20 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
         </>
       ) : (
         <>
-          <FormItem label='请求参数'>
-            <ParamsEdit
-              value={sidebarContext.formModel.params}
-              ctx={sidebarContext}
-              onChange={onParamsChange}
-            />
-          </FormItem>
-          <FormItem>
-            <Params
-              onDebugClick={onDebugClick}
-              ctx={sidebarContext}
-              params={params}
-            />
-          </FormItem>
           <FormItem label='返回数据'>
+            {sidebarContext.formModel.resultSchema ? (
+              <Button
+                style={{ margin: 0, marginBottom: 6 }}
+                onClick={editSchema}
+              >
+                编辑
+              </Button>
+            ) : null}
             <ReturnShema
-              value={sidebarContext.formModel.outputKeys}
-              onChange={onOutputKeysChange}
+              outputKeys={sidebarContext.formModel.outputKeys}
+              excludeKeys={sidebarContext.formModel.excludeKeys}
+              onOutputKeysChange={onOutputKeysChange}
+              onExcludeKeysChange={onExcludeKeysChange}
               schema={schema}
               error={errorInfo}
             />

@@ -5,18 +5,30 @@ import { isEmpty } from '../../../utils/lodash';
 
 const emptyAry: any[] = [];
 
-export default function ReturnShema({ value, onChange, schema, error }: any) {
+export default function ReturnShema({
+  outputKeys,
+  excludeKeys: excKeys,
+  onOutputKeysChange,
+  onExcludeKeysChange,
+  schema,
+  error,
+}: any) {
   const parentEleRef = useRef();
   const curKeyRef = useRef('');
-  const [keys, setKeys] = useState(value || emptyAry);
+  const excludeKeysRef = useRef([]);
+  const [keys, setOutputKeys] = useState(outputKeys || emptyAry);
+  const [excludeKeys, setExcludekeys] = useState<string[]>(excKeys || []);
   const [popMenuStyle, setStyle] = useState<any>();
-
+  excludeKeysRef.current = excludeKeys;
   useEffect(() => {
-    setKeys(value || emptyAry);
-  }, [value]);
+    setOutputKeys(outputKeys || emptyAry);
+  }, [outputKeys]);
 
   const markAsReturn = useCallback(() => {
-    setKeys((keys: any[]) => {
+    setOutputKeys((keys: any[]) => {
+      if (excludeKeysRef.current.some((key) => key === curKeyRef.current)) {
+        return keys;
+      }
       const outputkeys = [
         ...keys.filter(
           (key: string) =>
@@ -26,14 +38,19 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
         ),
         curKeyRef.current,
       ].filter((key) => key !== '');
-      onChange([...outputkeys]);
+      onOutputKeysChange([...outputkeys]);
       return outputkeys;
+    });
+    setExcludekeys((keys: string[]) => {
+      const newKeys = keys.filter((key) => key !== curKeyRef.current);
+      onExcludeKeysChange(newKeys);
+      return newKeys;
     });
   }, []);
 
-  function proAry(items) {
+  function proAry(items, xpath) {
     if (!items) return null;
-    return proItem({ val: items });
+    return proItem({ val: items, xpath });
   }
 
   function proObj(properties, xpath) {
@@ -52,7 +69,7 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
   function proItem({ val, key, xpath, root }: { val; key?; xpath?; root? }) {
     let jsx;
     if (val.type === 'array') {
-      jsx = proAry(val.items);
+      jsx = proAry(val.items, xpath);
     } else {
       if (val.type === 'object') {
         jsx = proObj(val.properties, xpath);
@@ -61,7 +78,17 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
 
     const hasReturnSchema = !isEmpty(keys);
     const markedAsReturn =
-      (!hasReturnSchema && root) || (hasReturnSchema && keys?.includes(xpath));
+      (!hasReturnSchema && root) ||
+      (key && hasReturnSchema && keys?.includes(xpath));
+
+    const showMark =
+      xpath !== void 0 &&
+      !excludeKeys.some((key) => xpath.startsWith(key) && key !== xpath);
+
+    const showCancel =
+      (markedAsReturn && !root) ||
+      (keys.some((key: string) => xpath?.startsWith(key)) &&
+        !excludeKeys.some((key) => xpath.startsWith(key)));
 
     return (
       <div
@@ -71,10 +98,13 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
         }`}
       >
         {markedAsReturn ? <div className={css.marked}></div> : null}
+        {excludeKeys.includes(xpath) && key ? (
+          <div className={css.exclude}></div>
+        ) : null}
         <div className={css.keyName}>
           {key}
           <span className={css.typeName}>({getTypeName(val.type)})</span>
-          {xpath !== void 0 ? (
+          {showMark && key ? (
             <button
               onClick={(e) => {
                 popMark(e, xpath);
@@ -84,7 +114,7 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
               标记
             </button>
           ) : null}
-          {markedAsReturn && !root ? (
+          {showCancel ? (
             <button
               onClick={(e) => {
                 cancelMark(e, xpath);
@@ -113,11 +143,23 @@ export default function ReturnShema({ value, onChange, schema, error }: any) {
   }, []);
 
   const cancelMark = useCallback((e, xpath) => {
-    setKeys((keys: any[]) => {
+    setOutputKeys((keys: any[]) => {
       const outputkeys = [
         ...keys.filter((key: string) => key !== xpath),
       ].filter((key) => key !== '');
-      onChange(outputkeys);
+      if (!keys.some((key) => key === xpath)) {
+        setExcludekeys((keys: string[]) => {
+          const excludeKeys = [
+            ...keys.filter(
+              (key) => !(key.includes(xpath) || xpath.includes(key))
+            ),
+            xpath,
+          ];
+          onExcludeKeysChange(excludeKeys);
+          return excludeKeys;
+        });
+      }
+      onOutputKeysChange(outputkeys);
       return outputkeys;
     });
   }, []);

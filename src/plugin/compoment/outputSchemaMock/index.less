@@ -6,11 +6,11 @@
   font-size: 12px;
 
   .fieldName {
-    width: 162px;
+    width: 331px;
   }
   .type {
     text-align: center;
-    width: 45px;
+    width: 60px;
     border: none;
     background-color: transparent;
   }
@@ -89,7 +89,13 @@
   }
 
   .iconRemove {
+    height: 12px;
     cursor: pointer;
+    margin-right: 8px;
+
+    &:hover {
+      color: #fa6400;;
+    }
   }
 
   .iconAdder {
@@ -97,24 +103,19 @@
     font-size: 20px;
     font-weight: normal;
     color: #555;
-    width: 22px;
-    height: 22px;
+    width: 12px;
+    height: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-bottom: 3px;
-    margin-left: 2px;
-    margin-bottom: 3px;
 
     &:hover {
-      color: rgb(255, 255, 255);
-      background-color: #fa6400;
+      color: #fa6400;;
     }
   }
 }
 
 .ct {
-  width: 100%;
   margin-left: 20px;
 }
 
@@ -130,4 +131,11 @@
 }
 .mockData {
   margin: 0 10px 0 -80px;
+}
+
+.empty {
+  position: relative;
+  color: #999;
+  font-style: italic;
+  font-size: 12px;
 }

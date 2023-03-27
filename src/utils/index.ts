@@ -1,4 +1,4 @@
-import { isEmpty, get, set } from '../utils/lodash';
+import { isEmpty, cloneDeep } from '../utils/lodash';
 
 export function getServiceUrl(uri: string) {
   return `/app/pcspa/desn/${uri}`;
@@ -45,21 +45,80 @@ export function formatSchema(schema: any) {
   }
 }
 
+function setData(data, keys, val) {
+  const len = keys.length;
+  function dfs(res, index, val) {
+    if (index === len) {
+      return res;
+    }
+    const key = keys[index];
+    if (Array.isArray(res)) {
+      return res.map((item, i) => {
+        const curVal = val[i];
+        let obj;
+        if (curVal === void 0) {
+          obj = {};
+          val.push(obj);
+        } else {
+          obj = curVal;
+        }
+        return dfs(item, index, obj);
+      });
+    } else {
+      if (index === len - 1) {
+        val[key] = res[key];
+        return res[key];
+      }
+      res = res[key];
+      if (Array.isArray(res)) {
+        val[key] = val[key] || [];
+      } else {
+        val[key] = val[key] || {};
+      }
+    }
+    return dfs(res, index + 1, Array.isArray(val) ? val : val[key]);
+  }
+  return dfs(data, 0, val);
+}
+
 export function getDataByOutputKeys(data, outputKeys) {
   let outputData: any = {};
   if (outputKeys === void 0 || outputKeys.length === 0) {
     outputData = data;
-  } else if (outputKeys.length === 1) {
-    outputData = get(data, outputKeys[0], data);
   } else {
     outputKeys.forEach((key: string) => {
-      set(outputData, key, get(data, key));
+      setData(data, key.split('.'), outputData);
     });
-    if (Object.keys(outputData).length === 1) {
-      outputData = outputData[Object.keys(outputData)[0]];
-    }
   }
   return outputData;
+}
+
+function del(data, keys) {
+  const len = keys.length;
+  function dfs(data, index) {
+    if (index === len) return;
+    const key = keys[index];
+    if (index === len - 1) {
+      Reflect.deleteProperty(data, key);
+    }
+    if (Array.isArray(data)) {
+      data.forEach(item => { dfs(item, index)})
+    } else {
+      dfs(data[key], index + 1);
+    }
+  }
+  dfs(data, 0)
+}
+
+export function getDataByExcludeKeys(data, excludeKeys) {
+  if (!excludeKeys || excludeKeys.length === 0) {
+    return data;
+  }
+  const res = cloneDeep(data);
+  excludeKeys.forEach(keys => {
+    del(res, keys.split('.'));
+  })
+  return res;
 }
 
 export function params2data(params: any) {
