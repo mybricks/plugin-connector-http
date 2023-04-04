@@ -4,7 +4,6 @@ import axios from 'axios';
 import {DOMAIN_PANEL_VISIBLE, NO_PANEL_VISIBLE} from '../../../constant';
 import Button from '../../../components/Button';
 import Loading from '../loading';
-import {choose} from '../../../icon';
 
 import styles from './index.less';
 
@@ -113,8 +112,8 @@ const DomainPanel: FC<DomainPanelProps> = props => {
 									domainFileName: domainFile.name
 								})}
 							>
+								<input type="checkbox" />
 								<div>{entity.name}</div>
-								<div className={styles.right}>{choose}</div>
 							</div>
 						);
 					})}

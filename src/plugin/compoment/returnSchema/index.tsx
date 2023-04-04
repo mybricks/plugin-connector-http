@@ -1,7 +1,8 @@
-import css from './index.less';
 import React, { useEffect, useRef, useState } from 'react';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
+
+import css from './index.less';
 
 const emptyAry: any[] = [];
 
@@ -86,9 +87,10 @@ export default function ReturnShema({
       !excludeKeys.some((key) => xpath.startsWith(key) && key !== xpath);
 
     const showCancel =
-      (markedAsReturn && !root) ||
+	    key !== void 0 &&
+      ((markedAsReturn && !root) ||
       (keys.some((key: string) => xpath?.startsWith(key)) &&
-        !excludeKeys.some((key) => xpath.startsWith(key)));
+        !excludeKeys.some((key) => xpath.startsWith(key))));
 
     return (
       <div

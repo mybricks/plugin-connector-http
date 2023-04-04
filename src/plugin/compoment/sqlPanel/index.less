@@ -5,26 +5,58 @@
   cursor: pointer;
   user-select: none;
 
-  .right {
-    display: none;
-  }
-
   .item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     margin-left: 12px;
     line-height: 36px;
     border-bottom: 1px solid #ccc;
+
+    & > div {
+      flex: 1;
+    }
+
+    input[type=checkbox] {
+      width: 16px;
+      height: 16px;
+      appearance: none;
+      margin-right: 10px;
+      position: relative;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    input[type=checkbox]:after {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 16px;
+      height: 16px;
+      content: '';
+      border-radius: 3px;
+      background-color: #e4e4e4;
+      text-align: center;
+      padding: 0 2px;
+    }
   }
 
   .selected {
     color: #FA6400;
     justify-content: space-between;
 
-    .right {
+    input[type=checkbox]:after {
+      border-radius: 3px;
+      content: "✓";
+      font-size: 12px;
+      font-weight: bold;
+      color: #fff;
+      background-color: #fa6400;
+      text-align: center;
+      padding: 0 2px;
       display: flex;
+      height: 100%;
       align-items: center;
+      justify-content: center;
     }
   }
 }

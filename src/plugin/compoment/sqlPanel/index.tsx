@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import axios from 'axios';
 import Button from '../../../components/Button';
 import {exampleOpenSQLParamsFunc, exampleSQLParamsFunc, NO_PANEL_VISIBLE, SQL_PANEL_VISIBLE} from '../../../constant';
-import { choose } from '../../../icon';
 import Loading from '../loading';
 import { uuid } from '../../../utils';
 import Collapse from '../../../components/Collapse';
@@ -178,10 +177,12 @@ export default function SQLPanel({
           </div>
         </div>
         <div className={curCss.ct}>
-          {loading ? <Loading /> : originSQLList?.map((sql) => (
-	          sql.isOpen ? (
-		          <Collapse style={{ fontSize: '14px' }} headerClassName={{ height: '36px' }} header={sql.title} defaultFold={false}>
-			          {['SELECT'].map((key) => {
+          {loading ? <Loading /> : originSQLList?.map((sql) => {
+	          const selected = sql.isOpen ? false : (selectedSQLList.some(({ id }) => sql.id === id) || data.connectors.some(({ id }) => sql.id === id));
+	          
+	          return sql.isOpen ? (
+							<Collapse style={{ fontSize: '14px' }} headerClassName={{ height: '36px' }} header={sql.title} defaultFold={false}>
+								{['SELECT'].map((key) => {
 									// ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
 									const curId = sql.id + '_' + key;
 									const keyMap = {
@@ -190,39 +191,32 @@ export default function SQLPanel({
 										SELECT: '查询接口',
 										DELETE: '删除接口',
 									};
+									const selected = selectedSQLList.some(({ id }) => id === curId) || data.connectors.some(({ id }) => id === curId);
 									
 									return (
 										<div
 											key={curId}
 											style={{ marginLeft: '24px' }}
-											className={`${curCss.item} ${
-												selectedSQLList.some(({ id }) => id === curId) || data.connectors.some(({ id }) => id === curId)
-													? curCss.selected
-													: ''
-											}`}
+											className={`${curCss.item} ${selected ? curCss.selected : ''}`}
 											onClick={() => onItemClick({ ...sql, title: `${sql.entityName}的${keyMap[key]}`, id: curId, fileId: domainFile.id })}
 										>
+											<input type="checkbox" />
 											<div>{sql.entityName}的{keyMap[key]}</div>
-											<div className={curCss.right}>{choose}</div>
 										</div>
 									);
-			          })}
-		          </Collapse>
-		          ) : (
-		          <div
-			          key={sql.id}
-			          className={`${curCss.item} ${
-				          selectedSQLList.some(({ id }) => sql.id === id) || data.connectors.some(({ id }) => sql.id === id)
-					          ? curCss.selected
-					          : ''
-			          }`}
-			          onClick={() => onItemClick({ ...sql, fileId: domainFile.id })}
-		          >
-			          <div>{sql.title}</div>
-			          <div className={curCss.right}>{choose}</div>
-		          </div>
-	          )
-          ))}
+								})}
+							</Collapse>
+						) : (
+							<div
+								key={sql.id}
+								className={`${curCss.item} ${selected	? curCss.selected	: ''}`}
+								onClick={() => onItemClick({ ...sql, fileId: domainFile.id })}
+							>
+								<input type="checkbox" />
+								<div>{sql.title}</div>
+							</div>
+						);
+          })}
         </div>
       </div>
     ) : null,

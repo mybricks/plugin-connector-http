@@ -84,12 +84,23 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
       );
       allDataRef.current = data;
       const { outputKeys, excludeKeys } = sidebarContext.formModel;
-      const outputData = getDataByOutputKeys(data, outputKeys);
+      let outputData = getDataByExcludeKeys(getDataByOutputKeys(data, outputKeys), excludeKeys);
       sidebarContext.formModel.resultSchema = jsonToSchema(data);
-      setData(getDataByExcludeKeys(outputData, excludeKeys));
+	    let outputSchema = jsonToSchema(outputData);
+	
+	    /** 当标记单项时，自动返回单项对应的值 */
+	    if (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === '')) {
+		    try {
+			    if (Object.values(outputData).length === 1) {
+				    outputData = Object.values(outputData)[0];
+				    outputSchema = Object.values(outputSchema.properties)[0];
+			    }
+		    } catch {}
+	    }
+			
+      setData(outputData);
 
       formatSchema(sidebarContext.formModel.resultSchema);
-      const outputSchema = jsonToSchema(outputData);
       formatSchema(outputSchema);
       const inputSchema = jsonToSchema(params || {});
       formatSchema(inputSchema);
