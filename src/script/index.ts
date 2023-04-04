@@ -135,6 +135,15 @@ function getScript(serviceItem) {
               outputKeys.forEach((key) => {
                 setData(response, key.split('.'), outputData)
               });
+							
+	            /** 当标记单项时，自动返回单项对应的值 */
+							if (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === '')) {
+								try {
+									if (Object.values(outputData).length === 1) {
+										outputData = Object.values(outputData)[0];
+									}
+								} catch {}
+							}
             }
             then(outputData);
           })

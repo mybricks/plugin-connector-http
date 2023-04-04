@@ -118,6 +118,8 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const onKeysChange = useCallback((outputKeys, excludeKeys) => {
     const { resultSchema } = sidebarContext.formModel;
     try {
+			/** 当标记单项时，自动返回单项对应的值 */
+			let autoExtra = false;
       sidebarContext.formModel.outputKeys = outputKeys;
       let outputSchema: any = {};
       if (outputKeys.length === 0) {
@@ -145,6 +147,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
           });
         });
         if (Object.keys(outputSchema.properties).length === 1) {
+	        autoExtra = true;
           outputSchema =
             outputSchema.properties[Object.keys(outputSchema.properties)[0]];
         }
@@ -169,7 +172,11 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
       try {
         const cloneData = cloneDeep(allDataRef.current);
         const remanentData = getDataByExcludeKeys(cloneData, excludeKeys);
-        const res = getDataByOutputKeys(remanentData, outputKeys);
+        let res = getDataByOutputKeys(remanentData, outputKeys);
+				
+				if (autoExtra) {
+					res = Object.values(res)[0];
+				}
         if (res !== void 0) {
           setData(res);
         }
