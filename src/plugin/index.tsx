@@ -62,6 +62,7 @@ export default function Sidebar({
   ininitialValue = {},
 }: Iprops) {
   const ref = useRef<HTMLDivElement>(null);
+  const blurMap = useRef<Record<string, () => void>>({});
   const [searchValue, setSearchValue] = useState('');
   const [sidebarContext, setContext] = useState<any>({
 	  openFileSelector,
@@ -514,6 +515,7 @@ export default function Sidebar({
       <div
         ref={ref}
         className={`${css['sidebar-panel']} ${css['sidebar-panel-open']}`}
+        onClick={() => Object.values(blurMap.current).forEach(fn => fn())}
       >
         <div className={`${css['sidebar-panel-view']}`}>
           <div className={css['sidebar-panel-header']}>
@@ -524,6 +526,7 @@ export default function Sidebar({
               </div>
             </div>
             <Toolbar
+	            blurMap={blurMap.current}
               searchValue={searchValue}
               ctx={sidebarContext}
               setRender={setRender}

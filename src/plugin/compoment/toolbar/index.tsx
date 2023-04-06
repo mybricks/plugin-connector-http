@@ -1,13 +1,15 @@
-import css from './index.less';
 import { plus } from '../../../icon'
-import React, { useCallback } from 'react';
+import React from 'react';
 import {
 	DOMAIN_PANEL_VISIBLE,
 	KDEV_PANEL_VISIBLE, SQL_PANEL_VISIBLE,
 	TG_PANEL_VISIBLE,
 } from '../../../constant';
 import Dropdown from '../../../components/Dropdown';
-export default function ({ ctx, setRender }: any) {
+
+import css from './index.less';
+
+export default function ({ ctx, setRender, blurMap }: any) {
   const onAddClick = async (type = 'http') => {
 	  ctx.type = type;
 	  ctx.activeId = void 0;
@@ -56,7 +58,7 @@ export default function ({ ctx, setRender }: any) {
 	  );
 	
 	  return (
-		  <Dropdown dropDownStyle={ctx.panelVisible ? { right: 0 } : undefined} overlay={menu} trigger={['click']}>
+		  <Dropdown dropDownStyle={(ctx.templateVisible || ctx.panelVisible) ? { right: 0 } : undefined} onBlur={fn => blurMap['toolbar'] = fn} overlay={menu}>
 			  <div className={css.icon}>
 				  {plus}
 			  </div>

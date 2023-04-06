@@ -7,6 +7,7 @@
     "jsx": "react",
     "declaration": true, 
     "emitDeclarationOnly": true,
+    "moduleResolution": "node",
     "lib": [
       "dom",
       "es6",
