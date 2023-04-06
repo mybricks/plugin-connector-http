@@ -47,7 +47,7 @@ export function formatSchema(schema: any) {
 function setData(data, keys, val) {
   const len = keys.length;
   function dfs(res, index, val) {
-    if (index === len) {
+    if (!res || index === len) {
       return res;
     }
     const key = keys[index];
@@ -81,7 +81,7 @@ function setData(data, keys, val) {
 }
 
 export function getDataByOutputKeys(data, outputKeys) {
-  let outputData: any = {};
+  let outputData: any = Array.isArray(data) ? [] : {};
   if (outputKeys === void 0 || outputKeys.length === 0) {
     outputData = data;
   } else {
@@ -95,7 +95,7 @@ export function getDataByOutputKeys(data, outputKeys) {
 function del(data, keys) {
   const len = keys.length;
   function dfs(data, index) {
-    if (index === len) return;
+    if (!data || index === len) return;
     const key = keys[index];
     if (index === len - 1) {
       Reflect.deleteProperty(data, key);
@@ -103,7 +103,7 @@ function del(data, keys) {
     if (Array.isArray(data)) {
       data.forEach(item => { dfs(item, index)})
     } else {
-      dfs(data[key], index + 1);
+	    dfs(data[key], index + 1);
     }
   }
   dfs(data, 0)
@@ -291,7 +291,7 @@ function proAry(curSchema, ary) {
   if (ary.length > 0) {
 	  ary.forEach(item => {
 			const schema = JSON.parse(JSON.stringify(curSchema));
-		  proItem({ schema, val: item, fromAry: true });
+		  proItem({ schema, val: item, fromAry: true } as unknown as any);
 		  schemaList.push(schema);
 	  })
   }

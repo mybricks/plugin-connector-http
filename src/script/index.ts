@@ -16,7 +16,7 @@ function getScript(serviceItem) {
     function setData(data, keys, val) {
       const len = keys.length;
       function dfs(res, index, val) {
-        if (index === len) {
+        if (!res || index === len) {
           return res;
         }
         const key = keys[index];
@@ -51,7 +51,7 @@ function getScript(serviceItem) {
     function del(data, keys) {
       const len = keys.length;
       function dfs(data, index) {
-        if (index === len) return;
+        if (!data || index === len) return;
         const key = keys[index];
         if (index === len - 1) {
           Reflect.deleteProperty(data, key);
@@ -128,7 +128,7 @@ function getScript(serviceItem) {
             return response;
           })
           .then((response) => {
-            let outputData = {};
+	          let outputData: any = Array.isArray(response) ? [] : {};
             if (outputKeys === void 0 || outputKeys.length === 0) {
               outputData = response;
             } else {
@@ -137,13 +137,17 @@ function getScript(serviceItem) {
               });
 							
 	            /** 当标记单项时，自动返回单项对应的值 */
-							if (Array.isArray(outputKeys) && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
-								try {
-									if (Object.values(outputData).length === 1) {
-										outputData = Object.values(outputData)[0];
-									}
-								} catch {}
-							}
+	            if (Array.isArray(outputKeys) && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
+		            try {
+			            let cascadeOutputKeys = outputKeys.map(key => key.split('.'));
+			            while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
+				            outputData = Object.values(outputData)[0];
+				            cascadeOutputKeys.forEach(keys => keys.shift());
+			            }
+		            } catch(e) {
+									console.log('connector format data error', e);
+		            }
+	            }
             }
             then(outputData);
           })

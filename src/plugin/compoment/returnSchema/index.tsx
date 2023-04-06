@@ -89,7 +89,7 @@ export default function ReturnShema({
     const showCancel =
 	    key !== void 0 &&
       ((markedAsReturn && !root) ||
-      (keys.some((key: string) => xpath?.startsWith(key)) &&
+      ((keys.some((key: string) => xpath?.startsWith(key)) || !hasReturnSchema) &&
         !excludeKeys.some((key) => xpath.startsWith(key))));
 
     return (
