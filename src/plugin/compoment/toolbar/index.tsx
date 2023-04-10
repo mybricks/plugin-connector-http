@@ -58,7 +58,7 @@ export default function ({ ctx, setRender, blurMap }: any) {
 	  );
 	
 	  return (
-		  <Dropdown dropDownStyle={(ctx.templateVisible || ctx.panelVisible) ? { right: 0 } : undefined} onBlur={fn => blurMap['toolbar'] = fn} overlay={menu}>
+		  <Dropdown dropDownStyle={(ctx.templateVisible || ctx.panelVisible || !!document.querySelector('div[data-id=plugin-panel]')) ? { right: 0 } : undefined} onBlur={fn => blurMap['toolbar'] = fn} overlay={menu}>
 			  <div className={css.icon}>
 				  {plus}
 			  </div>

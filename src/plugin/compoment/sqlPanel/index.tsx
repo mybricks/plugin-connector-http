@@ -165,7 +165,7 @@ export default function SQLPanel({
 	
   return ReactDOM.createPortal(
 	  !!domainFile ? (
-      <div style={{ left: 361, ...style }} className={`${css['sidebar-panel-edit']}`}>
+      <div style={{ left: 361, ...style }} data-id="plugin-panel" className={`${css['sidebar-panel-edit']}`}>
         <div className={css['sidebar-panel-title']}>
           <div>领域接口选择</div>
           <div>

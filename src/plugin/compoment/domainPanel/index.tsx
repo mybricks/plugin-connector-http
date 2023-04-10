@@ -86,7 +86,7 @@ const DomainPanel: FC<DomainPanelProps> = props => {
 	
   return ReactDOM.createPortal(
 	  !!domainFile ? (
-			<div className={styles.sidebarPanelEdit} style={{ ...style, left: 361 }}>
+			<div className={styles.sidebarPanelEdit} data-id="plugin-panel" style={{ ...style, left: 361 }}>
 				<div className={styles.sidebarPanelTitle}>
 					<div>模型实体选择</div>
 					<div>
