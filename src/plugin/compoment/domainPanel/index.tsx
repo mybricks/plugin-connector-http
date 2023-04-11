@@ -98,25 +98,29 @@ const DomainPanel: FC<DomainPanelProps> = props => {
 					</div>
 				</div>
 				<div className={styles.ct}>
-					{loading ? <Loading /> : entityList.map(entity => {
-						const selected = selectedEntityList.some(({ id}) => entity.id === id)
-							|| data.connectors.some(({ id }) => entity.id === id);
-						
-						return (
-							<div
-								key={entity.id}
-								className={selected ? styles.selected : styles.item}
-								onClick={() => onItemClick({
-									...entity,
-									domainFileId: domainFile.id,
-									domainFileName: domainFile.name
-								})}
-							>
-								<input type="checkbox" />
-								<div>{entity.name}</div>
-							</div>
-						);
-					})}
+					{loading ? <Loading /> : (
+						entityList?.length
+							? entityList.map(entity => {
+									const selected = selectedEntityList.some(({ id}) => entity.id === id)
+										|| data.connectors.some(({ id }) => entity.id === id);
+									
+									return (
+										<div
+											key={entity.id}
+											className={selected ? styles.selected : styles.item}
+											onClick={() => onItemClick({
+												...entity,
+												domainFileId: domainFile.id,
+												domainFileName: domainFile.name
+											})}
+										>
+											<input type="checkbox" />
+											<div>{entity.name}</div>
+										</div>
+									);
+								})
+							: <div className={styles.empty}>暂无可添加的领域模型实体</div>
+					)}
 				</div>
 			</div>
 	  ) : null,
