@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 import Button from '../../../components/Button';
@@ -24,6 +24,8 @@ export default function SQLPanel({
   const [entityList, setEntityList] = useState([]);
   const [selectedSQLList, setSelectedSQLList] = useState([]);
   const [loading, setLoading] = useState(false);
+	const domainFileRef = useRef(null);
+	
   const onItemClick = useCallback((item) => {
     if (data.connectors.some(({ id }) => item.id === id)) return;
     setSelectedSQLList((sql) => {
@@ -42,6 +44,7 @@ export default function SQLPanel({
   }
 	const onSaveSQl = useCallback(async (sqlList: any[]) => {
 		setDomainFile(null);
+		domainFileRef.current = null;
 		
 		for(let l = sqlList.length, i=0; i<l; i++) {
 			const item = sqlList[i]
@@ -151,8 +154,13 @@ export default function SQLPanel({
 	
 	useEffect(() => {
 		if (sidebarContext.panelVisible & SQL_PANEL_VISIBLE) {
+			if (domainFileRef.current) {
+				domainFileRef.current = null;
+				setDomainFile(null);
+			}
 			sidebarContext.openFileSelector?.()
 			.then(file => {
+				domainFileRef.current = file;
 				setDomainFile(file);
 				
 				file && getBundle(file.id);
@@ -160,6 +168,9 @@ export default function SQLPanel({
 			.finally(() => {
 				setRender({ panelVisible: NO_PANEL_VISIBLE });
 			});
+		} else if (sidebarContext.panelVisible !== NO_PANEL_VISIBLE) {
+			domainFileRef.current = null;
+			setDomainFile(null);
 		}
 	}, [sidebarContext.panelVisible, setRender]);
 	

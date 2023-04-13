@@ -1,4 +1,4 @@
-import React, {CSSProperties, FC, useCallback, useEffect, useState} from 'react';
+import React, {CSSProperties, FC, useCallback, useEffect, useRef, useState} from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 import {DOMAIN_PANEL_VISIBLE, NO_PANEL_VISIBLE} from '../../../constant';
@@ -30,6 +30,7 @@ const DomainPanel: FC<DomainPanelProps> = props => {
 	const [entityList, setEntityList] = useState<Entity[]>([]);
 	const [selectedEntityList, setSelectedEntityList] = useState<Entity[]>([]);
 	const [loading, setLoading] = useState(false);
+	const domainFileRef = useRef(null);
 	
 	const onSave = useCallback(() => {
 		setSelectedEntityList((entityList => {
@@ -41,6 +42,7 @@ const DomainPanel: FC<DomainPanelProps> = props => {
 					script: JSON.stringify(item)
 				})
 			})
+			domainFileRef.current = null;
 			setDomainFile(null);
 			return [];
 		}));
@@ -72,8 +74,13 @@ const DomainPanel: FC<DomainPanelProps> = props => {
 	
 	useEffect(() => {
 		if (sidebarContext.panelVisible & DOMAIN_PANEL_VISIBLE) {
+			if (domainFileRef.current) {
+				domainFileRef.current = null;
+				setDomainFile(null);
+			}
 			sidebarContext.openFileSelector?.()
 			.then(file => {
+				domainFileRef.current = file;
 				setDomainFile(file);
 				
 				file && getBundle(file.id);
@@ -81,6 +88,9 @@ const DomainPanel: FC<DomainPanelProps> = props => {
 			.finally(() => {
 				setRender({ panelVisible: NO_PANEL_VISIBLE });
 			});
+		} else if (sidebarContext.panelVisible !== NO_PANEL_VISIBLE) {
+			domainFileRef.current = null;
+			setDomainFile(null);
 		}
 	}, [sidebarContext.panelVisible, setRender]);
 	
