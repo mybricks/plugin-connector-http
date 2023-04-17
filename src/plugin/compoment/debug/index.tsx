@@ -183,15 +183,17 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 		  } else if (outputKeys.length === 1 && outputKeys[0] === '') {
 			  outputSchema = { type: 'any' };
 		  } else {
-			  outputSchema = resultSchema.type === 'array' ? { type: 'array', items: { type: 'object', properties: {} } } : { type: 'object', properties: {} };
+			  outputSchema = resultSchema.type === 'array'
+				  ? { type: 'array', items: (resultSchema.items?.type === 'object' ? { type: 'object', properties: {} } : (resultSchema.items?.type === 'array' ? { type: 'array', items: {} } : { type: resultSchema.items?.type })) }
+				  : { type: 'object', properties: {} };
 				
 			  outputKeys.forEach((key: string) => {
-				  let subSchema = outputSchema.properties;
-				  let subResultSchema = resultSchema.properties;
+				  let subSchema = outputSchema.properties || outputSchema.items?.properties || outputSchema.items?.items;
+				  let subResultSchema = resultSchema.properties || resultSchema.items?.properties || resultSchema.items?.items;
 				  const keys = key.split('.');
 					
 				  keys.forEach((field, index) => {
-						if (!subResultSchema || !subResultSchema[field]) {
+						if (!subSchema || !subResultSchema || !subResultSchema[field]) {
 							return;
 						}
 						
@@ -201,11 +203,14 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 							const { type } = subResultSchema[field];
 							
 							if (type === 'array') {
-								subSchema[field] = { ...subResultSchema[field], items: { type: 'object', properties: {} } };
+								subSchema[field] = subSchema[field] || {
+									...subResultSchema[field],
+									items: (subResultSchema[field].items.type === 'object' ? { type: 'object', properties: {} } : (subResultSchema[field].items.type === 'array' ? { type: 'array', items: {} } : { type: subResultSchema[field].items.type }))
+								};
 								subSchema = subSchema[field].items.properties;
 								subResultSchema = subResultSchema[field].items.properties;
 							} else if (type === 'object') {
-								subSchema[field] = { ...subResultSchema[field], properties: {} };
+								subSchema[field] = subSchema[field] || { ...subResultSchema[field], properties: {} };
 								subSchema = subSchema[field].properties;
 								subResultSchema = subResultSchema[field].properties;
 							} else {

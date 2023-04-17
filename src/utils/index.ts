@@ -307,7 +307,7 @@ const mergeSchemaTypeBySchemaList = (schema, schemaList) => {
 	for (let index	= 0; index < schemaList.length; index++){
 		const item = schemaList[index];
 		
-		if (!item) {
+		if (!item || !Object.keys(item).length) {
 			continue;
 		}
 		
@@ -333,15 +333,15 @@ const mergeSchemaTypeBySchemaList = (schema, schemaList) => {
 					if ((!property && item.properties[key]) || (property.type === 'unknown' && item.properties[key].type !== 'unknown')) {
 						schema.properties[key] = item.properties[key];
 					} else {
-						mergeSchemaTypeBySchemaList(schema.properties[key], schemaList.map(item => item.properties[key]));
+						mergeSchemaTypeBySchemaList(schema.properties[key], schemaList.map(item => item.properties?.[key]));
 					}
 				})
 			} else if (schema.type === 'array' && item.type === 'array') {
-				if (!schema.properties.items) {
-					schema.properties.items = {};
+				if (!schema.items) {
+					schema.items = {};
 				}
 				
-				mergeSchemaTypeBySchemaList(schema.properties['items'], schemaList.map(item => item.properties.items));
+				mergeSchemaTypeBySchemaList(schema.items, schemaList.map(item => item.items));
 			}
 		}
 	}
