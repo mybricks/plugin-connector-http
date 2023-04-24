@@ -341,7 +341,7 @@ const mergeSchemaTypeBySchemaList = (schema, schemaList) => {
 					schema.items = {};
 				}
 				
-				mergeSchemaTypeBySchemaList(schema.items, schemaList.map(item => item.items));
+				mergeSchemaTypeBySchemaList(schema.items, schemaList.map(item => item?.items || {}));
 			}
 		}
 	}
