@@ -90,6 +90,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 	    sidebarContext.formModel.resultSchema = resultSchema;
 	
 	    outputKeys = outputKeys
+	      .filter(Boolean)
 				.map(key => key.split('.'))
 				.filter(keys => {
 					let schema = resultSchema.properties || resultSchema.items?.properties;
@@ -108,6 +109,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 				})
 				.map(keys => keys.join('.'));
 	    excludeKeys = excludeKeys
+	      .filter(Boolean)
 		    .map(key => key.split('.'))
 		    .filter(keys => {
 			    let schema = resultSchema.properties || resultSchema.items?.properties;
@@ -129,7 +131,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 	    let outputData = getDataByExcludeKeys(getDataByOutputKeys(data, outputKeys), excludeKeys);
 	    let outputSchema = jsonToSchema(outputData);
 	    /** 当标记单项时，自动返回单项对应的值 */
-	    if (Array.isArray(outputKeys) && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
+	    if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
 		    try {
 					let cascadeOutputKeys = [...outputKeys].map(key => key.split('.'));
 			    while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {

@@ -137,7 +137,7 @@ function getScript(serviceItem) {
               });
 							
 	            /** 当标记单项时，自动返回单项对应的值 */
-	            if (Array.isArray(outputKeys) && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
+	            if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
 		            try {
 			            let cascadeOutputKeys = outputKeys.map(key => key.split('.'));
 			            while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
