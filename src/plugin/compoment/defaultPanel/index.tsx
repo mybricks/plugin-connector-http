@@ -295,7 +295,7 @@ export default function DefaultPanel({
             </div>
           </>
           <div className={css.ct}>
-            <Collapse key={Math.random()} header='接口调试' defaultFold={false}>
+            <Collapse key={Math.random()} header='接口调试' defaultFold={false} contentStyle={{ display: 'flex', 'flexDirection': 'column' }}>
               <DebugForm
                 sidebarContext={sidebarContext}
                 setRender={setRender}

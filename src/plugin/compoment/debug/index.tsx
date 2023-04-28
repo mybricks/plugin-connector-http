@@ -352,7 +352,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
         </>
       ) : (
         <>
-          <FormItem label='返回数据'>
+          <FormItem label='返回数据' contentStyle={{ overflowX: 'auto' }}>
             {sidebarContext.formModel.resultSchema ? (
               <Button
                 style={{ margin: 0, marginBottom: 6 }}

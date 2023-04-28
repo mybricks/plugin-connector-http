@@ -295,7 +295,7 @@ function proAry(curSchema, ary) {
 		  schemaList.push(schema);
 	  })
   }
-	mergeSchemaTypeBySchemaList(curSchema, schemaList);
+	mergeSchemaTypeBySchemaList(curSchema, schemaList.filter(Boolean));
 }
 
 const mergeSchemaTypeBySchemaList = (schema, schemaList) => {
@@ -304,7 +304,7 @@ const mergeSchemaTypeBySchemaList = (schema, schemaList) => {
 	}
 	
 	let curSchema = null;
-	for (let index	= 0; index < schemaList.length; index++){
+	for (let index	= 0; index < schemaList.length; index++) {
 		const item = schemaList[index];
 		
 		if (!item || !Object.keys(item).length) {
@@ -332,18 +332,34 @@ const mergeSchemaTypeBySchemaList = (schema, schemaList) => {
 					
 					if ((!property && item.properties[key]) || (property.type === 'unknown' && item.properties[key].type !== 'unknown')) {
 						schema.properties[key] = item.properties[key];
-					} else {
-						mergeSchemaTypeBySchemaList(schema.properties[key], schemaList.map(item => item.properties?.[key]));
 					}
-				})
+				});
 			} else if (schema.type === 'array' && item.type === 'array') {
-				if (!schema.items) {
-					schema.items = {};
+				if (!schema.items || !Object.keys(schema.items).length) {
+					schema.items = item.items || {};
 				}
-				
-				mergeSchemaTypeBySchemaList(schema.items, schemaList.map(item => item?.items || {}));
 			}
 		}
+	}
+	
+	if (schema.type === 'object') {
+		Object.keys(schema.properties || {}).forEach((key) => {
+			if (schema.properties?.[key]?.type === 'object') {
+				mergeSchemaTypeBySchemaList(schema.properties[key], schemaList.filter(Boolean).map(item => item?.properties?.[key]));
+			} else if (schema.properties?.[key]?.type === 'array') {
+				if (!schema.properties?.[key]?.items) {
+					schema.properties[key].items = {};
+				}
+				
+				mergeSchemaTypeBySchemaList(schema.properties[key], schemaList.filter(Boolean).map(item => item?.properties?.[key]));
+			}
+		});
+	} else if (schema.type === 'array') {
+		if (!schema.items) {
+			schema.items = {};
+		}
+		
+		mergeSchemaTypeBySchemaList(schema.items, schemaList.filter(Boolean).map(item => item?.items || {}));
 	}
 }
 
