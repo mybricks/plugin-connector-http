@@ -18,8 +18,15 @@ const defaultFn = (options: IOptions, ...args: any) => ({
   ...args,
 });
 
+const httpRegExp = new RegExp('^(http|https)://');
+
 export function call(
-  connector: { id: string; script: string; [key: string]: any },
+  connector: {
+    id: string;
+    script: string;
+    useProxy?: boolean;
+    [key: string]: any
+  },
   params: any,
   config?: IConfig
 ) {
@@ -33,6 +40,14 @@ export function call(
         {
           ajax(options: IOptions) {
             const opts = before({ ...options });
+            const { url } = opts;
+
+            if (connector.useProxy && httpRegExp.test(url)) {
+              return axios({url: '/paas/api/proxy', method: 'post', data: opts || options}).then((res: any) => res.data).catch(error => {
+                reject(error)
+              })
+            }
+
             return axios(opts || options).then((res: any) => res.data).catch(error => {
               reject(error)
             })
