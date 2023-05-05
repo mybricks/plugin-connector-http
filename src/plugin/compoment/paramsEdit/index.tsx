@@ -153,7 +153,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
             <div className={css.header}>
               <p className={css.column1}>字段名</p>
               <p className={css.column2}>类型</p>
-              <p className={css.column3}>默认值</p>
+              <p className={css.column3}>调试值</p>
               <p className={css.column4}>操作</p>
             </div>
             <div className={css.content}>{processItem(value, value)}</div>

@@ -87,7 +87,7 @@ export default function Sidebar({
     enableRenderPortal: true,
     addActions: addActions
       ? addActions.some(({ type }: any) => type === 'defalut')
-        ? addActions 
+        ? addActions
         : [{ type: 'http', title: '普通接口' }].concat(addActions)
       : [{ type: 'http', title: '普通接口' }],
     connector: {
@@ -540,7 +540,7 @@ export default function Sidebar({
 		            .map((item) => {
 		              const expand = sidebarContext.expandId === item.id;
 		              item.updateTime = formatDate(item.updateTime || item.createTime);
-		              const { useMock } = item.content;
+		              const { useMock, type } = item.content;
 		              return (
 		                <div key={item.id}>
 		                  <div
@@ -571,7 +571,7 @@ export default function Sidebar({
 		                          className={css.tag}
 		                          onClick={(e) => onServiceItemTitleClick(e, item)}
 		                        >
-		                          {useMock ? 'Mock' : '接口'}
+		                          {useMock ? 'Mock' : (sidebarContext.addActions.length > 1 ? (type === 'http-sql' ? '领域接口' : '普通接口') : '接口')}
 		                        </div>
 		                        <div className={css.name}>
 		                          <span>{item.content.title}</span>
