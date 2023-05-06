@@ -10,6 +10,64 @@ import Collapse from '../../../components/Collapse';
 import css from '../../../../src/style-cssModules.less';
 import curCss from './index.less';
 
+/** 字段类型 */
+enum FieldBizType {
+	STRING = 'string',
+	NUMBER = 'number',
+	DATETIME = 'datetime',
+	/** 超链接 */
+	HREF = 'href',
+	/** 电话 */
+	PHONE = 'phone',
+	/** 邮箱 */
+	EMAIL = 'email',
+	/** 图片 */
+	IMAGE = 'image',
+	/** 附件 */
+	APPEND_FILE = 'appendFile',
+	/** 枚举 */
+	ENUM = 'enum',
+	/** 外键，关联其他表 */
+	RELATION = 'relation',
+	/** 映射其他表 */
+	MAPPING = 'mapping',
+	/** 系统表 */
+	SYS_USER = 'SYS_USER',
+	/** 系统表 */
+	SYS_USER_CREATOR = 'SYS_USER.CREATOR',
+	/** 系统表 */
+	SYS_USER_UPDATER = 'SYS_USER.UPDATER',
+}
+const getSchemaTypeByFieldType = (field) => {
+	switch (field.bizType) {
+		case FieldBizType.ENUM:
+			return 'enum';
+		case FieldBizType.DATETIME:
+			return field.showFormat ? 'string' : 'number';
+		case FieldBizType.STRING:
+			return 'string';
+		case FieldBizType.NUMBER:
+			return 'number';
+		case FieldBizType.HREF:
+			return 'string';
+		case FieldBizType.PHONE:
+			return 'string';
+		case FieldBizType.EMAIL:
+			return 'string';
+		case FieldBizType.IMAGE:
+			return 'string';
+		case FieldBizType.APPEND_FILE:
+			return 'string';
+		case FieldBizType.RELATION:
+			return 'number';
+		case FieldBizType.SYS_USER:
+			return 'number';
+		case FieldBizType.SYS_USER_CREATOR:
+			return 'number';
+		case FieldBizType.SYS_USER_UPDATER:
+			return 'number';
+	}
+};
 export default function SQLPanel({
   sidebarContext,
   style,
@@ -53,10 +111,30 @@ export default function SQLPanel({
 			const entityId = item.id.replace('_SELECT', '');
 			const entity = isOpen ? entityList.find(entity => entity.id === entityId) : null;
 			
-			const inputSchema = item.paramAry?.reduce((obj, cur) => {
-				obj[cur.name] = { type: cur.type };
-				return obj;
-			}, {});
+			const inputSchema = item.inputSchema || { type: 'any' };
+			let outputSchema = item.outputSchema || { type: 'any' };
+			
+			if (isOpen) {
+				outputSchema = { type: 'array', items: { type: 'object', properties: {} } };
+				
+				try {
+					item.originEntity?.fieldAry
+					.filter(field => field.bizType !== 'mapping' && !field.isPrivate && ['string', 'number', 'datetime', 'relation', 'SYS_USER', 'SYS_USER.CREATOR', 'SYS_USER.UPDATER'].includes(field.bizType))
+					.forEach(field => {
+						if (field.mapping?.entity?.fieldAry.length) {
+							outputSchema.items.properties[field.name] = { type: 'object', properties: {} };
+							field.mapping.entity.fieldAry.forEach(mappingField => {
+								outputSchema.items.properties[field.name].properties[mappingField.name] = { type: getSchemaTypeByFieldType(mappingField) };
+							});
+						} else {
+							outputSchema.items.properties[field.name] = { type: getSchemaTypeByFieldType(field) };
+						}
+					});
+				} catch (e) {
+					console.log('parse outputSchema error', e);
+				}
+			}
+			
 			const debugParams = item.paramAry?.map((item) => ({
 				id: uuid(),
 				name: item.title,
@@ -76,21 +154,14 @@ export default function SQLPanel({
 							type: 'string'
 		        }
 	        },
-        } :{
-          type: 'object',
-          properties: {
-            ...inputSchema,
-          },
-        },
+        } : inputSchema,
         outputSchema: {
           type: 'object',
           properties: {
             code: {
               type: 'number',
             },
-            data: {
-              type: 'object',
-            },
+            data: outputSchema,
             msg: {
               type: 'string',
             },
@@ -102,9 +173,7 @@ export default function SQLPanel({
             code: {
               type: 'number',
             },
-            data: {
-              type: 'object',
-            },
+	          data: outputSchema,
             msg: {
               type: 'string',
             },
@@ -144,7 +213,7 @@ export default function SQLPanel({
 				if (res.data.code === 1) {
 					setOriginSQList([
 						...res.data.data.service,
-						...res.data.data.entityAry.filter(entity => entity.isOpen).map(entity => ({ id: entity.id, entityName: entity.name, title: `${entity.name}的领域服务`, isOpen: true }))
+						...res.data.data.entityAry.filter(entity => entity.isOpen).map(entity => ({ id: entity.id, entityName: entity.name, title: `${entity.name}的领域服务`, originEntity: entity,  isOpen: true }))
 					]);
 					setEntityList(res.data.data.entityAry);
 				}
