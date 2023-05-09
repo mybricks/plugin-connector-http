@@ -30,7 +30,6 @@
   padding: 3px 12px 3px 12px;
   flex: 1;
   overflow: auto;
-  cursor: pointer;
   user-select: none;
 
   input[type=checkbox] {
@@ -57,17 +56,7 @@
   }
 
   .selected {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ccc;
     color: #FA6400;
-    margin-left: 12px;
-    line-height: 36px;
-
-    & > div {
-      flex: 1;
-    }
 
     input[type=checkbox]:after {
       border-radius: 3px;
@@ -85,15 +74,28 @@
   }
 
   .item {
+    cursor: pointer;
     line-height: 36px;
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid #ccc;
     align-items: center;
     margin-left: 12px;
 
     & > div {
       flex: 1;
+    }
+  }
+
+  .item + .item {
+    border-top: 1px dashed #ccc;
+  }
+
+  .defaultSelected {
+    opacity: .5;
+    cursor: default;
+
+    input[type=checkbox] {
+      cursor: default;
     }
   }
 }

@@ -2,15 +2,18 @@
   padding: 3px 12px 3px 12px;
   flex: 1;
   overflow: auto;
-  cursor: pointer;
   user-select: none;
+
+  .item + .item {
+    border-top: 1px dashed #ccc;
+  }
 
   .item {
     display: flex;
     align-items: center;
     margin-left: 12px;
     line-height: 36px;
-    border-bottom: 1px solid #ccc;
+    cursor: pointer;
 
     & > div {
       flex: 1;
@@ -57,6 +60,15 @@
       height: 100%;
       align-items: center;
       justify-content: center;
+    }
+  }
+
+  .defaultSelected {
+    opacity: .5;
+    cursor: default;
+
+    input[type=checkbox] {
+      cursor: default;
     }
   }
 

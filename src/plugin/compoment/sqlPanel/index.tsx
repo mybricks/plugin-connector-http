@@ -232,6 +232,8 @@ export default function SQLPanel({
 				domainFileRef.current = file;
 				setDomainFile(file);
 				
+				setOriginSQList([]);
+				setEntityList([]);
 				file && getBundle(file.id);
 			})
 			.finally(() => {
@@ -259,47 +261,67 @@ export default function SQLPanel({
         <div className={curCss.ct}>
           {loading ? <Loading /> : (
 	          originSQLList?.length
-		          ? originSQLList?.map((sql) => {
-			          const selected = sql.isOpen ? false : (selectedSQLList.some(({ id }) => sql.id === id) || data.connectors.some(({ id }) => sql.id === id));
-			
-			          return sql.isOpen ? (
-				          <Collapse style={{ fontSize: '14px' }} headerClassName={{ height: '36px' }} header={sql.title} defaultFold={false}>
-					          {['SELECT'].map((key) => {
-						          // ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
-						          const curId = sql.id + '_' + key;
-						          const keyMap = {
-							          INSERT: '创建接口',
-							          UPDATE: '更新接口',
-							          SELECT: '查询接口',
-							          DELETE: '删除接口',
-						          };
-						          const selected = selectedSQLList.some(({ id }) => id === curId) || data.connectors.some(({ id }) => id === curId);
-						
-						          return (
-							          <div
-								          key={curId}
-								          style={{ marginLeft: '24px' }}
-								          className={`${curCss.item} ${selected ? curCss.selected : ''}`}
-								          onClick={() => onItemClick({ ...sql, title: `${sql.entityName}的${keyMap[key]}`, id: curId, fileId: domainFile.id })}
-							          >
-								          <input type="checkbox" />
-								          <div>{sql.entityName}的{keyMap[key]}</div>
-							          </div>
-						          );
-					          })}
-				          </Collapse>
-			          ) : (
-				          <div
-					          key={sql.id}
-					          className={`${curCss.item} ${selected	? curCss.selected	: ''}`}
-					          onClick={() => onItemClick({ ...sql, fileId: domainFile.id })}
-				          >
-					          <input type="checkbox" />
-					          <div>{sql.title}</div>
-				          </div>
-			          );
-		          })
-		          : <div className={curCss.empty}>暂无可添加的领域接口</div>
+		          ? (
+								<>
+									{
+										originSQLList?.filter(sql => !sql.isOpen).map((sql) => {
+											const defaultSelected = data.connectors.some(({ id }) => sql.id === id);
+											const selected = selectedSQLList.some(({ id }) => sql.id === id);
+											
+											return (
+												<div
+													key={sql.id}
+													className={`${curCss.item} ${(defaultSelected || selected)	? curCss.selected	: ''} ${defaultSelected ? curCss.defaultSelected : ''}`}
+													onClick={defaultSelected ? undefined : () => onItemClick({ ...sql, fileId: domainFile.id })}
+												>
+													<input type="checkbox" />
+													<div>{sql.title}</div>
+												</div>
+											);
+										})
+									}
+									{originSQLList?.filter(sql => sql.isOpen).length ? (
+										<>
+											<div style={{ fontSize: '14px', marginLeft: '12px' }}>
+												<div className={css.dividerText}>以下 服务接口 来自开启领域服务后的模型实体</div>
+												<div className={css.dashedDivider}></div>
+											</div>
+											{
+												originSQLList?.filter(sql => sql.isOpen).map((sql) => {
+													return (
+														<Collapse style={{ fontSize: '14px', marginLeft: '12px' }} headerClassName={{ height: '36px' }} header={sql.title} defaultFold={false}>
+															{['SELECT'].map((key) => {
+																// ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+																const curId = sql.id + '_' + key;
+																const keyMap = {
+																	INSERT: '创建接口',
+																	UPDATE: '更新接口',
+																	SELECT: '查询接口',
+																	DELETE: '删除接口',
+																};
+																const defaultSelected = data.connectors.some(({ id }) => id === curId);
+																const selected = selectedSQLList.some(({ id }) => id === curId);
+																
+																return (
+																	<div
+																		key={curId}
+																		style={{ marginLeft: '24px' }}
+																		className={`${curCss.item} ${(defaultSelected || selected) ? curCss.selected : ''} ${defaultSelected ? curCss.defaultSelected : ''}`}
+																		onClick={defaultSelected ? undefined : () => onItemClick({ ...sql, title: `${sql.entityName}的${keyMap[key]}`, id: curId, fileId: domainFile.id })}
+																	>
+																		<input type="checkbox" />
+																		<div>{sql.entityName}的{keyMap[key]}</div>
+																	</div>
+																);
+															})}
+														</Collapse>
+													);
+												})
+											}
+										</>
+									) : null}
+								</>
+		          ) : <div className={curCss.empty}>暂无可添加的领域接口</div>
           )}
         </div>
       </div>

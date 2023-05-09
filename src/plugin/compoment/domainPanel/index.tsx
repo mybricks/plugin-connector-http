@@ -82,6 +82,7 @@ const DomainPanel: FC<DomainPanelProps> = props => {
 			.then(file => {
 				domainFileRef.current = file;
 				setDomainFile(file);
+				setEntityList([]);
 				
 				file && getBundle(file.id);
 			})
@@ -111,13 +112,13 @@ const DomainPanel: FC<DomainPanelProps> = props => {
 					{loading ? <Loading /> : (
 						entityList?.length
 							? entityList.map(entity => {
-									const selected = selectedEntityList.some(({ id}) => entity.id === id)
-										|| data.connectors.some(({ id }) => entity.id === id);
+									const defaultSelected = data.connectors.some(({ id }) => entity.id === id);
+									const selected = selectedEntityList.some(({ id}) => entity.id === id);
 									
 									return (
 										<div
 											key={entity.id}
-											className={selected ? styles.selected : styles.item}
+											className={`${styles.item} ${selected || defaultSelected ? styles.selected : ''} ${defaultSelected ? styles.defaultSelected : ''}`}
 											onClick={() => onItemClick({
 												...entity,
 												domainFileId: domainFile.id,

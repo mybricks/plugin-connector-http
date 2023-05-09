@@ -579,6 +579,7 @@ export default function Sidebar({
 		                      </div>
 		                      <div className={css['sidebar-panel-list-item__right']}>
 		                        <div
+			                        data-mybricks-tip="编辑"
 		                          ref={clickRef}
 		                          className={css.action}
 		                          onClick={() => onEditItem(item)}
@@ -586,12 +587,14 @@ export default function Sidebar({
 		                          {Icons.edit}
 		                        </div>
 		                        <div
+			                        data-mybricks-tip="复制"
 		                          className={css.action}
 		                          onClick={() => onCopyItem(item)}
 		                        >
 		                          {Icons.copy}
 		                        </div>
 		                        <div
+			                        data-mybricks-tip="删除"
 		                          className={css.action}
 		                          onClick={() => onRemoveItem(item)}
 		                        >
