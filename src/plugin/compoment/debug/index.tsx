@@ -172,7 +172,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
     }
   }, []);
 
-  const onKeysChange = useCallback((outputKeys, excludeKeys) => {
+  const onKeysChange = useCallback((outputKeys = [], excludeKeys = []) => {
     const { resultSchema } = sidebarContext.formModel;
 		
 	  try {
