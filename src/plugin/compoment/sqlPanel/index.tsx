@@ -68,6 +68,26 @@ const getSchemaTypeByFieldType = (field) => {
 			return 'number';
 	}
 };
+const getParamsFromSchema = (schema, params) => {
+	if (schema.type === 'object' || schema.type === 'array') {
+		const properties = schema.properties || schema.items?.properties || {};
+		Object.keys(properties).forEach((key) => {
+			const item: any = { id: uuid(), name: key, type: properties[key].type };
+			const isNested = properties[key].type === 'object' || properties[key].type === 'array';
+			if (isNested) {
+				item.children = [];
+			}
+			
+			params.push(item);
+			
+			if (isNested) {
+				getParamsFromSchema((properties[key] || properties[key].items) || {}, item.children);
+			}
+		});
+	} else {
+		params.push({ id: uuid(), name: schema.name, type: schema.type });
+	}
+};
 export default function SQLPanel({
   sidebarContext,
   style,
@@ -99,20 +119,21 @@ export default function SQLPanel({
   const onSave = () => {
     onSaveSQl(selectedSQLList).catch(e => console.log(e));
     setSelectedSQLList([]);
-  }
+  };
+	
 	const onSaveSQl = useCallback(async (sqlList: any[]) => {
 		setDomainFile(null);
 		domainFileRef.current = null;
 		
 		for(let l = sqlList.length, i=0; i<l; i++) {
-			const item = sqlList[i]
+			const item: any = sqlList[i];
 			const fileId = item.fileId;
 			const isOpen = item.id.endsWith('_SELECT');
 			const entityId = item.id.replace('_SELECT', '');
 			const entity = isOpen ? entityList.find(entity => entity.id === entityId) : null;
 			
-			const inputSchema = item.inputSchema || { type: 'any' };
-			let outputSchema = item.outputSchema || { type: 'any' };
+			const inputSchema: any = item.inputSchema || { type: 'any' };
+			let outputSchema: any = item.outputSchema || { type: 'any' };
 			
 			if (isOpen) {
 				outputSchema = { type: 'array', items: { type: 'object', properties: {} } };
@@ -121,7 +142,7 @@ export default function SQLPanel({
 					item.originEntity?.fieldAry
 					.filter(field => field.bizType !== 'mapping' && !field.isPrivate && ['string', 'number', 'datetime', 'relation', 'SYS_USER', 'SYS_USER.CREATOR', 'SYS_USER.UPDATER'].includes(field.bizType))
 					.forEach(field => {
-						if (field.mapping?.entity?.fieldAry.length) {
+						if ((field.mapping as any)?.entity?.fieldAry.length) {
 							outputSchema.items.properties[field.name] = { type: 'object', properties: {} };
 							field.mapping.entity.fieldAry.forEach(mappingField => {
 								outputSchema.items.properties[field.name].properties[mappingField.name] = { type: getSchemaTypeByFieldType(mappingField) };
@@ -135,12 +156,12 @@ export default function SQLPanel({
 				}
 			}
 			
-			const debugParams = item.paramAry?.map((item) => ({
-				id: uuid(),
-				name: item.title,
-				type: item.type,
-				defaultValue: item.debugValue,
-			}));
+			let debugParams = [];
+			if (isOpen) {
+				debugParams = [{ id: uuid(), name: 'keyword', type: 'string' }];
+			} else {
+				getParamsFromSchema(inputSchema, debugParams);
+			}
 			
 			updateService('create', {
         id: item.id,
@@ -283,7 +304,7 @@ export default function SQLPanel({
 									{originSQLList?.filter(sql => sql.isOpen).length ? (
 										<>
 											<div style={{ fontSize: '14px', marginLeft: '12px' }}>
-												<div className={css.dividerText}>以下 服务接口 来自开启领域服务后的模型实体</div>
+												<div className={css.dividerText}>以下 服务接口 来自开放领域服务后的模型实体</div>
 												<div className={css.dashedDivider}></div>
 											</div>
 											{

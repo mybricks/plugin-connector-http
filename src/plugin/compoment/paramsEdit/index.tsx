@@ -102,6 +102,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
           >
             <option label={'字符'} value={'string'} />
             <option label={'数字'} value={'number'} />
+            <option label={'布尔'} value={'boolean'} />
             <option label={'对象'} value={'object'} />
             <option label={'列表'} value={'array'} />
           </select>
