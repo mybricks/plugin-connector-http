@@ -31,12 +31,12 @@ export const exampleSQLParamsFunc = `export default function ({ params, data, he
 `;
 
 /** 领域服务的模板 */
-export const exampleOpenSQLParamsFunc = `export default function ({ params, data, headers, url, method }) {
+export const exampleSelectOpenSQLParamsFunc = `export default function ({ params, data, headers, url, method }) {
   const domainInfo = {
     serviceId: '__serviceId__',
     fileId: '__fileId__'
   }
-  const fields = __fields__;
+  const fields = (Array.isArray(data.fields) && data.fields.length ? data.fields : null) || __fields__;
   const query = data.keyword ? fields.reduce((pre, item) => {
     return { ...pre, [item.name]: { operator: 'LIKE', value: data.keyword } };
   }, {}) : undefined;
@@ -44,9 +44,28 @@ export const exampleOpenSQLParamsFunc = `export default function ({ params, data
   // 设置请求query、请求体、请求头
   return { params, data: {
     params: {
+			...data,
       query,
 			fields,
-			action: 'SELECT'
+			action: '__action__'
+    },
+    ...domainInfo,
+  }, headers, url, method };
+ }
+`;
+
+/** 领域服务的模板 */
+export const exampleOpenSQLParamsFunc = `export default function ({ params, data, headers, url, method }) {
+  const domainInfo = {
+    serviceId: '__serviceId__',
+    fileId: '__fileId__'
+  }
+  
+  // 设置请求query、请求体、请求头
+  return { params, data: {
+    params: {
+      query: data,
+			action: '__action__'
     },
     ...domainInfo,
   }, headers, url, method };

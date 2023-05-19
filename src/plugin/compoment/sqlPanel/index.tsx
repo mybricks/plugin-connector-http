@@ -2,7 +2,13 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 import Button from '../../../components/Button';
-import {exampleOpenSQLParamsFunc, exampleSQLParamsFunc, NO_PANEL_VISIBLE, SQL_PANEL_VISIBLE} from '../../../constant';
+import {
+	exampleOpenSQLParamsFunc,
+	exampleSelectOpenSQLParamsFunc,
+	exampleSQLParamsFunc,
+	NO_PANEL_VISIBLE,
+	SQL_PANEL_VISIBLE
+} from '../../../constant';
 import Loading from '../loading';
 import { uuid } from '../../../utils';
 import Collapse from '../../../components/Collapse';
@@ -93,7 +99,6 @@ export default function SQLPanel({
   style,
   data,
   updateService,
-  serviceListUrl,
   callServiceUrl,
   setRender,
 }: any) {
@@ -128,37 +133,131 @@ export default function SQLPanel({
 		for(let l = sqlList.length, i=0; i<l; i++) {
 			const item: any = sqlList[i];
 			const fileId = item.fileId;
-			const isOpen = item.id.endsWith('_SELECT');
-			const entityId = item.id.replace('_SELECT', '');
-			const entity = isOpen ? entityList.find(entity => entity.id === entityId) : null;
+			const isOpen = !!item.id.match(/.*_(SELECT|UPDATE|INSERT|DELETE)$/);
+			const entityId = item.id.replace(/(?!=.*)_(SELECT|UPDATE|INSERT|DELETE)$/, '');
+			const action = item.id.replace(/.*_(?=(SELECT|UPDATE|INSERT|DELETE)$)/, '');
 			
-			const inputSchema: any = item.inputSchema || { type: 'any' };
+			let inputSchema: any = item.inputSchema || { type: 'any' };
 			let outputSchema: any = item.outputSchema || { type: 'any' };
-			
-			if (isOpen) {
-				outputSchema = { type: 'array', items: { type: 'object', properties: {} } };
-				
-				try {
-					item.originEntity?.fieldAry
-					.filter(field => field.bizType !== 'mapping' && !field.isPrivate && ['string', 'number', 'datetime', 'relation', 'SYS_USER', 'SYS_USER.CREATOR', 'SYS_USER.UPDATER'].includes(field.bizType))
-					.forEach(field => {
-						if ((field.mapping as any)?.entity?.fieldAry.length) {
-							outputSchema.items.properties[field.name] = { type: 'object', properties: {} };
-							field.mapping.entity.fieldAry.forEach(mappingField => {
-								outputSchema.items.properties[field.name].properties[mappingField.name] = { type: getSchemaTypeByFieldType(mappingField) };
-							});
-						} else {
-							outputSchema.items.properties[field.name] = { type: getSchemaTypeByFieldType(field) };
-						}
-					});
-				} catch (e) {
-					console.log('parse outputSchema error', e);
-				}
-			}
-			
 			let debugParams = [];
+			const fields: Array<{ name: string }> = [];
+			
 			if (isOpen) {
-				debugParams = [{ id: uuid(), name: 'keyword', type: 'string' }];
+				if (action === 'SELECT') {
+					debugParams = [
+						{ id: uuid(), name: 'keyword', type: 'string' },
+						// {
+						// 	id: uuid(),
+						// 	name: 'fields',
+						// 	type: 'array',
+						// 	children: [
+						// 		{ id: uuid(), name: '0', type: 'object', children: [{ id: uuid(), name: 'name', type: 'string' }] },
+						// 	]
+						// },
+						// {
+						// 	id: uuid(),
+						// 	name: 'orders',
+						// 	type: 'array',
+						// 	children: [
+						// 		{
+						// 			id: uuid(),
+						// 			name: '0',
+						// 			type: 'object',
+						// 			children: [
+						// 				{ id: uuid(), name: 'fieldName', type: 'string' },
+						// 				{ id: uuid(), name: 'order', type: 'string' },
+						// 			]
+						// 		},
+						// 	]
+						// },
+						// {
+						// 	id: uuid(),
+						// 	name: 'page',
+						// 	type: 'object',
+						// 	children: [
+						// 		{ id: uuid(), name: 'pageNum', type: 'number' },
+						// 		{ id: uuid(), name: 'pageSize', type: 'number' },
+						// 	]
+						// }
+					];
+					outputSchema = {
+						type: 'object',
+						properties: {
+							dataSource: { type: 'array', items: { type: 'object', properties: {} } },
+							total: { type: 'number' },
+							pageNum: { type: 'number' },
+							pageSize: { type: 'number' }
+						}
+					};
+					inputSchema = {
+						type: 'object',
+						properties: {
+							keyword: { type: 'string' },
+							fields: {
+								type: 'array',
+								items: {
+									type: 'object',
+									properties: {
+										name: { type: 'string' },
+									}
+								}
+							},
+							orders: {
+								type: 'array',
+								items: {
+									type: 'object',
+									properties: {
+										fieldName: { type: 'string' },
+										order: { type: 'string' },
+									}
+								}
+							},
+							page: {
+								type: 'object',
+								properties: {
+									pageNum: { type: 'number' },
+									pageSize: { type: 'number' }
+								}
+							}
+						}
+					};
+					
+					try {
+						item.originEntity?.fieldAry
+						.filter(field => field.bizType !== 'mapping' && !field.isPrivate)
+						.forEach(field => {
+							fields.push({ name: field.name });
+							if ((field.mapping as any)?.entity?.fieldAry.length) {
+								outputSchema.properties.dataSource.items.properties[field.name] = { type: 'object', properties: {} };
+								field.mapping.entity.fieldAry.forEach(mappingField => {
+									fields.push({ name: `${field.name}.${mappingField.name}` });
+									outputSchema.properties.dataSource.items.properties[field.name].properties[mappingField.name] = { type: getSchemaTypeByFieldType(mappingField) };
+								});
+							} else {
+								outputSchema.properties.dataSource.items.properties[field.name] = { type: getSchemaTypeByFieldType(field) };
+							}
+						});
+					} catch (e) {
+						console.log('parse outputSchema error', e);
+					}
+				} else if (action === 'UPDATE' || action === 'INSERT') {
+					inputSchema = { type: 'object', properties: {} };
+					
+					item.originEntity?.fieldAry
+						.filter(field => field.bizType !== 'mapping' && !field.isPrivate)
+						.forEach(field => {
+							debugParams.push({ id: uuid(), name: field.name, type: getSchemaTypeByFieldType(field) });
+							inputSchema.properties[field.name] = { type: getSchemaTypeByFieldType(field) };
+						});
+					
+					if (action === 'INSERT') {
+						outputSchema = {type: 'number'};
+						delete inputSchema.properties.id;
+					}
+				} else if (action === 'DELETE') {
+					debugParams = [{ id: uuid(), name: 'id', type: 'number' }];
+					inputSchema = { type: 'object', properties: { id: { type: 'number' } } };
+				}
 			} else {
 				getParamsFromSchema(inputSchema, debugParams);
 			}
@@ -168,14 +267,7 @@ export default function SQLPanel({
         title: item.title,
         method: 'POST',
         type: 'http-sql',
-        inputSchema: isOpen ? {
-	        type: 'object',
-	        properties: {
-		        keyword: {
-							type: 'string'
-		        }
-	        },
-        } : inputSchema,
+        inputSchema: inputSchema,
         outputSchema: {
           type: 'object',
           properties: {
@@ -213,10 +305,11 @@ export default function SQLPanel({
           : void 0,
         input: encodeURIComponent(
           isOpen
-	          ? exampleOpenSQLParamsFunc
+	          ? (action === 'SELECT' ? exampleSelectOpenSQLParamsFunc : exampleOpenSQLParamsFunc)
 	            .replace('__serviceId__', entityId)
 	            .replace('__fileId__', item.fileId)
-		          .replace('__fields__', JSON.stringify(entity.fieldAry.filter(field => field.bizType !== 'mapping' && !field.isPrivate && ['string', 'number', 'datetime', 'relation', 'SYS_USER', 'SYS_USER.CREATOR', 'SYS_USER.UPDATER'].includes(field.bizType)).map(field => ({ name: field.name }))))
+	            .replace('__action__', action)
+		          .replace('__fields__', JSON.stringify(fields))
 	          : exampleSQLParamsFunc
               .replace('__serviceId__', item.id)
               .replace('__fileId__', item.fileId)
@@ -311,11 +404,10 @@ export default function SQLPanel({
 												originSQLList?.filter(sql => sql.isOpen).map((sql) => {
 													return (
 														<Collapse style={{ fontSize: '14px', marginLeft: '12px' }} headerClassName={{ height: '36px' }} header={sql.title} defaultFold={false}>
-															{['SELECT'].map((key) => {
-																// ['SELECT', 'INSERT', 'UPDATE', 'DELETE']
+															{['SELECT', 'INSERT', 'UPDATE', 'DELETE'].map((key) => {
 																const curId = sql.id + '_' + key;
 																const keyMap = {
-																	INSERT: '创建接口',
+																	INSERT: '新增接口',
 																	UPDATE: '更新接口',
 																	SELECT: '查询接口',
 																	DELETE: '删除接口',
