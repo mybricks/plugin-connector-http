@@ -149,7 +149,21 @@ function getScript(serviceItem) {
 		            }
 	            }
             }
-            then(outputData);
+						
+						/** 领域模型接口按需展示日志，需返回源数据 */
+						if (
+							options.method.toUpperCase() === 'POST'
+							&& options.url.endsWith('/domain/run')
+							&& options.data
+							&& options.data.fileId
+							&& options.data.serviceId
+							&& options.data.params
+							&& options.data.params.showToplLog
+						) {
+							then({ __ORIGIN_RESPONSE__: response, outputData });
+						} else {
+							then(outputData);
+						}
           })
           .catch((error) => {
             onError((error && error.message) || error);
