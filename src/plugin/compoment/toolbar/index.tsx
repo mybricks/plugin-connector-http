@@ -1,12 +1,6 @@
 import { plus } from '../../../icon'
 import React from 'react';
-import {
-	AGGREGATION_MODEL_VISIBLE,
-	DOMAIN_PANEL_VISIBLE,
-	KDEV_PANEL_VISIBLE,
-	SQL_PANEL_VISIBLE,
-	TG_PANEL_VISIBLE,
-} from '../../../constant';
+import { KDEV_PANEL_VISIBLE, SQL_PANEL_VISIBLE, TG_PANEL_VISIBLE } from '../../../constant';
 import Dropdown from '../../../components/Dropdown';
 
 import css from './index.less';
@@ -32,16 +26,6 @@ export default function ({ ctx, setRender, blurMap }: any) {
 			/** 领域模型接口 */
 		  case 'http-sql':
 			  ctx.panelVisible = SQL_PANEL_VISIBLE;
-			  setRender(ctx);
-			  break;
-			/** 领域模型实体 */
-		  case 'domain':
-			  ctx.panelVisible = DOMAIN_PANEL_VISIBLE;
-			  setRender(ctx);
-			  break;
-			/** 聚合接口为模型，支持在 CRUD 组件中使用 */
-		  case 'aggregation-model':
-			  ctx.panelVisible = AGGREGATION_MODEL_VISIBLE;
 			  setRender(ctx);
 			  break;
 		  default:
