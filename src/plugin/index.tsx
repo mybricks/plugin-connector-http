@@ -2,6 +2,7 @@ import React, {ReactNode, useCallback, useMemo, useRef, useState} from 'react';
 import ReactDOM from 'react-dom';
 import {uuid} from '../utils';
 import {
+	AGGREGATION_MODEL_VISIBLE,
 	DEFAULT_PANEL_VISIBLE, DOMAIN_PANEL_VISIBLE,
 	exampleParamsFunc,
 	exampleResultFunc,
@@ -22,6 +23,7 @@ import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
 import SQLPanel from './compoment/sqlPanel';
 import DomainPanel from './compoment/domainPanel';
+import AggregationModel from './compoment/aggregation-model';
 
 interface Iprops {
   connector: Iconnector;
@@ -416,6 +418,19 @@ export default function Sidebar({
 			        setRender={setRender}
 			        updateService={updateService}
 			        key='domain'
+			        data={data}
+			        style={{ top: ref.current?.getBoundingClientRect().top }}
+		        />
+	        );
+          break;
+        case 'aggregation-model':
+          visible = AGGREGATION_MODEL_VISIBLE;
+	        node = (
+		        <AggregationModel
+			        sidebarContext={sidebarContext}
+			        setRender={setRender}
+			        updateService={updateService}
+			        key='aggregation-model'
 			        data={data}
 			        style={{ top: ref.current?.getBoundingClientRect().top }}
 		        />
