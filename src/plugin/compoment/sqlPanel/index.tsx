@@ -47,7 +47,7 @@ enum FieldBizType {
 const getSchemaTypeByFieldType = (field) => {
 	switch (field.bizType) {
 		case FieldBizType.ENUM:
-			return 'enum';
+			return 'string';
 		case FieldBizType.DATETIME:
 			return field.showFormat ? 'string' : 'number';
 		case FieldBizType.STRING:
@@ -227,15 +227,7 @@ export default function SQLPanel({
 						.filter(field => field.bizType !== 'mapping' && !field.isPrivate)
 						.forEach(field => {
 							fields.push({ name: field.name });
-							if ((field.mapping as any)?.entity?.fieldAry.length) {
-								outputSchema.properties.dataSource.items.properties[field.name] = { type: 'object', properties: {} };
-								field.mapping.entity.fieldAry.forEach(mappingField => {
-									fields.push({ name: `${field.name}.${mappingField.name}` });
-									outputSchema.properties.dataSource.items.properties[field.name].properties[mappingField.name] = { type: getSchemaTypeByFieldType(mappingField) };
-								});
-							} else {
-								outputSchema.properties.dataSource.items.properties[field.name] = { type: getSchemaTypeByFieldType(field) };
-							}
+							outputSchema.properties.dataSource.items.properties[field.name] = { type: getSchemaTypeByFieldType(field) };
 						});
 					} catch (e) {
 						console.log('parse outputSchema error', e);
