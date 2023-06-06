@@ -119,7 +119,9 @@ export default function Sidebar({
             createTime: Date.now(),
             updateTime: Date.now(),
           };
+					/** 插件内连接器数据 */
           data.connectors.push(serviceItem);
+					/** 设计器内连接器数据，支持服务接口组件选择接口 */
           sidebarContext.connector.add({
             id,
             type:
