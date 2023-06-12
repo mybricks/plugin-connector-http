@@ -1,4 +1,4 @@
-import React, {ReactNode, useCallback, useMemo, useRef, useState} from 'react';
+import React, {ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import ReactDOM from 'react-dom';
 import {uuid} from '../utils';
 import {
@@ -193,6 +193,13 @@ export default function Sidebar({
   }, []);
 
   const clickRef = useRef();
+	
+	/** 兼容老数据，设计器内的连接器数据 title 丢失，暂时打开就刷新数据 */
+	useEffect(() => {
+		data.connectors.forEach(connector => {
+			sidebarContext.connector.update({ id: connector.id, title: connector.content.title });
+		});
+	}, []);
 
   const setRender = useCallback((value: any) => {
     setContext((ctx: any) => ({
