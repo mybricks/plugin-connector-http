@@ -86,6 +86,8 @@ export const SERVICE_TYPE = {
   KDEV: 'http-kdev',
 };
 
+export const GLOBAL_PANEL = 'global-setting';
+
 export const DEFAULT_SCHEMA = {
   type: 'object',
   required: [],

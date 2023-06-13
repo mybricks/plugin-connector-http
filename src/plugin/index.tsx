@@ -1,16 +1,11 @@
-import React, {ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import ReactDOM from 'react-dom';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {uuid} from '../utils';
 import {
-	DEFAULT_PANEL_VISIBLE,
 	exampleParamsFunc,
 	exampleResultFunc,
-	KDEV_PANEL_VISIBLE,
-	NO_PANEL_VISIBLE,
+	GLOBAL_PANEL,
 	SERVICE_TYPE,
-	SQL_PANEL_VISIBLE,
 	templateResultFunc,
-	TG_PANEL_VISIBLE,
 } from '../constant';
 import css from '../style-cssModules.less';
 import {cloneDeep, get} from '../utils/lodash';
@@ -20,7 +15,7 @@ import {getScript} from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
-import SQLPanel from './compoment/sqlPanel';
+import PanelWrap from "../components/panel";
 
 interface Iprops {
   connector: Iconnector;
@@ -31,8 +26,7 @@ interface Iprops {
     connectors: any[];
     config: { paramsFn: string; resultFn?: string };
   };
-  ininitialValue: any;
-	openFileSelector?(): Promise<unknown>;
+  initialValue: any;
 }
 
 interface Iconnector {
@@ -56,18 +50,14 @@ export default function Sidebar({
   connector,
   data,
 	serviceListUrl,
-  callServiceUrl,
-	openFileSelector = () => Promise.resolve(null),
-  ininitialValue = {},
+  initialValue = {},
 }: Iprops) {
   const ref = useRef<HTMLDivElement>(null);
   const blurMap = useRef<Record<string, () => void>>({});
   const [searchValue, setSearchValue] = useState('');
   const [sidebarContext, setContext] = useState<any>({
-	  openFileSelector,
     eidtVisible: false,
     activeId: '',
-    panelVisible: NO_PANEL_VISIBLE,
     kdev: {
       departmentOptions: [],
       interfaceOptions: [],
@@ -76,14 +66,9 @@ export default function Sidebar({
     },
     tg: {},
     type: '',
-    comlibNavVisible: true,
     isEdit: false,
     formModel: { path: '', title: '', id: '', type: '', input: '', output: '' },
     isDebug: false,
-    templateVisible: false,
-    templateForm: {},
-    leftWidth: 271,
-    enableRenderPortal: true,
     addActions: addActions
       ? addActions.some(({ type }: any) => type === 'defalut')
         ? addActions
@@ -102,9 +87,9 @@ export default function Sidebar({
     },
   });
   const updateService = useCallback(
-    async (action: string, item?: any) => {
+    async (action?: string, item?: any) => {
       return new Promise((resolve) => {
-        const { id = uuid(), script, ...others }: any = item || sidebarContext.formModel;
+	      const { id = uuid(), script, ...others }: any = item || sidebarContext.formModel;
         if (action === 'create') {
           const serviceItem = {
             id,
@@ -152,10 +137,11 @@ export default function Sidebar({
                 sidebarContext.connector.update({
                   id: updateAll ? serviceItem.id : id,
                   title: others.title || serviceItem.content.title,
-                  type:
-                    sidebarContext.formModel.type ||
-                    sidebarContext.type ||
-                    'http',
+                  type: sidebarContext.type === GLOBAL_PANEL ? serviceItem.type : (
+	                  sidebarContext.formModel.type ||
+	                  sidebarContext.type ||
+	                  'http'
+                  ),
                   inputSchema: serviceItem.content.inputSchema,
                   outputSchema: serviceItem.content.outputSchema,
                   script: serviceItem.script || getScript({
@@ -216,13 +202,12 @@ export default function Sidebar({
       isEdit: true,
       isDebug: true,
       activeId: item.id,
-      templateVisible: false,
     };
     if (item.type === SERVICE_TYPE.TG) {
-      obj.panelVisible = TG_PANEL_VISIBLE;
+      obj.type = SERVICE_TYPE.TG;
       obj.formModel = { id: item.id, type: item.type, ...item.content };
     } else {
-      obj.panelVisible = DEFAULT_PANEL_VISIBLE;
+      obj.type = SERVICE_TYPE.HTTP;
       obj.formModel = {
         ...item.content,
         type: item.type,
@@ -244,13 +229,13 @@ export default function Sidebar({
   const onRemoveItem = useCallback(async (item) => {
     if (confirm(`确认删除 ${item.content.title} 吗`)) {
       await removeService(item);
-      sidebarContext.panelVisible = NO_PANEL_VISIBLE;
+	    sidebarContext.type = '';
       setRender(sidebarContext);
     }
   }, [sidebarContext]);
 
 	sidebarContext.addDefaultService = useCallback(async () => {
-	  sidebarContext.panelVisible = DEFAULT_PANEL_VISIBLE;
+		sidebarContext.type = SERVICE_TYPE.HTTP;
 	  sidebarContext.formModel = {
 		  title: '',
 		  type: sidebarContext.formModel.type,
@@ -266,19 +251,18 @@ export default function Sidebar({
   sidebarContext.updateService = updateService;
 
   const onGlobalConfigClick = useCallback(() => {
-    sidebarContext.templateVisible = true;
-    sidebarContext.panelVisible = NO_PANEL_VISIBLE;
+    sidebarContext.type = GLOBAL_PANEL;
     setRender(sidebarContext);
   }, []);
 
   const closeTemplateForm = useCallback(() => {
-    sidebarContext.templateVisible = false;
+    sidebarContext.type = '';
     sidebarContext.isEdit = false;
     setRender(sidebarContext);
   }, []);
 
 	sidebarContext.onCancel = useCallback(() => {
-	  sidebarContext.panelVisible = NO_PANEL_VISIBLE;
+	  sidebarContext.type = '';
 	  sidebarContext.isDebug = false;
 	  sidebarContext.activeId = void 0;
 	  sidebarContext.isEdit = false;
@@ -291,7 +275,7 @@ export default function Sidebar({
     } else {
       await createService();
     }
-    sidebarContext.panelVisible = NO_PANEL_VISIBLE;
+    sidebarContext.type = '';
     sidebarContext.activeId = void 0;
     sidebarContext.formModel = {};
     sidebarContext.isEdit = false;
@@ -358,86 +342,64 @@ export default function Sidebar({
   );
 
   const renderAddActions = useCallback(() => {
-    return sidebarContext.addActions.map(({ type, render: Compnent }: any) => {
-      let visible = 0;
-			let node: ReactNode = ReactDOM.createPortal(
-				sidebarContext.panelVisible & visible ? (
+		const curAction = sidebarContext.addActions.find(action => action.type === sidebarContext.type && action.render);
+		let node = null;
+		
+		if (curAction) {
+			node = (
+				<PanelWrap key={curAction.type}>
 					<div
-						style={{
-							left: 361,
-							top: ref.current?.getBoundingClientRect().top,
-						}}
-						key={type}
+						data-id="plugin-panel"
+						style={{ left: 361, top: ref.current?.getBoundingClientRect().top }}
+						key={curAction.type}
 						className={`${css['sidebar-panel-edit']}`}
 					>
-						<Compnent
-							panelCtx={sidebarContext}
-							constant={{
-								exampleParamsFunc,
-								exampleResultFunc,
-								NO_PANEL_VISIBLE,
-							}}
-						/>
+						{curAction?.render({
+							onClose: closeTemplateForm,
+							originConnectors: cloneDeep(data.connectors),
+							connectorService: {
+								add(item: Record<string, any>) {
+									updateService('create', item);
+								},
+								remove: removeService,
+								update(item: Record<string, any>) {
+									updateService('update', item);
+								},
+								test: sidebarContext.connector.test,
+							}
+						}) || null}
 					</div>
-				) : null,
-				document.body
+				</PanelWrap>
 			);
-	
-	    switch (type) {
-        case 'http':
-          visible = DEFAULT_PANEL_VISIBLE;
-					node = (
-						<DefaultPanel
-							sidebarContext={sidebarContext}
-							setRender={setRender}
-							onSubmit={onFinish}
-							key={type}
-							globalConfig={data.config}
-							style={{ top: ref.current?.getBoundingClientRect().top }}
-						/>
-					);
-          break;
-        case 'http-tg':
-          visible = TG_PANEL_VISIBLE;
-          break;
-        case 'http-sql':
-          visible = SQL_PANEL_VISIBLE;
-	        node = (
-		        <SQLPanel
-			        sidebarContext={sidebarContext}
-			        setRender={setRender}
-			        onSubmit={onFinish}
-			        serviceListUrl={serviceListUrl}
-              callServiceUrl={callServiceUrl}
-              updateService={updateService}
-			        key='http-sql'
-			        data={data}
-			        style={{ top: ref.current?.getBoundingClientRect().top }}
-		        />
-	        );
-          break;
-        case 'http-kdev':
-          visible = KDEV_PANEL_VISIBLE;
-      }
-			
-      return node;
-    });
-  }, [sidebarContext, serviceListUrl]);
+		} else if (sidebarContext.type === SERVICE_TYPE.HTTP) {
+			node = (
+				<DefaultPanel
+					sidebarContext={sidebarContext}
+					setRender={setRender}
+					onSubmit={onFinish}
+					key={sidebarContext.type}
+					globalConfig={data.config}
+					style={{ top: ref.current?.getBoundingClientRect().top }}
+				/>
+			);
+		}
+		
+		return node;
+  }, [sidebarContext, sidebarContext.type, serviceListUrl, updateService]);
 
   const onGlobalConfigChange = useCallback(() => {
     updateService('updateAll');
   }, []);
 
   const renderGlobalPanel = useCallback(() => {
-    return (
+    return sidebarContext.type === GLOBAL_PANEL ? (
       <GlobalPanel
-        sidebarContext={sidebarContext}
         style={{ top: ref.current?.getBoundingClientRect().top }}
         closeTemplateForm={closeTemplateForm}
         data={data}
         onChange={onGlobalConfigChange}
       />
-    );
+    ) : null;
   }, [sidebarContext]);
 
   const getInterfaceParams = useCallback((item) => {
@@ -471,14 +433,14 @@ export default function Sidebar({
   const initData = useCallback(() => {
     data.config = data.config || {
       paramsFn:
-        ininitialValue.paramsFn || encodeURIComponent(exampleParamsFunc),
-      resultFn: ininitialValue.resultFn || templateResultFunc,
+        initialValue.paramsFn || encodeURIComponent(exampleParamsFunc),
+      resultFn: initialValue.resultFn || templateResultFunc,
     };
     data.config.resultFn =
-      data.config.resultFn || ininitialValue.resultFn || templateResultFunc;
-    if (data.connectors.length === 0 && ininitialValue.serviceList?.length) {
-      data.connectors = ininitialValue.serviceList;
-      ininitialValue.serviceList.forEach((item: any) => {
+      data.config.resultFn || initialValue.resultFn || templateResultFunc;
+    if (data.connectors.length === 0 && initialValue.serviceList?.length) {
+      data.connectors = initialValue.serviceList;
+      initialValue.serviceList.forEach((item: any) => {
         const { title, inputSchema, outputSchema } = item.content || {};
         const ctr = {
           id: item.id,
@@ -536,6 +498,14 @@ export default function Sidebar({
 		              const expand = sidebarContext.expandId === item.id;
 		              item.updateTime = formatDate(item.updateTime || item.createTime);
 		              const { useMock, type } = item.content;
+									let typeLabel = '接口';
+			
+									if (useMock) {
+										typeLabel = 'Mock';
+									} else if (sidebarContext.addActions.length > 1) {
+										typeLabel = sidebarContext.addActions.find(action => action.type === type)?.title || typeLabel;
+									}
+									
 		              return (
 		                <div key={item.id}>
 		                  <div
@@ -566,7 +536,7 @@ export default function Sidebar({
 		                          className={css.tag}
 		                          onClick={(e) => onServiceItemTitleClick(e, item)}
 		                        >
-		                          {useMock ? 'Mock' : (sidebarContext.addActions.length > 1 ? (type === 'http-sql' ? '领域接口' : '普通接口') : '接口')}
+		                          {typeLabel}
 		                        </div>
 		                        <div className={css.name}>
 		                          <span>{item.content.title}</span>
@@ -628,65 +598,6 @@ export default function Sidebar({
 		              );
 		            })
 						}
-	          {
-		          data.connectors
-		          .filter((item) => item.content.type === 'domain')
-		          .filter((item) => searchValue ? item.content.title.includes(searchValue) : true)
-		          .map((item) => {
-			          const expand = sidebarContext.expandId === item.id;
-			          item.updateTime = formatDate(item.updateTime || item.createTime);
-								let entity: Record<string, unknown> = {};
-								try {
-									entity = JSON.parse(item.script);
-								} catch {}
-								
-			          return (
-				          <div key={item.id}>
-					          <div key={item.id} className={css['sidebar-panel-list-item']}>
-						          <div>
-							          <div
-								          onClick={(e) => onItemClick(e, item)}
-								          className={css['sidebar-panel-list-item__left']}
-							          >
-								          <div className={`${css.icon} ${expand ? css.iconExpand : ''}`}>
-									          {Icons.arrowR}
-								          </div>
-								          <div className={css.tag}>领域模型</div>
-								          <div className={css.name}>
-									          <span>{item.content.title}</span>
-								          </div>
-							          </div>
-							          <div className={css['sidebar-panel-list-item__right']}>
-								          <div></div>
-								          <div
-									          className={css.action}
-									          onClick={() => onRemoveItem(item)}
-								          >
-									          {Icons.remove}
-								          </div>
-							          </div>
-						          </div>
-					          </div>
-					          {expand ? (
-						          <div className={css['sidebar-panel-list-item__expand']}>
-							          <div className={css['sidebar-panel-list-item__param']}>
-                          <span className={css['sidebar-panel-list-item__name']}>标识:</span>
-								          <span className={css['sidebar-panel-list-item__content']}>{item.id}</span>
-							          </div>
-							          <div className={css['sidebar-panel-list-item__param']}>
-								          <span className={css['sidebar-panel-list-item__name']}>模型:</span>
-								          <span className={css['sidebar-panel-list-item__content']}>{entity.domainFileName}</span>
-							          </div>
-							          <div className={css['sidebar-panel-list-item__param']}>
-								          <span className={css['sidebar-panel-list-item__name']}>实体:</span>
-								          <span className={css['sidebar-panel-list-item__content']}>{entity.name}</span>
-							          </div>
-						          </div>
-					          ) : null}
-				          </div>
-			          );
-		          })
-	          }
           </div>
         </div>
         {renderAddActions()}

@@ -1,11 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { DEFAULT_PANEL_VISIBLE, NO_PANEL_VISIBLE } from '../../../constant';
+import ReactDOM from 'react-dom';
 import Editor from '@mybricks/code-editor';
 import DebugForm from '../debug';
-
-import css from './index.less';
-import parenetCss from '../../../style-cssModules.less';
-import ReactDOM from 'react-dom';
 import { fullScreen, fullScreenExit } from '../../../icon';
 import RadioBtns from './RadioBtn';
 import Button from '../../../components/Button';
@@ -13,6 +9,9 @@ import Collapse from '../../../components/Collapse';
 import FormItem from '../../../components/FormItem';
 import Input, { TextArea } from '../../../components/Input';
 import { safeDecode } from '../../../utils';
+
+import parentCss from '../../../style-cssModules.less';
+import css from './index.less';
 
 const methodOpts = [
   { title: 'GET', value: 'GET' },
@@ -28,11 +27,11 @@ export default function DefaultPanel({
   setRender,
   globalConfig,
 }: any) {
-  const paramRef = useRef();
-  const resultRef = useRef();
+  const paramRef = useRef<HTMLDivElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
   const addresRef = useRef<any>();
   const onClosePanel = useCallback(() => {
-    sidebarContext.panelVisible = NO_PANEL_VISIBLE;
+    sidebarContext.type = '';
     sidebarContext.isDebug = false;
     sidebarContext.activeId = void 0;
     sidebarContext.isEdit = false;
@@ -42,24 +41,24 @@ export default function DefaultPanel({
   const [outputFn, setOutputFn] = useState(sidebarContext.formModel.output);
 
   const onParamsEditorFullscreen = () => {
-    paramRef.current?.classList.add(parenetCss['sidebar-panel-code-full']);
+    paramRef.current?.classList.add(parentCss['sidebar-panel-code-full']);
     sidebarContext.fullscreenParamsEditor = true;
     setRender(sidebarContext);
   };
 
   const onParamsEditorFullscreenExit = () => {
-    paramRef.current?.classList.remove(parenetCss['sidebar-panel-code-full']);
+    paramRef.current?.classList.remove(parentCss['sidebar-panel-code-full']);
     sidebarContext.fullscreenParamsEditor = false;
     setRender(sidebarContext);
   };
   const onResultEditorFullscreen = () => {
     sidebarContext.fullscrenResultEditor = true;
-    resultRef.current?.classList.add(parenetCss['sidebar-panel-code-full']);
+    resultRef.current?.classList.add(parentCss['sidebar-panel-code-full']);
     setRender(sidebarContext);
   };
   const onResultEditorFullscreenExit = () => {
     sidebarContext.fullscrenResultEditor = false;
-    resultRef.current?.classList.remove(parenetCss['sidebar-panel-code-full']);
+    resultRef.current?.classList.remove(parentCss['sidebar-panel-code-full']);
     setRender(sidebarContext);
   };
 
@@ -92,15 +91,16 @@ export default function DefaultPanel({
   }, [sidebarContext.formModel.path])
   
   return ReactDOM.createPortal(
-    sidebarContext.panelVisible & DEFAULT_PANEL_VISIBLE ? (
+    (
       <div
+	      data-id="plugin-panel"
         style={{ left: 361, ...style }}
-        className={`${parenetCss['sidebar-panel-edit']}`}
+        className={`${parentCss['sidebar-panel-edit']}`}
       >
-        <div className={parenetCss['sidebar-panel-title']}>
+        <div className={parentCss['sidebar-panel-title']}>
           <div>{sidebarContext.formModel?.title}</div>
           <div>
-            <div className={parenetCss['actions']}>
+            <div className={parentCss['actions']}>
               {!sidebarContext.isEidt && (
                 <Button type='primary' size='small' onClick={onSaveClick}>
                   保 存
@@ -112,7 +112,7 @@ export default function DefaultPanel({
             </div>
           </div>
         </div>
-        <div className={parenetCss['sidebar-panel-content']}>
+        <div className={parentCss['sidebar-panel-content']}>
           <>
             <div className={css.ct}>
               <Collapse header='基本信息' defaultFold={false}>
@@ -177,20 +177,20 @@ export default function DefaultPanel({
                 {sidebarContext.fullscreenParamsEditor ? (
                   <div
                     onClick={onParamsEditorFullscreenExit}
-                    className={parenetCss['sidebar-panel-code-icon-full']}
+                    className={parentCss['sidebar-panel-code-icon-full']}
                   >
                     {fullScreenExit}
                   </div>
                 ) : (
                   <div
                     onClick={onParamsEditorFullscreen}
-                    className={parenetCss['sidebar-panel-code-icon']}
+                    className={parentCss['sidebar-panel-code-icon']}
                   >
                     {fullScreen}
                   </div>
                 )}
                 <Editor
-                  onMounted={(editor, monaco, container) => {
+                  onMounted={(editor, monaco, container: HTMLDivElement) => {
                     paramRef.current = container;
                     container.onclick = (e) => {
                       if (e.target === container) {
@@ -213,6 +213,7 @@ export default function DefaultPanel({
                   language='javascript'
                   theme='light'
                   lineNumbers='off'
+                  /** @ts-ignore */
                   scrollbar={{
                     horizontalScrollbarSize: 2,
                     verticalScrollbarSize: 2,
@@ -226,20 +227,20 @@ export default function DefaultPanel({
                 {sidebarContext.fullscrenResultEditor ? (
                   <div
                     onClick={onResultEditorFullscreenExit}
-                    className={parenetCss['sidebar-panel-code-icon-full']}
+                    className={parentCss['sidebar-panel-code-icon-full']}
                   >
                     {fullScreen}
                   </div>
                 ) : (
                   <div
                     onClick={onResultEditorFullscreen}
-                    className={parenetCss['sidebar-panel-code-icon']}
+                    className={parentCss['sidebar-panel-code-icon']}
                   >
                     {fullScreen}
                   </div>
                 )}
                 <Editor
-                  onMounted={(editor, monaco, container) => {
+                  onMounted={(editor, monaco, container: HTMLDivElement) => {
                     resultRef.current = container;
                     container.onclick = (e) => {
                       if (e.target === container) {
@@ -262,6 +263,7 @@ export default function DefaultPanel({
                   language='javascript'
                   theme='light'
                   lineNumbers='off'
+                  /** @ts-ignore */
                   scrollbar={{
                     horizontalScrollbarSize: 2,
                     verticalScrollbarSize: 2,
@@ -306,7 +308,7 @@ export default function DefaultPanel({
           </div>
         </div>
       </div>
-    ) : null,
+    ),
     document.body
   );
 }
