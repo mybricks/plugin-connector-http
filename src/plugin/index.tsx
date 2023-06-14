@@ -86,84 +86,78 @@ export default function Sidebar({
       setSearchValue(v);
     },
   });
-  const updateService = useCallback(
-    async (action?: string, item?: any) => {
-      return new Promise((resolve) => {
-	      const { id = uuid(), script, ...others }: any = item || sidebarContext.formModel;
-        if (action === 'create') {
-          const serviceItem = {
-            id,
-            type: sidebarContext.type || 'http',
-            content: {
-              input: encodeURIComponent(exampleParamsFunc),
-              output: encodeURIComponent(exampleResultFunc),
-              inputSchema: { type: 'object' },
-              ...others,
-            },
-            script,
-            createTime: Date.now(),
-            updateTime: Date.now(),
-          };
-					/** 插件内连接器数据 */
-          data.connectors.push(serviceItem);
-					/** 设计器内连接器数据，支持服务接口组件选择接口 */
-          sidebarContext.connector.add({
-            id,
-            type:
-              sidebarContext.formModel.type || sidebarContext.type || 'http',
-            title: others.title,
-            inputSchema: others.inputSchema,
-            outputSchema: others.outputSchema,
-            script: script || getScript({
-              ...serviceItem.content,
-              globalParamsFn: data.config.paramsFn,
-              globalResultFn: data.config.resultFn,
-            }),
-          });
-        } else {
-          const updateAll = action === 'updateAll';
-          data.connectors.forEach((service: any, index: number) => {
-            if (service.id === id || updateAll) {
-              let serviceItem = data.connectors[index];
-              if (!updateAll) {
-                serviceItem = {
-                  ...service,
-                  updateTime: Date.now(),
-                  content: { ...others },
-                };
-                data.connectors[index] = serviceItem;
-              }
-              try {
-                sidebarContext.connector.update({
-                  id: updateAll ? serviceItem.id : id,
-                  title: others.title || serviceItem.content.title,
-                  type: sidebarContext.type === GLOBAL_PANEL ? serviceItem.type : (
-	                  sidebarContext.formModel.type ||
-	                  sidebarContext.type ||
-	                  'http'
-                  ),
-                  inputSchema: serviceItem.content.inputSchema,
-                  outputSchema: serviceItem.content.outputSchema,
-                  script: serviceItem.script || getScript({
-                    ...serviceItem.content,
-                    globalParamsFn: data.config.paramsFn,
-                    globalResultFn: data.config.resultFn,
-                  }),
-                });
-              } catch (error) {}
-            }
-          });
-        }
-        // @ts-ignore
-        resolve('');
-      });
-    },
-    [sidebarContext]
-  );
+  const updateService = async (action?: string, item?: any) => {
+	  return new Promise((resolve) => {
+		  console.log('sidebarContext', JSON.parse(JSON.stringify(sidebarContext)));
+		  const { id = uuid(), script, ...others }: any = item || sidebarContext.formModel;
+		  if (action === 'create') {
+			  const serviceItem = {
+				  id,
+				  type: sidebarContext.formModel.type || sidebarContext.type || 'http',
+				  content: {
+					  input: encodeURIComponent(exampleParamsFunc),
+					  output: encodeURIComponent(exampleResultFunc),
+					  inputSchema: { type: 'object' },
+					  ...others,
+				  },
+				  script,
+				  createTime: Date.now(),
+				  updateTime: Date.now(),
+			  };
+			  /** 插件内连接器数据 */
+			  data.connectors.push(serviceItem);
+			  /** 设计器内连接器数据，支持服务接口组件选择接口 */
+			  sidebarContext.connector.add({
+				  id,
+				  type:
+					  sidebarContext.formModel.type || sidebarContext.type || 'http',
+				  title: others.title,
+				  inputSchema: others.inputSchema,
+				  outputSchema: others.outputSchema,
+				  script: script || getScript({
+					  ...serviceItem.content,
+					  globalParamsFn: data.config.paramsFn,
+					  globalResultFn: data.config.resultFn,
+				  }),
+			  });
+		  } else {
+			  const updateAll = action === 'updateAll';
+			  data.connectors.forEach((service: any, index: number) => {
+				  if (service.id === id || updateAll) {
+					  let serviceItem = data.connectors[index];
+					  if (!updateAll) {
+						  serviceItem = {
+							  ...service,
+							  updateTime: Date.now(),
+							  content: { ...others },
+						  };
+						  data.connectors[index] = serviceItem;
+					  }
+					  try {
+						  sidebarContext.connector.update({
+							  id: updateAll ? serviceItem.id : id,
+							  title: others.title || serviceItem.content.title,
+							  type: service.type,
+							  inputSchema: serviceItem.content.inputSchema,
+							  outputSchema: serviceItem.content.outputSchema,
+							  script: serviceItem.script || getScript({
+								  ...serviceItem.content,
+								  globalParamsFn: data.config.paramsFn,
+								  globalResultFn: data.config.resultFn,
+							  }),
+						  });
+					  } catch (error) {}
+				  }
+			  });
+		  }
+		  // @ts-ignore
+		  resolve('');
+	  });
+  };
 
-  const createService = useCallback(() => {
-    return updateService('create');
-  }, []);
+  const createService = () => {
+	  return updateService('create');
+  };
 
   const removeService = useCallback((item: any) => {
     return new Promise((resolve) => {
@@ -238,7 +232,7 @@ export default function Sidebar({
 		sidebarContext.type = SERVICE_TYPE.HTTP;
 	  sidebarContext.formModel = {
 		  title: '',
-		  type: sidebarContext.formModel.type,
+		  type: SERVICE_TYPE.HTTP,
 		  path: '',
 		  desc: '',
 		  method: 'GET',
