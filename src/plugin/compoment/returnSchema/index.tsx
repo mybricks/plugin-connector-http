@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
+import {DefaultPanelContext} from '../defaultPanel/context';
 
 import css from './index.less';
 
@@ -14,7 +15,8 @@ export default function ReturnShema({
   schema,
   error,
 }: any) {
-  const parentEleRef = useRef();
+  const defaultPanelContext = useContext(DefaultPanelContext);
+  const parentEleRef = useRef<HTMLDivElement>();
   const curKeyRef = useRef('');
   const excludeKeysRef = useRef([]);
   const [keys, setOutputKeys] = useState(outputKeys || emptyAry);
@@ -142,6 +144,7 @@ export default function ReturnShema({
       left: currentPos.x - parentPos.x,
       top: currentPos.y - parentPos.y + btnEle.offsetHeight,
     });
+    defaultPanelContext.addBlurAry('return-schema', () => setStyle(void 0));
   }, []);
 
   const cancelMark = useCallback((e, xpath) => {
@@ -166,8 +169,10 @@ export default function ReturnShema({
     });
   }, []);
 
-  const resetPopMenuStyle = useCallback(() => {
+  const resetPopMenuStyle = useCallback((event) => {
     setStyle(void 0);
+    defaultPanelContext.addBlurAry('return-schema', () => {});
+    event.stopPropagation();
   }, []);
 
   if (error) {

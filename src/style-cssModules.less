@@ -1,7 +1,6 @@
 @color: #fa6400;
 
 .sidebar-panel {
-
   width: 320px;
   background-color: #f7f7f7;
   z-index: 9;
@@ -62,6 +61,7 @@
         color: @color;
       }
     }
+
     &__title {
       font-size: 14px;
       font-weight: 666;
@@ -72,6 +72,7 @@
       align-items: center;
       border-bottom: 1px solid #eee;
     }
+
     &__sub-title {
       font-size: 14px;
       font-weight: 666;
@@ -87,6 +88,7 @@
       padding: 0 10px;
       margin-bottom: -2px;
     }
+
     &__toolbar {
       padding: 0 10px 0 6px;
       height: 26px;
@@ -112,12 +114,15 @@
     padding: 0 12px;
     margin-bottom: 12px;
   }
+
   .param-item {
     display: flex;
     width: 100%;
     align-items: baseline;
+
     &-actions {
       margin-left: 12px;
+
       :global {
         .anticon {
           &:hover {
@@ -135,6 +140,7 @@
   overflow-y: auto;
   flex: 1;
   flex-direction: column;
+
   &-item {
     border-bottom: 1px solid #ccc;
     display: flex;
@@ -145,15 +151,18 @@
     padding: 0 3px;
     position: relative;
     cursor: pointer;
+
     & > div {
       &:first-child {
         display: flex;
         justify-content: space-between;
       }
     }
+
     &.active {
       background-color: rgba(247, 247, 247, 0.4);
     }
+
     &__name {
       display: inline-block;
       color: #aaa;
@@ -161,66 +170,81 @@
       text-align: right;
       flex: 0 0 55px;
     }
+
     &__content {
       flex: 1;
       word-break: break-all;
     }
+
     &__param {
       display: flex;
       margin-bottom: 4px;
       font-size: 12px;
       padding: 0 6px;
+
       &:last-child {
         padding-bottom: 0;
         margin-bottom: 0;
       }
     }
+
     &__expand {
       background-color: #fff;
       padding: 5px;
       border-bottom: 1px solid #ccc;
     }
+
     &__copy {
       user-select: text;
+
       &:hover {
         color: #fa6400;
       }
     }
+
     &:hover {
       background-color: #f1f1f1;
     }
+
     .icon {
       cursor: pointer;
       color: rgba(0, 0, 0, 0.85);
       display: flex;
       align-items: center;
+
       svg {
         max-width: 12px;
       }
     }
+
     .iconExpand {
       transform: rotate(90deg);
       transition: 0.1s;
     }
+
     .tag {
       padding: 0 8px 0 2px;
       color: @color;
       min-width: 35px;
       cursor: pointer;
+
       &__no-address {
         color: rgba(255, 0, 0, 0.8);
       }
     }
+
     .name {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
     &__left {
       padding: 12px 0 12px 4px;
       display: flex;
       min-width: 130px;
       flex: 1;
+
       &--tag {
         display: none;
         position: absolute;
@@ -236,6 +260,8 @@
       align-items: center;
       justify-content: space-between;
       padding-right: 4px;
+      margin-right: 8px;
+
       .action {
         display: flex;
         align-items: center;
@@ -280,6 +306,7 @@
     right: 0;
     bottom: 0;
     top: 0;
+
     :global {
       .monaco-editor {
         padding-top: 16px;
