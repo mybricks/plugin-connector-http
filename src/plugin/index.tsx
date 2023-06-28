@@ -15,7 +15,6 @@ import {getScript} from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
-import PanelWrap from "../components/panel";
 
 interface Iprops {
   connector: Iconnector;
@@ -176,7 +175,7 @@ export default function Sidebar({
 	
 	/** 兼容老数据，设计器内的连接器数据 title 丢失，暂时打开就刷新数据 */
 	useEffect(() => {
-		data.connectors.forEach(connector => {
+		data?.connectors.forEach(connector => {
 			sidebarContext.connector.update({ id: connector.id, title: connector.content.title });
 		});
 	}, []);
@@ -341,29 +340,20 @@ export default function Sidebar({
 		
 		if (curAction) {
 			node = (
-				<PanelWrap key={curAction.type}>
-					<div
-						data-id="plugin-panel"
-						style={{ left: 361, top: ref.current?.getBoundingClientRect().top }}
-						key={curAction.type}
-						className={`${css['sidebar-panel-edit']}`}
-					>
-						{curAction?.render({
-							onClose: closeTemplateForm,
-							originConnectors: cloneDeep(data.connectors),
-							connectorService: {
-								add(item: Record<string, any>) {
-									updateService('create', item);
-								},
-								remove: removeService,
-								update(item: Record<string, any>) {
-									updateService('update', item);
-								},
-								test: sidebarContext.connector.test,
-							}
-						}) || null}
-					</div>
-				</PanelWrap>
+        curAction?.render({
+          onClose: closeTemplateForm,
+          originConnectors: cloneDeep(data.connectors),
+          connectorService: {
+            add(item: Record<string, any>) {
+              updateService('create', item);
+            },
+            remove: removeService,
+            update(item: Record<string, any>) {
+              updateService('update', item);
+            },
+            test: sidebarContext.connector.test,
+          }
+        }) || null
 			);
 		} else if (sidebarContext.type === SERVICE_TYPE.HTTP) {
 			node = (
@@ -458,7 +448,7 @@ export default function Sidebar({
   }, []);
 
   useMemo(() => {
-    initData();
+    data && initData();
   }, []);
 
   return (
@@ -485,7 +475,7 @@ export default function Sidebar({
           </div>
           <div className={css['sidebar-panel-list']}>
             {
-							data.connectors
+							data?.connectors
 								.filter((item) => item.content.type !== 'domain')
 		            .filter((item) => searchValue ? item.content.title.includes(searchValue) : true)
 		            .map((item) => {
