@@ -87,7 +87,6 @@ export default function Sidebar({
   });
   const updateService = async (action?: string, item?: any) => {
 	  return new Promise((resolve) => {
-		  console.log('sidebarContext', JSON.parse(JSON.stringify(sidebarContext)));
 		  const { id = uuid(), script, ...others }: any = item || sidebarContext.formModel;
 		  if (action === 'create') {
 			  const serviceItem = {
