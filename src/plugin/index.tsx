@@ -1,20 +1,19 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {uuid} from '../utils';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { uuid } from '../utils';
 import {
 	exampleParamsFunc,
 	exampleResultFunc,
 	GLOBAL_PANEL,
 	SERVICE_TYPE,
-	templateResultFunc,
 } from '../constant';
 import css from '../style-cssModules.less';
-import {cloneDeep, get} from '../utils/lodash';
-import {formatDate} from '../utils/moment';
+import { cloneDeep, get } from '../utils/lodash';
+import { formatDate } from '../utils/moment';
 import DefaultPanel from './compoment/defaultPanel';
-import {getScript} from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
+import {getScript} from "../script";
 
 interface Iprops {
   connector: Iconnector;
@@ -36,56 +35,56 @@ interface Iconnector {
 }
 
 const interfaceParams = [
-  { key: 'id', name: '标识', copy: true },
-  { key: 'content.title', name: '标题' },
-  { key: 'content.method', name: '方法' },
-  { key: 'content.path', name: '路径' },
-  { key: 'content.doc', name: '文档链接', link: true },
-  { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
+	{ key: 'id', name: '标识', copy: true },
+	{ key: 'content.title', name: '标题' },
+	{ key: 'content.method', name: '方法' },
+	{ key: 'content.path', name: '路径' },
+	{ key: 'content.doc', name: '文档链接', link: true },
+	{ key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
 ];
 
 export default function Sidebar({
-  addActions,
-  connector,
-  data,
+	addActions,
+	connector,
+	data,
 	serviceListUrl,
-  initialValue = {},
+	initialValue = {},
 }: Iprops) {
-  const ref = useRef<HTMLDivElement>(null);
-  const blurMap = useRef<Record<string, () => void>>({});
-  const [searchValue, setSearchValue] = useState('');
-  const [sidebarContext, setContext] = useState<any>({
-    eidtVisible: false,
-    activeId: '',
-    kdev: {
-      departmentOptions: [],
-      interfaceOptions: [],
-      searchOptions: [],
-      interfaceMap: {},
-    },
-    tg: {},
-    type: '',
-    isEdit: false,
-    formModel: { path: '', title: '', id: '', type: '', input: '', output: '' },
-    isDebug: false,
-    addActions: addActions
-      ? addActions.some(({ type }: any) => type === 'defalut')
-        ? addActions
-        : [{ type: 'http', title: '普通接口' }].concat(addActions)
-      : [{ type: 'http', title: '普通接口' }],
-    connector: {
-      add: (args: any) => connector.add({ ...args }),
-      remove: (id: string) => connector.remove(id),
-      update: (args: any) => {
-        connector.update({ ...args });
-      },
-      test: (...args: any) => connector.test(...args),
-    },
-    search: (v: string) => {
-      setSearchValue(v);
-    },
-  });
-  const updateService = async (action?: string, item?: any) => {
+	const ref = useRef<HTMLDivElement>(null);
+	const blurMap = useRef<Record<string, () => void>>({});
+	const [searchValue, setSearchValue] = useState('');
+	const [sidebarContext, setContext] = useState<any>({
+		eidtVisible: false,
+		activeId: '',
+		kdev: {
+			departmentOptions: [],
+			interfaceOptions: [],
+			searchOptions: [],
+			interfaceMap: {},
+		},
+		tg: {},
+		type: '',
+		isEdit: false,
+		formModel: { path: '', title: '', id: '', type: '', input: '', output: '' },
+		isDebug: false,
+		addActions: addActions
+			? addActions.some(({ type }: any) => type === 'defalut')
+				? addActions
+				: [{ type: 'http', title: '普通接口' }].concat(addActions)
+			: [{ type: 'http', title: '普通接口' }],
+		connector: {
+			add: (args: any) => connector.add({ ...args }),
+			remove: (id: string) => connector.remove(id),
+			update: (args: any) => {
+				connector.update({ ...args });
+			},
+			test: (...args: any) => connector.test(...args),
+		},
+		search: (v: string) => {
+			setSearchValue(v);
+		},
+	});
+	const updateService = async (action?: string, item?: any) => {
 	  return new Promise((resolve) => {
 		  const { id = uuid(), script, ...others }: any = item || sidebarContext.formModel;
 		  if (action === 'create') {
@@ -107,16 +106,20 @@ export default function Sidebar({
 			  /** 设计器内连接器数据，支持服务接口组件选择接口 */
 			  sidebarContext.connector.add({
 				  id,
-				  type:
-					  sidebarContext.formModel.type || sidebarContext.type || 'http',
+				  type: sidebarContext.formModel.type || sidebarContext.type || 'http',
 				  title: others.title,
 				  inputSchema: others.inputSchema,
 				  outputSchema: others.outputSchema,
-				  script: script || getScript({
-					  ...serviceItem.content,
-					  globalParamsFn: data.config.paramsFn,
-					  globalResultFn: data.config.resultFn,
-				  }),
+					content: {
+						input: serviceItem.content.input,
+						output: serviceItem.content.output,
+						method: serviceItem.content.method,
+						path: serviceItem.content.path,
+						outputKeys: serviceItem.content.outputKeys,
+						excludeKeys: serviceItem.content.excludeKeys,
+						globalParamsFn: data.config.paramsFn,
+						globalResultFn: data.config.resultFn,
+					},
 			  });
 		  } else {
 			  const updateAll = action === 'updateAll';
@@ -131,6 +134,18 @@ export default function Sidebar({
 						  };
 						  data.connectors[index] = serviceItem;
 					  }
+						console.log('serviceItem', {
+							id: updateAll ? serviceItem.id : id,
+							title: others.title || serviceItem.content.title,
+							type: service.type,
+							inputSchema: serviceItem.content.inputSchema,
+							outputSchema: serviceItem.content.outputSchema,
+							script: JSON.stringify(decodeURIComponent(serviceItem.script || getScript({
+								...serviceItem.content,
+								globalParamsFn: data.config.paramsFn,
+								globalResultFn: data.config.resultFn,
+							}))),
+						});
 					  try {
 						  sidebarContext.connector.update({
 							  id: updateAll ? serviceItem.id : id,
@@ -138,11 +153,16 @@ export default function Sidebar({
 							  type: service.type,
 							  inputSchema: serviceItem.content.inputSchema,
 							  outputSchema: serviceItem.content.outputSchema,
-							  script: serviceItem.script || getScript({
-								  ...serviceItem.content,
-								  globalParamsFn: data.config.paramsFn,
-								  globalResultFn: data.config.resultFn,
-							  }),
+								content: {
+									input: serviceItem.content.input,
+									output: serviceItem.content.output,
+									method: serviceItem.content.method,
+									path: serviceItem.content.path,
+									outputKeys: serviceItem.content.outputKeys,
+									excludeKeys: serviceItem.content.excludeKeys,
+									globalParamsFn: data.config.paramsFn,
+									globalResultFn: data.config.resultFn,
+								},
 						  });
 					  } catch (error) {}
 				  }
@@ -151,73 +171,73 @@ export default function Sidebar({
 		  // @ts-ignore
 		  resolve('');
 	  });
-  };
+	};
 
-  const createService = () => {
+	const createService = () => {
 	  return updateService('create');
-  };
+	};
 
-  const removeService = useCallback((item: any) => {
-    return new Promise((resolve) => {
-      const index = data.connectors.findIndex((service) => {
-        return String(service.id) === String(item.id);
-      });
-      data.connectors.splice(index, 1);
-      try {
-        sidebarContext.connector.remove(item.id);
-      } catch (error) {}
-      resolve('');
-    });
-  }, []);
+	const removeService = useCallback((item: any) => {
+		return new Promise((resolve) => {
+			const index = data.connectors.findIndex((service) => {
+				return String(service.id) === String(item.id);
+			});
+			data.connectors.splice(index, 1);
+			try {
+				sidebarContext.connector.remove(item.id);
+			} catch (error) {}
+			resolve('');
+		});
+	}, []);
 
-  const clickRef = useRef();
+	const clickRef = useRef();
 
-  const setRender = useCallback((value: any) => {
-    setContext((ctx: any) => ({
-      ...ctx,
-      formModel: {
-        ...ctx.formModel,
-      },
-      ...value,
-    }));
-  }, []);
+	const setRender = useCallback((value: any) => {
+		setContext((ctx: any) => ({
+			...ctx,
+			formModel: {
+				...ctx.formModel,
+			},
+			...value,
+		}));
+	}, []);
 
-  const onEditItem = useCallback((item) => {
-    const obj: any = {
-      isEdit: true,
-      isDebug: true,
-      activeId: item.id,
-    };
-    if (item.type === SERVICE_TYPE.TG) {
-      obj.type = SERVICE_TYPE.TG;
-      obj.formModel = { id: item.id, type: item.type, ...item.content };
-    } else {
-      obj.type = SERVICE_TYPE.HTTP;
-      obj.formModel = {
-        ...item.content,
-        type: item.type,
-        id: item.id,
-        input: item.content.input || exampleParamsFunc,
-        output: item.content.output || exampleResultFunc,
-      };
-    }
-    setRender(obj);
-  }, []);
+	const onEditItem = useCallback((item) => {
+		const obj: any = {
+			isEdit: true,
+			isDebug: true,
+			activeId: item.id,
+		};
+		if (item.type === SERVICE_TYPE.TG) {
+			obj.type = SERVICE_TYPE.TG;
+			obj.formModel = { id: item.id, type: item.type, ...item.content };
+		} else {
+			obj.type = SERVICE_TYPE.HTTP;
+			obj.formModel = {
+				...item.content,
+				type: item.type,
+				id: item.id,
+				input: item.content.input || exampleParamsFunc,
+				output: item.content.output || exampleResultFunc,
+			};
+		}
+		setRender(obj);
+	}, []);
 
-  const onCopyItem = useCallback(async (item) => {
-    sidebarContext.formModel = cloneDeep(item.content);
-    sidebarContext.formModel.title += ' 复制';
-    setRender(sidebarContext);
-    await createService();
-  }, []);
+	const onCopyItem = useCallback(async (item) => {
+		sidebarContext.formModel = cloneDeep(item.content);
+		sidebarContext.formModel.title += ' 复制';
+		setRender(sidebarContext);
+		await createService();
+	}, []);
 
-  const onRemoveItem = useCallback(async (item) => {
-    if (confirm(`确认删除 ${item.content.title} 吗`)) {
-      await removeService(item);
+	const onRemoveItem = useCallback(async (item) => {
+		if (confirm(`确认删除 ${item.content.title} 吗`)) {
+			await removeService(item);
 	    sidebarContext.type = '';
-      setRender(sidebarContext);
-    }
-  }, [sidebarContext]);
+			setRender(sidebarContext);
+		}
+	}, [sidebarContext]);
 
 	sidebarContext.addDefaultService = useCallback(async () => {
 		sidebarContext.type = SERVICE_TYPE.HTTP;
@@ -232,19 +252,19 @@ export default function Sidebar({
 		  output: encodeURIComponent(exampleResultFunc),
 	  };
 	  setRender(sidebarContext);
-  }, []);
-  sidebarContext.updateService = updateService;
+	}, []);
+	sidebarContext.updateService = updateService;
 
-  const onGlobalConfigClick = useCallback(() => {
-    sidebarContext.type = GLOBAL_PANEL;
-    setRender(sidebarContext);
-  }, []);
+	const onGlobalConfigClick = useCallback(() => {
+		sidebarContext.type = GLOBAL_PANEL;
+		setRender(sidebarContext);
+	}, []);
 
-  const closeTemplateForm = useCallback(() => {
-    sidebarContext.type = '';
-    sidebarContext.isEdit = false;
-    setRender(sidebarContext);
-  }, []);
+	const closeTemplateForm = useCallback(() => {
+		sidebarContext.type = '';
+		sidebarContext.isEdit = false;
+		setRender(sidebarContext);
+	}, []);
 
 	sidebarContext.onCancel = useCallback(() => {
 	  sidebarContext.type = '';
@@ -252,100 +272,100 @@ export default function Sidebar({
 	  sidebarContext.activeId = void 0;
 	  sidebarContext.isEdit = false;
 	  setRender(sidebarContext);
-  }, []);
+	}, []);
 
-  const onFinish = async () => {
-    if (sidebarContext.isEdit) {
-      await updateService();
-    } else {
-      await createService();
-    }
-    sidebarContext.type = '';
-    sidebarContext.activeId = void 0;
-    sidebarContext.formModel = {};
-    sidebarContext.isEdit = false;
-    setRender(sidebarContext);
-  };
+	const onFinish = async () => {
+		if (sidebarContext.isEdit) {
+			await updateService();
+		} else {
+			await createService();
+		}
+		sidebarContext.type = '';
+		sidebarContext.activeId = void 0;
+		sidebarContext.formModel = {};
+		sidebarContext.isEdit = false;
+		setRender(sidebarContext);
+	};
 
-  const onItemClick = useCallback((e: any, item: any) => {
-    if (item.id === sidebarContext.expandId) {
-      sidebarContext.expandId = 0;
-      setRender(sidebarContext);
-      return;
-    }
-    sidebarContext.expandId = item.id;
-    setRender(sidebarContext);
-  }, [setRender, sidebarContext]);
+	const onItemClick = useCallback((e: any, item: any) => {
+		if (item.id === sidebarContext.expandId) {
+			sidebarContext.expandId = 0;
+			setRender(sidebarContext);
+			return;
+		}
+		sidebarContext.expandId = item.id;
+		setRender(sidebarContext);
+	}, [setRender, sidebarContext]);
 
-  const onLinkClick = useCallback((url: string) => {
-    window.open(url);
-  }, []);
+	const onLinkClick = useCallback((url: string) => {
+		window.open(url);
+	}, []);
 
-  const renderParam = useCallback(
-    (item, { key, format, copy, link, isTpl }) => {
-      if (format) {
-        return formatDate(item[key], format);
-      }
-      if (copy) {
-        return (
-          <span
-            className={css['sidebar-panel-list-item__copy']}
-          >{`${item[key]}`}</span>
-        );
-      }
-      if (link) {
-        return get(item, key) ? (
-          <span
-            onClick={() => onLinkClick(get(item, key))}
-            className={css['doc-link']}
-          >
+	const renderParam = useCallback(
+		(item, { key, format, copy, link, isTpl }) => {
+			if (format) {
+				return formatDate(item[key], format);
+			}
+			if (copy) {
+				return (
+					<span
+						className={css['sidebar-panel-list-item__copy']}
+					>{`${item[key]}`}</span>
+				);
+			}
+			if (link) {
+				return get(item, key) ? (
+					<span
+						onClick={() => onLinkClick(get(item, key))}
+						className={css['doc-link']}
+					>
             点击跳转
-          </span>
-        ) : (
-          '无'
-        );
-      }
-      if (isTpl) {
-        const domainObj = item[key];
-        return (
-          <>
-            <span>
-              {typeof domainObj === 'object'
-                ? domainObj.domain || '无'
-                : domainObj || '无'}
-            </span>
-            <br />
-            {get(item, [key, 'laneId']) && (
-              <span>{get(item, [key, 'laneId'])}</span>
-            )}
-          </>
-        );
-      }
-      return get(item, key, '无');
-    },
-    []
-  );
+					</span>
+				) : (
+					'无'
+				);
+			}
+			if (isTpl) {
+				const domainObj = item[key];
+				return (
+					<>
+						<span>
+							{typeof domainObj === 'object'
+								? domainObj.domain || '无'
+								: domainObj || '无'}
+						</span>
+						<br />
+						{get(item, [key, 'laneId']) && (
+							<span>{get(item, [key, 'laneId'])}</span>
+						)}
+					</>
+				);
+			}
+			return get(item, key, '无');
+		},
+		[]
+	);
 
-  const renderAddActions = useCallback(() => {
+	const renderAddActions = useCallback(() => {
 		const curAction = sidebarContext.addActions.find(action => action.type === sidebarContext.type && action.render);
 		let node = null;
 		
 		if (curAction) {
 			node = (
-        curAction?.render({
-          onClose: closeTemplateForm,
-          originConnectors: cloneDeep(data.connectors),
-          connectorService: {
-            add(item: Record<string, any>) {
-              updateService('create', item);
-            },
-            remove: removeService,
-            update(item: Record<string, any>) {
-              updateService('update', item);
-            },
-            test: sidebarContext.connector.test,
-          }
-        }) || null
+				curAction?.render({
+					onClose: closeTemplateForm,
+					originConnectors: cloneDeep(data.connectors),
+					connectorService: {
+						add(item: Record<string, any>) {
+							updateService('create', item);
+						},
+						remove: removeService,
+						update(item: Record<string, any>) {
+							updateService('update', item);
+						},
+						test: sidebarContext.connector.test,
+					}
+				}) || null
 			);
 		} else if (sidebarContext.type === SERVICE_TYPE.HTTP) {
 			node = (
@@ -361,112 +381,109 @@ export default function Sidebar({
 		}
 		
 		return node;
-  }, [sidebarContext, sidebarContext.type, serviceListUrl, updateService]);
+	}, [sidebarContext, sidebarContext.type, serviceListUrl, updateService]);
 
-  const onGlobalConfigChange = useCallback(() => {
-    updateService('updateAll');
-  }, []);
+	const onGlobalConfigChange = useCallback(() => {
+		updateService('updateAll');
+	}, []);
 
-  const renderGlobalPanel = useCallback(() => {
-    return sidebarContext.type === GLOBAL_PANEL ? (
-      <GlobalPanel
-        style={{ top: ref.current?.getBoundingClientRect().top }}
-        closeTemplateForm={closeTemplateForm}
-        data={data}
-        onChange={onGlobalConfigChange}
-      />
-    ) : null;
-  }, [sidebarContext]);
+	const renderGlobalPanel = useCallback(() => {
+		return sidebarContext.type === GLOBAL_PANEL ? (
+			<GlobalPanel
+				style={{ top: ref.current?.getBoundingClientRect().top }}
+				closeTemplateForm={closeTemplateForm}
+				data={data}
+				onChange={onGlobalConfigChange}
+			/>
+		) : null;
+	}, [sidebarContext]);
 
-  const getInterfaceParams = useCallback((item) => {
-    if (item.type === SERVICE_TYPE.TG) {
-      return interfaceParams.filter(
-        ({ key }) =>
-          !['content.path', 'content.method', 'content.desc'].includes(key)
-      );
-    }
-    return interfaceParams;
-  }, []);
+	const getInterfaceParams = useCallback((item) => {
+		if (item.type === SERVICE_TYPE.TG) {
+			return interfaceParams.filter(
+				({ key }) =>
+					!['content.path', 'content.method', 'content.desc'].includes(key)
+			);
+		}
+		return interfaceParams;
+	}, []);
 
-  const onServiceItemTitleClick = (e, item) => {
-    e.stopPropagation();
-    const { id, content, type } = item;
-    if (type === SERVICE_TYPE.TG) return;
-    if (!content.mockAddress) {
-      sidebarContext.toolTipId = id;
-      setTimeout(() => {
-        sidebarContext.toolTipId = void 0;
-      }, 2500);
-      return;
-    }
-    sidebarContext.formModel = {
-      id,
-      ...content,
-      useMock: !content.useMock,
-    };
-    updateService();
-  };
-  const initData = useCallback(() => {
-    data.config = data.config || {
-      paramsFn:
-        initialValue.paramsFn || encodeURIComponent(exampleParamsFunc),
-      resultFn: initialValue.resultFn || templateResultFunc,
-    };
-    data.config.resultFn =
-      data.config.resultFn || initialValue.resultFn || templateResultFunc;
-    if (data.connectors.length === 0 && initialValue.serviceList?.length) {
-      data.connectors = initialValue.serviceList;
-      initialValue.serviceList.forEach((item: any) => {
-        const { title, inputSchema, outputSchema } = item.content || {};
-        const ctr = {
-          id: item.id,
-          type: sidebarContext.formModel.type || sidebarContext.type || 'http',
-          title,
-          inputSchema,
-          outputSchema,
-          script: getScript({
-            ...item.content,
-            globalParamsFn: data.config.paramsFn,
-            globalResultFn: data.config.resultFn,
-          }),
-        };
-        try {
-          sidebarContext.connector.add(ctr);
-        } catch (error) {
-          console.log(error);
-        }
-      });
-    }
-  }, []);
+	const onServiceItemTitleClick = (e, item) => {
+		e.stopPropagation();
+		const { id, content, type } = item;
+		if (type === SERVICE_TYPE.TG) return;
+		if (!content.mockAddress) {
+			sidebarContext.toolTipId = id;
+			setTimeout(() => {
+				sidebarContext.toolTipId = void 0;
+			}, 2500);
+			return;
+		}
+		sidebarContext.formModel = {
+			id,
+			...content,
+			useMock: !content.useMock,
+		};
+		updateService();
+	};
+	const initData = useCallback(() => {
+		data.config = data.config || {
+			paramsFn: initialValue.paramsFn,
+			resultFn: initialValue.resultFn,
+		};
+		if (data.connectors.length === 0 && initialValue.serviceList?.length) {
+			data.connectors = initialValue.serviceList;
+			initialValue.serviceList.forEach((item: any) => {
+				const { title, inputSchema, outputSchema } = item.content || {};
+				const ctr = {
+					id: item.id,
+					type: sidebarContext.formModel.type || sidebarContext.type || 'http',
+					title,
+					inputSchema,
+					outputSchema,
+					content: {
+						...item.content,
+						globalParamsFn: data.config.paramsFn,
+						globalResultFn: data.config.resultFn,
+					},
+				};
+				try {
+					sidebarContext.connector.add(ctr);
+				} catch (error) {
+					console.log(error);
+				}
+			});
+		}
+	}, []);
 
-  useMemo(() => {
-    data && initData();
-  }, []);
+	useMemo(() => {
+		data && initData();
+	}, []);
 
-  return (
-    <>
-      <div
-        ref={ref}
-        className={`${css['sidebar-panel']} ${css['sidebar-panel-open']}`}
-        onClick={() => Object.values(blurMap.current).forEach(fn => fn())}
-      >
-        <div className={`${css['sidebar-panel-view']}`}>
-          <div className={css['sidebar-panel-header']}>
-            <div className={css['sidebar-panel-header__title']}>
-              <span>服务连接</span>
-              <div className={css.icon} onClick={onGlobalConfigClick}>
-                {Icons.set}
-              </div>
-            </div>
-            <Toolbar
+	return (
+		<>
+			<div
+				ref={ref}
+				className={`${css['sidebar-panel']} ${css['sidebar-panel-open']}`}
+				onClick={() => Object.values(blurMap.current).forEach(fn => fn())}
+			>
+				<div className={`${css['sidebar-panel-view']}`}>
+					<div className={css['sidebar-panel-header']}>
+						<div className={css['sidebar-panel-header__title']}>
+							<span>服务连接</span>
+							<div className={css.icon} onClick={onGlobalConfigClick}>
+								{Icons.set}
+							</div>
+						</div>
+						<Toolbar
 	            blurMap={blurMap.current}
-              searchValue={searchValue}
-              ctx={sidebarContext}
-              setRender={setRender}
-            />
-          </div>
-          <div className={css['sidebar-panel-list']}>
-            {
+							searchValue={searchValue}
+							ctx={sidebarContext}
+							setRender={setRender}
+						/>
+					</div>
+					<div className={css['sidebar-panel-list']}>
+						{
 							data?.connectors
 								.filter((item) => item.content.type !== 'domain')
 		            .filter((item) => searchValue ? item.content.title.includes(searchValue) : true)
@@ -574,11 +591,11 @@ export default function Sidebar({
 		              );
 		            })
 						}
-          </div>
-        </div>
-        {renderAddActions()}
-        {renderGlobalPanel()}
-      </div>
-    </>
-  );
+					</div>
+				</div>
+				{renderAddActions()}
+				{renderGlobalPanel()}
+			</div>
+		</>
+	);
 }

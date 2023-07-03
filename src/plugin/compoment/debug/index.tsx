@@ -3,7 +3,6 @@ import {
 	formatSchema,
 	getDataByExcludeKeys,
 	getDataByOutputKeys,
-	getDecodeString,
 	jsonToSchema,
 	params2data,
 } from '../../../utils';
@@ -13,22 +12,21 @@ import ParamsEdit from '../paramsEdit';
 import Params from '../params';
 import OutputSchemaMock from '../outputSchemaMock';
 import FormItem from '../../../components/FormItem';
-import { getScript } from '../../../script';
 import { cloneDeep } from '../../../utils/lodash';
 import Button from '../../../components/Button';
 
 import css from './index.less';
 
 function DataShow({ data }: any) {
-  let valueStr = '';
-  try {
-    valueStr = JSON.stringify(data, null, 2);
-  } catch (error) {
-    console.log(error, 'error');
-  }
+	let valueStr = '';
+	try {
+		valueStr = JSON.stringify(data, null, 2);
+	} catch (error) {
+		console.log(error, 'error');
+	}
 	
 	return !valueStr ? null : (
-		<div style={{marginLeft: 87}}>
+		<div style={{ marginLeft: 87 }}>
 			<div className={css.title}>标记后的返回结果示例</div>
 			{/* @ts-ignore */}
 			<JSONView
@@ -45,47 +43,45 @@ function DataShow({ data }: any) {
 }
 
 export default function Debug({ sidebarContext, validate, globalConfig }: any) {
-  const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
-  const [remoteData, setData] = useState<any>();
-  const allDataRef = useRef<any>();
-  const [errorInfo, setError] = useState('');
-  const [params, setParams] = useState(sidebarContext.formModel.params);
-  const [edit, setEdit] = useState(false);
-  sidebarContext.formModel.params = sidebarContext.formModel.params || {
-    type: 'root',
-    name: 'root',
-    children: [],
-  };
-  useEffect(() => {
-    setSchema(sidebarContext.formModel.resultSchema);
-  }, [sidebarContext.formModel.resultSchema]);
+	const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
+	const [remoteData, setData] = useState<any>();
+	const allDataRef = useRef<any>();
+	const [errorInfo, setError] = useState('');
+	const [params, setParams] = useState(sidebarContext.formModel.params);
+	const [edit, setEdit] = useState(false);
+	sidebarContext.formModel.params = sidebarContext.formModel.params || {
+		type: 'root',
+		name: 'root',
+		children: [],
+	};
+	useEffect(() => {
+		setSchema(sidebarContext.formModel.resultSchema);
+	}, [sidebarContext.formModel.resultSchema]);
 
-  const onDebugClick = async () => {
-    try {
-      if (!validate()) return;
-      const originParams = sidebarContext.formModel.paramsList?.[0].data || [];
-      const params = params2data(originParams);
-      // setData([]);
-      setError('');
-      const data = await sidebarContext.connector.test(
-        {
-          type: sidebarContext.formModel.type || 'http',
-          mode: 'test',
-          id: sidebarContext.formModel.id,
-          script: getDecodeString(
-            getScript({
-              ...sidebarContext.formModel,
-              globalParamsFn: globalConfig.paramsFn,
-              globalResultFn: globalConfig.resultFn,
-              path: sidebarContext.formModel.path.trim(),
-              resultTransformDisabled: true,
-            })
-          ),
-        },
-        params
-      );
-      allDataRef.current = data;
-      let { outputKeys = [], excludeKeys = [] } = sidebarContext.formModel;
+	const onDebugClick = async () => {
+		try {
+			if (!validate()) return;
+			const originParams = sidebarContext.formModel.paramsList?.[0].data || [];
+			const params = params2data(originParams);
+			// setData([]);
+			setError('');
+			const data = await sidebarContext.connector.test(
+				{
+					type: sidebarContext.formModel.type || 'http',
+					mode: 'test',
+					id: sidebarContext.formModel.id,
+					content: {
+						...sidebarContext.formModel,
+						globalParamsFn: globalConfig.paramsFn,
+						globalResultFn: globalConfig.resultFn,
+						path: sidebarContext.formModel.path.trim(),
+						resultTransformDisabled: true,
+					},
+				},
+				params
+			);
+			allDataRef.current = data;
+			let { outputKeys = [], excludeKeys = [] } = sidebarContext.formModel;
 	    const resultSchema = jsonToSchema(data);
 	    sidebarContext.formModel.resultSchema = resultSchema;
 	
@@ -142,38 +138,38 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 		    } catch {}
 	    }
 	
-      setData(outputData);
+			setData(outputData);
 	
-      formatSchema(sidebarContext.formModel.resultSchema);
+			formatSchema(sidebarContext.formModel.resultSchema);
 	    formatSchema(outputSchema);
 	    const inputSchema = jsonToSchema(params || {});
 	    formatSchema(inputSchema);
 	    sidebarContext.formModel.outputKeys = outputKeys;
 	    sidebarContext.formModel.excludeKeys = excludeKeys;
 	    sidebarContext.formModel.outputSchema = outputSchema;
-      sidebarContext.formModel.inputSchema = inputSchema;
-      setSchema({ ...sidebarContext.formModel.resultSchema });
-    } catch (error: any) {
-      console.log(error);
-      sidebarContext.formModel.outputSchema = void 0;
-      sidebarContext.formModel.resultSchema = void 0;
-      setError(error?.message || error);
-    }
-  };
+			sidebarContext.formModel.inputSchema = inputSchema;
+			setSchema({ ...sidebarContext.formModel.resultSchema });
+		} catch (error: any) {
+			console.log(error);
+			sidebarContext.formModel.outputSchema = void 0;
+			sidebarContext.formModel.resultSchema = void 0;
+			setError(error?.message || error);
+		}
+	};
 
-  const onParamsChange = useCallback((params) => {
-    if (params !== void 0) {
-      const data = params2data(params || []);
-      const inputSchema = jsonToSchema(data);
-      formatSchema(inputSchema);
-      sidebarContext.formModel.inputSchema = inputSchema;
-      sidebarContext.formModel.params = params;
-      setParams(params);
-    }
-  }, []);
+	const onParamsChange = useCallback((params) => {
+		if (params !== void 0) {
+			const data = params2data(params || []);
+			const inputSchema = jsonToSchema(data);
+			formatSchema(inputSchema);
+			sidebarContext.formModel.inputSchema = inputSchema;
+			sidebarContext.formModel.params = params;
+			setParams(params);
+		}
+	}, []);
 
-  const onKeysChange = useCallback((outputKeys = [], excludeKeys = []) => {
-    const { resultSchema } = sidebarContext.formModel;
+	const onKeysChange = useCallback((outputKeys = [], excludeKeys = []) => {
+		const { resultSchema } = sidebarContext.formModel;
 		
 	  try {
 		  /** 当标记单项时，自动返回单项对应的值 */
@@ -288,91 +284,91 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 		  sidebarContext.formModel.outputKeys = outputKeys;
 		  sidebarContext.formModel.excludeKeys = excludeKeys;
 		  sidebarContext.formModel.outputSchema = newOutputSchema;
-    } catch (error) {
-      console.log(error);
-    }
-  }, []);
+		} catch (error) {
+			console.log(error);
+		}
+	}, []);
 
-  const onOutputKeysChange = useCallback(
-    (outputKeys) => {
-      onKeysChange(outputKeys, sidebarContext.formModel.excludeKeys);
-    },
-    [sidebarContext]
-  );
+	const onOutputKeysChange = useCallback(
+		(outputKeys) => {
+			onKeysChange(outputKeys, sidebarContext.formModel.excludeKeys);
+		},
+		[sidebarContext]
+	);
 
-  const onExcludeKeysChange = useCallback(
-    (excludeKeys) => {
-      onKeysChange(sidebarContext.formModel.outputKeys, excludeKeys);
-    },
-    [sidebarContext]
-  );
+	const onExcludeKeysChange = useCallback(
+		(excludeKeys) => {
+			onKeysChange(sidebarContext.formModel.outputKeys, excludeKeys);
+		},
+		[sidebarContext]
+	);
 
-  const onMockSchemaChange = useCallback((schema) => {
-    sidebarContext.formModel.resultSchema = schema;
-  }, []);
-  const editSchema = () => {
-    setEdit(true);
-  };
-  const saveSchema = () => {
-    setEdit(false);
-  };
-  return (
-    <>
-      <FormItem label='请求参数'>
-        <ParamsEdit
-          value={sidebarContext.formModel.params}
-          ctx={sidebarContext}
-          onChange={onParamsChange}
-        />
-      </FormItem>
-      <FormItem>
-        <Params
-          onDebugClick={onDebugClick}
-          ctx={sidebarContext}
-          params={params}
-        />
-      </FormItem>
-      {edit ? (
-        <>
-          <FormItem label='返回数据'>
-            {sidebarContext.formModel.resultSchema ? (
-              <Button
-                style={{ margin: 0, marginBottom: 6 }}
-                onClick={saveSchema}
-              >
+	const onMockSchemaChange = useCallback((schema) => {
+		sidebarContext.formModel.resultSchema = schema;
+	}, []);
+	const editSchema = () => {
+		setEdit(true);
+	};
+	const saveSchema = () => {
+		setEdit(false);
+	};
+	return (
+		<>
+			<FormItem label='请求参数'>
+				<ParamsEdit
+					value={sidebarContext.formModel.params}
+					ctx={sidebarContext}
+					onChange={onParamsChange}
+				/>
+			</FormItem>
+			<FormItem>
+				<Params
+					onDebugClick={onDebugClick}
+					ctx={sidebarContext}
+					params={params}
+				/>
+			</FormItem>
+			{edit ? (
+				<>
+					<FormItem label='返回数据'>
+						{sidebarContext.formModel.resultSchema ? (
+							<Button
+								style={{ margin: 0, marginBottom: 6 }}
+								onClick={saveSchema}
+							>
                 保存
-              </Button>
-            ) : null}
-            <OutputSchemaMock
-              schema={sidebarContext.formModel.resultSchema}
-              ctx={sidebarContext}
-              onChange={onMockSchemaChange}
-            />
-          </FormItem>
-        </>
-      ) : (
-        <>
-          <FormItem label='返回数据'>
-            {sidebarContext.formModel.resultSchema ? (
-              <Button
-                style={{ margin: 0, marginBottom: 6 }}
-                onClick={editSchema}
-              >
+							</Button>
+						) : null}
+						<OutputSchemaMock
+							schema={sidebarContext.formModel.resultSchema}
+							ctx={sidebarContext}
+							onChange={onMockSchemaChange}
+						/>
+					</FormItem>
+				</>
+			) : (
+				<>
+					<FormItem label='返回数据'>
+						{sidebarContext.formModel.resultSchema ? (
+							<Button
+								style={{ margin: 0, marginBottom: 6 }}
+								onClick={editSchema}
+							>
                 编辑
-              </Button>
-            ) : null}
-            <ReturnShema
-              outputKeys={sidebarContext.formModel.outputKeys}
-              excludeKeys={sidebarContext.formModel.excludeKeys}
-              onOutputKeysChange={onOutputKeysChange}
-              onExcludeKeysChange={onExcludeKeysChange}
-              schema={schema}
-              error={errorInfo}
-            />
-          </FormItem>
-          <DataShow data={remoteData} />
-        </>
-      )}
-    </>
-  );
+							</Button>
+						) : null}
+						<ReturnShema
+							outputKeys={sidebarContext.formModel.outputKeys}
+							excludeKeys={sidebarContext.formModel.excludeKeys}
+							onOutputKeysChange={onOutputKeysChange}
+							onExcludeKeysChange={onExcludeKeysChange}
+							schema={schema}
+							error={errorInfo}
+						/>
+					</FormItem>
+					<DataShow data={remoteData} />
+				</>
+			)}
+		</>
+	);
 }
