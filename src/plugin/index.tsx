@@ -13,7 +13,6 @@ import DefaultPanel from './compoment/defaultPanel';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
-import {getScript} from "../script";
 
 interface Iprops {
   connector: Iconnector;
@@ -134,18 +133,6 @@ export default function Sidebar({
 						  };
 						  data.connectors[index] = serviceItem;
 					  }
-						console.log('serviceItem', {
-							id: updateAll ? serviceItem.id : id,
-							title: others.title || serviceItem.content.title,
-							type: service.type,
-							inputSchema: serviceItem.content.inputSchema,
-							outputSchema: serviceItem.content.outputSchema,
-							script: JSON.stringify(decodeURIComponent(serviceItem.script || getScript({
-								...serviceItem.content,
-								globalParamsFn: data.config.paramsFn,
-								globalResultFn: data.config.resultFn,
-							}))),
-						});
 					  try {
 						  sidebarContext.connector.update({
 							  id: updateAll ? serviceItem.id : id,
