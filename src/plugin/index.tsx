@@ -192,7 +192,8 @@ export default function Sidebar({
       obj.type = SERVICE_TYPE.TG;
       obj.formModel = { id: item.id, type: item.type, ...item.content };
     } else {
-      obj.type = SERVICE_TYPE.HTTP;
+      const noUseInnerEdit = sidebarContext.addActions.find(action => action.type === item.type)?.noUseInnerEdit;
+      obj.type = noUseInnerEdit ? item.type : SERVICE_TYPE.HTTP;
       obj.formModel = {
         ...item.content,
         type: item.type,
@@ -202,7 +203,7 @@ export default function Sidebar({
       };
     }
     setRender(obj);
-  }, []);
+  }, [sidebarContext]);
 
   const onCopyItem = useCallback(async (item) => {
     sidebarContext.formModel = cloneDeep(item.content);
@@ -335,6 +336,8 @@ export default function Sidebar({
         curAction?.render({
           onClose: closeTemplateForm,
           originConnectors: cloneDeep(data.connectors),
+					globalConfig: data.config,
+          initService: sidebarContext.isEdit ? sidebarContext.formModel : undefined,
           connectorService: {
             add(item: Record<string, any>) {
               updateService('create', item);
@@ -474,15 +477,17 @@ export default function Sidebar({
 		              const expand = sidebarContext.expandId === item.id;
 		              item.updateTime = formatDate(item.updateTime || item.createTime);
 		              const { useMock, type } = item.content;
+                  const curAction = sidebarContext.addActions.find(action => action.type === type);
 									let typeLabel = '接口';
 			
 									if (useMock) {
 										typeLabel = 'Mock';
 									} else if (sidebarContext.addActions.length > 1) {
-										typeLabel = sidebarContext.addActions.find(action => action.type === type)?.title || typeLabel;
+                    typeLabel = curAction?.title || typeLabel;
 									}
-									
-		              return (
+                  const curTitle = curAction?.getTitle?.(item) || item.content.title;
+
+                  return (
 		                <div key={item.id}>
 		                  <div
 		                    key={item.id}
@@ -515,7 +520,7 @@ export default function Sidebar({
 		                          {typeLabel}
 		                        </div>
 		                        <div className={css.name}>
-		                          <span>{item.content.title}</span>
+		                          <span data-mybricks-tip={curTitle || undefined}>{curTitle}</span>
 		                        </div>
 		                      </div>
 		                      <div className={css['sidebar-panel-list-item__right']}>

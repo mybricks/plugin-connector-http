@@ -1,5 +1,5 @@
-import React, {FC, useEffect} from 'react';
-import {render, unmountComponentAtNode} from "react-dom";
+import React, { FC, useEffect } from 'react';
+import { render, unmountComponentAtNode } from 'react-dom';
 
 let container = document.querySelector('[data-id=http-plugin-panel-root]');
 if (!container) {
@@ -13,10 +13,10 @@ const PanelWrap: FC = props => {
 		
 		return () => {
 			unmountComponentAtNode(container);
-		}
+		};
 	}, []);
 	
-  return null;
+	return null;
 };
 
 export default PanelWrap;

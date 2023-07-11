@@ -42,6 +42,10 @@ export function call(
             const opts = before({ ...options });
             const { url } = opts;
 
+            if (!url) {
+              reject('请求路径不能为空');
+            }
+
             if (connector.useProxy && httpRegExp.test(url)) {
               return axios({url: '/paas/api/proxy', method: 'post', data: opts || options}).then((res: any) => res.data).catch(error => {
                 reject(error)

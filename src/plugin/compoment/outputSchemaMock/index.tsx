@@ -20,6 +20,7 @@ function DataShow({ data }: any) {
   } catch (error) {}
   return isEmpty(data) ? null : (
     <FormItem label='Mock数据'>
+      {/* @ts-ignore */}
       <JSONView
         width={430}
         value={valueStr}
@@ -312,6 +313,6 @@ function formatValue(item, key, val) {
     ['minimum', 'maximum', false],
     ['maximum', 'minimum', true],
   ].forEach(([start, end, le]) => {
-    validate(item, val, start, end, le);
+    validate(item, val, start, end, le as boolean);
   });
 }
