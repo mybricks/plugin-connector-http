@@ -11,6 +11,7 @@ export default function GlobalPanel({
   style,
   data,
   onChange,
+	envList
 }: any) {
 	return ReactDOM.createPortal(
 	  (
@@ -86,6 +87,30 @@ export default function GlobalPanel({
 					  </Collapse>
 				  </div>
 			  ) : null}
+				{data.config?.envList?.length ? (
+					<div className={curCss.item}>
+						<Collapse header="环境配置" defaultFold={false}>
+							{data.config.envList.map(env => {
+								return (
+									<div className={curCss.envItem} key={env.name}>
+										<label>{env.title}</label>
+										<div className={`${curCss.editor} ${curCss.textEdt}`}>
+											<input
+												type="text"
+												placeholder="请填写环境的请求域名前缀"
+												defaultValue={env.defaultApiPrePath}
+												onChange={e => {
+													env.defaultApiPrePath = e.target.value;
+													onChange({ envList: data.config.envList });
+												}}
+											/>
+										</div>
+									</div>
+								);
+							})}
+						</Collapse>
+					</div>
+				) : null}
 		  </div>
 	  ),
     document.body

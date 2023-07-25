@@ -25,6 +25,7 @@ export function call(
     id: string;
     script: string;
     useProxy?: boolean;
+    executeEnv?: string;
     [key: string]: any
   },
   params: any,
@@ -38,6 +39,7 @@ export function call(
         params,
         { then: resolve, onError: reject },
         {
+          executeEnv: connector.executeEnv,
           ajax(options: IOptions) {
             const opts = before({ ...options });
             const { url } = opts;
@@ -59,6 +61,7 @@ export function call(
         }
       );
     } catch (ex) {
+      console.log('连接器错误', ex);
       reject(`连接器script错误.`);
     }
   });

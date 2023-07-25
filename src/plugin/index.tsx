@@ -23,9 +23,10 @@ interface Iprops {
   addActions?: any[];
   data: {
     connectors: any[];
-    config: { paramsFn: string; resultFn?: string };
+    config: { paramsFn: string; resultFn?: string; envList?: Array<{ name: string; title: string; defaultApiPrePath: string; }> };
   };
   initialValue: any;
+	envList?: Array<{ name: string; title: string; defaultApiPrePath: string }>;
 }
 
 interface Iconnector {
@@ -50,6 +51,7 @@ export default function Sidebar({
   data,
 	serviceListUrl,
   initialValue = {},
+	envList = []
 }: Iprops) {
   const ref = useRef<HTMLDivElement>(null);
   const blurMap = useRef<Record<string, () => void>>({});
@@ -116,6 +118,7 @@ export default function Sidebar({
 					  ...serviceItem.content,
 					  globalParamsFn: data.config.paramsFn,
 					  globalResultFn: data.config.resultFn,
+					  envList: data.config.envList,
 				  }),
 			  });
 		  } else {
@@ -142,6 +145,7 @@ export default function Sidebar({
 								  ...serviceItem.content,
 								  globalParamsFn: data.config.paramsFn,
 								  globalResultFn: data.config.resultFn,
+									envList: data.config.envList,
 							  }),
 						  });
 					  } catch (error) {}
@@ -376,10 +380,11 @@ export default function Sidebar({
         style={{ top: ref.current?.getBoundingClientRect().top }}
         closeTemplateForm={closeTemplateForm}
         data={data}
+				envList={envList}
         onChange={onGlobalConfigChange}
       />
     ) : null;
-  }, [sidebarContext]);
+  }, [sidebarContext, envList]);
 
   const getInterfaceParams = useCallback((item) => {
     if (item.type === SERVICE_TYPE.TG) {
@@ -445,6 +450,20 @@ export default function Sidebar({
   useMemo(() => {
     data && initData();
   }, []);
+
+	useEffect(() => {
+		if (envList?.length) {
+			data.config.envList = envList.map(env => {
+				const find = data.config.envList?.find(e => e.name === env.name);
+
+				if (find) {
+					return { ...env, defaultApiPrePath: find.defaultApiPrePath };
+				} else {
+					return { ...env };
+				}
+			});
+		}
+	}, [envList]);
 
   return (
     <>

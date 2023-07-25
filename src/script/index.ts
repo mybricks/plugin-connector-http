@@ -72,6 +72,7 @@ function getScript(serviceItem) {
       const outputKeys = __outputKeys__;
       const excludeKeys = __excludeKeys__;
       const resultTransformDisabled = __resultTransformDisabled__;
+      const envList = __envList__;
 
       try {
         const url = path;
@@ -90,6 +91,12 @@ function getScript(serviceItem) {
           return param;
         });
         options.method = options.method || method;
+        if (envList.length && config.executeEnv) {
+          const env = envList.find(e => e.name === config.executeEnv);
+          if (env && env.defaultApiPrePath && !/^(https?|ws)/.test(options.url)) {
+            options.url = env.defaultApiPrePath + options.url;
+          }
+        }
         config
           .ajax(options)
           .then((response) => {
@@ -189,6 +196,7 @@ function getScript(serviceItem) {
         '__hasGlobalResultFn__',
         serviceItem.globalResultFn ? true : false
       )
+      .replace('__envList__', JSON.stringify(serviceItem.envList ?? []))
       .replace('__method__', serviceItem.method)
       .replace('__path__', serviceItem.path.trim())
       .replace('__outputKeys__', JSON.stringify(serviceItem.outputKeys))
