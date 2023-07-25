@@ -449,10 +449,8 @@ export default function Sidebar({
 
   useMemo(() => {
     data && initData();
-  }, []);
 
-	useEffect(() => {
-		if (envList?.length) {
+		if (envList?.length && data?.config) {
 			data.config.envList = envList.map(env => {
 				const find = data.config.envList?.find(e => e.name === env.name);
 
@@ -463,7 +461,7 @@ export default function Sidebar({
 				}
 			});
 		}
-	}, [envList]);
+  }, []);
 
   return (
     <>
