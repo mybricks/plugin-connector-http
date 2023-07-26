@@ -48,7 +48,7 @@ export function call(
               reject('请求路径不能为空');
             }
 
-            if (connector.useProxy && httpRegExp.test(url)) {
+            if (connector.useProxy && httpRegExp.test(url) && !url.startsWith(location.origin)) {
               return axios({url: '/paas/api/proxy', method: 'post', data: opts || options}).then((res: any) => res.data).catch(error => {
                 reject(error)
               })
