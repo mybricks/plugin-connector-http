@@ -370,3 +370,35 @@ export function safeDecode(code: string) {
     return code;
   }
 }
+
+export const extractParamsBySchema = (originSchema) => {
+	const params = { id: uuid(), name: 'root', type: 'root', children: [] };
+
+	const dfs = (param, schema) => {
+		if (schema.type === 'object') {
+			Object.keys(schema.properties).forEach(key => {
+				const property = schema.properties[key];
+				const item = { type: property.type, name: key, id: uuid(), defaultValue: property.defaultValue ?? '', children: []  };
+				param.children.push(item);
+
+				if (['array', 'object'].includes(property.type)) {
+					dfs(item, property);
+				}
+			});
+		} else if (schema.type === 'array') {
+			if (!schema.items?.type) {
+				return;
+			}
+			const item = { type: schema.items.type, name: '0', id: uuid(), defaultValue: schema.items.defaultValue ?? '', children: []  };
+			param.children.push(item);
+
+			if (['array', 'object'].includes(schema.items.type)) {
+				dfs(item, schema.items);
+			}
+		}
+	};
+
+	dfs(params, originSchema);
+
+	return params;
+};
