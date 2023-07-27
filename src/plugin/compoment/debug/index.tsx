@@ -46,12 +46,19 @@ function DataShow({ data }: any) {
 	);
 }
 
+const CodeIcon = (
+	<svg viewBox="0 0 1027 1024" width="16" height="16" fill="currentColor">
+		<path d="M321.828571 226.742857c-14.628571-14.628571-36.571429-14.628571-51.2 0L7.314286 482.742857c-14.628571 14.628571-14.628571 36.571429 0 51.2l256 256c14.628571 14.628571 36.571429 14.628571 51.2 0 14.628571-14.628571 14.628571-36.571429 0-51.2L87.771429 512l234.057142-234.057143c7.314286-14.628571 7.314286-36.571429 0-51.2z m263.314286 0c-14.628571 0-36.571429 7.314286-43.885714 29.257143l-131.657143 497.371429c-7.314286 21.942857 7.314286 36.571429 29.257143 43.885714s36.571429-7.314286 43.885714-29.257143l131.657143-497.371429c7.314286-14.628571-7.314286-36.571429-29.257143-43.885714z m431.542857 256l-256-256c-14.628571-14.628571-36.571429-14.628571-51.2 0-14.628571 14.628571-14.628571 36.571429 0 51.2L936.228571 512l-234.057142 234.057143c-14.628571 14.628571-14.628571 36.571429 0 51.2 14.628571 14.628571 36.571429 14.628571 51.2 0l256-256c14.628571-14.628571 14.628571-43.885714 7.314285-58.514286z"></path>
+	</svg>
+);
 export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
 	const [showParamsCode, setShowParamsCode] = useState(false);
+	const [showResponseCode, setShowResponseCode] = useState(false);
   const allDataRef = useRef<any>();
   const codeTextRef = useRef<HTMLTextAreaElement>(null);
+  const responseCodeTextRef = useRef<HTMLTextAreaElement>(null);
   const [errorInfo, setError] = useState('');
   const [params, setParams] = useState(sidebarContext.formModel.params);
   const [edit, setEdit] = useState(false);
@@ -322,7 +329,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
     setEdit(false);
   };
 
-	const toggleCodeShow = useCallback(event => {
+	const toggleParamsCodeShow = useCallback(event => {
 		event.stopPropagation();
 		if (showParamsCode) {
 			try {
@@ -346,9 +353,27 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 		}
 
 		setShowParamsCode(!showParamsCode);
-	}, [showParamsCode, sidebarContext.formModel.params]);
+	}, [showParamsCode]);
 
-  return (
+	const toggleResponseCodeShow = useCallback(event => {
+		event.stopPropagation();
+		if (showResponseCode) {
+			try {
+				const jsonSchema = JSON.parse(responseCodeTextRef.current?.value);
+
+				if (JSON.stringify(sidebarContext.formModel.resultSchema) !== JSON.stringify(jsonSchema)) {
+					sidebarContext.formModel.resultSchema = jsonSchema;
+				}
+			} catch (e) {
+				console.warn('JSON 解析错误', e);
+				notice('JSON 解析错误，此次变更被忽略', { type: 'warning' });
+			}
+		}
+
+		setShowResponseCode(!showResponseCode);
+	}, [showResponseCode]);
+
+	return (
     <>
 			<div className={css.paramEditContainer}>
 				{showParamsCode ? (
@@ -380,54 +405,67 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 					</>
 				)}
 
-
-				<div className={`${css.codeIcon} ${showParamsCode ? css.focus : ''}`} onClick={toggleCodeShow}>
-					<svg viewBox="0 0 1027 1024" width="16" height="16" fill="currentColor">
-						<path d="M321.828571 226.742857c-14.628571-14.628571-36.571429-14.628571-51.2 0L7.314286 482.742857c-14.628571 14.628571-14.628571 36.571429 0 51.2l256 256c14.628571 14.628571 36.571429 14.628571 51.2 0 14.628571-14.628571 14.628571-36.571429 0-51.2L87.771429 512l234.057142-234.057143c7.314286-14.628571 7.314286-36.571429 0-51.2z m263.314286 0c-14.628571 0-36.571429 7.314286-43.885714 29.257143l-131.657143 497.371429c-7.314286 21.942857 7.314286 36.571429 29.257143 43.885714s36.571429-7.314286 43.885714-29.257143l131.657143-497.371429c7.314286-14.628571-7.314286-36.571429-29.257143-43.885714z m431.542857 256l-256-256c-14.628571-14.628571-36.571429-14.628571-51.2 0-14.628571 14.628571-14.628571 36.571429 0 51.2L936.228571 512l-234.057142 234.057143c-14.628571 14.628571-14.628571 36.571429 0 51.2 14.628571 14.628571 36.571429 14.628571 51.2 0l256-256c14.628571-14.628571 14.628571-43.885714 7.314285-58.514286z"></path>
-					</svg>
+				<div className={`${css.codeIcon} ${showParamsCode ? css.focus : ''}`} onClick={toggleParamsCodeShow}>
+					{CodeIcon}
 				</div>
 			</div>
-      {edit ? (
-        <>
-          <FormItem label='返回数据'>
-            {sidebarContext.formModel.resultSchema ? (
-              <Button
-                style={{ margin: 0, marginBottom: 6 }}
-                onClick={saveSchema}
-              >
-                保存
-              </Button>
-            ) : null}
-            <OutputSchemaMock
-              schema={sidebarContext.formModel.resultSchema}
-              ctx={sidebarContext}
-              onChange={onMockSchemaChange}
-            />
-          </FormItem>
-        </>
-      ) : (
-        <>
-          <FormItem label='返回数据'>
-            {sidebarContext.formModel.resultSchema ? (
-              <Button
-                style={{ margin: 0, marginBottom: 6 }}
-                onClick={editSchema}
-              >
-                编辑
-              </Button>
-            ) : null}
-            <ReturnShema
-              outputKeys={sidebarContext.formModel.outputKeys}
-              excludeKeys={sidebarContext.formModel.excludeKeys}
-              onOutputKeysChange={onOutputKeysChange}
-              onExcludeKeysChange={onExcludeKeysChange}
-              schema={schema}
-              error={errorInfo}
-            />
-          </FormItem>
-          <DataShow data={remoteData} />
-        </>
-      )}
-    </>
+			{edit ? (
+				<>
+					<FormItem label='返回数据'>
+						{sidebarContext.formModel.resultSchema ? (
+							<Button
+								style={{margin: 0, marginBottom: 6}}
+								onClick={saveSchema}
+							>
+								保存
+							</Button>
+						) : null}
+						<OutputSchemaMock
+							schema={sidebarContext.formModel.resultSchema}
+							ctx={sidebarContext}
+							onChange={onMockSchemaChange}
+						/>
+					</FormItem>
+				</>
+			) : (
+				<>
+					<FormItem label='返回数据'>
+						{showResponseCode ? (
+							<textarea
+								ref={responseCodeTextRef}
+								className={css.codeText}
+								cols={30}
+								rows={10}
+								defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}
+							/>
+						) : (
+							<>
+								{sidebarContext.formModel.resultSchema ? (
+									<Button
+										style={{margin: 0, marginBottom: 6}}
+										onClick={editSchema}
+									>
+										编辑
+									</Button>
+								) : null}
+								<ReturnShema
+									outputKeys={sidebarContext.formModel.outputKeys}
+									excludeKeys={sidebarContext.formModel.excludeKeys}
+									onOutputKeysChange={onOutputKeysChange}
+									onExcludeKeysChange={onExcludeKeysChange}
+									schema={schema}
+									error={errorInfo}
+								/>
+							</>
+						)}
+
+						<div className={`${css.codeIcon} ${css.responseCodeIcon} ${showResponseCode ? css.focus : ''}`} onClick={toggleResponseCodeShow}>
+							{CodeIcon}
+						</div>
+					</FormItem>
+					<DataShow data={remoteData}/>
+				</>
+			)}
+		</>
   );
 }
