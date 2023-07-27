@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+	extractParamsBySchema,
 	formatSchema,
 	getDataByExcludeKeys,
 	getDataByOutputKeys,
@@ -16,6 +17,7 @@ import FormItem from '../../../components/FormItem';
 import { getScript } from '../../../script';
 import { cloneDeep } from '../../../utils/lodash';
 import Button from '../../../components/Button';
+import {notice} from '../../../components/Message';
 
 import css from './index.less';
 
@@ -47,7 +49,9 @@ function DataShow({ data }: any) {
 export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
+	const [showParamsCode, setShowParamsCode] = useState(false);
   const allDataRef = useRef<any>();
+  const codeTextRef = useRef<HTMLTextAreaElement>(null);
   const [errorInfo, setError] = useState('');
   const [params, setParams] = useState(sidebarContext.formModel.params);
   const [edit, setEdit] = useState(false);
@@ -317,22 +321,72 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const saveSchema = () => {
     setEdit(false);
   };
+
+	const toggleCodeShow = useCallback(event => {
+		event.stopPropagation();
+		if (showParamsCode) {
+			try {
+				const jsonSchema = JSON.parse(codeTextRef.current?.value);
+
+				if (jsonSchema.type !== 'object') {
+					notice('JSON 最外层必须为对象类型', { type: 'warning' });
+					return;
+				}
+
+				if (JSON.stringify(sidebarContext.formModel.inputSchema) !== JSON.stringify(jsonSchema)) {
+					sidebarContext.formModel.inputSchema = jsonSchema;
+					const params = extractParamsBySchema(jsonSchema);
+					sidebarContext.formModel.params = params;
+					setParams(params);
+				}
+			} catch (e) {
+				console.warn('JSON 解析错误', e);
+				notice('JSON 解析错误，此次变更被忽略', { type: 'warning' });
+			}
+		}
+
+		setShowParamsCode(!showParamsCode);
+	}, [showParamsCode, sidebarContext.formModel.params]);
+
   return (
     <>
-      <FormItem label='请求参数'>
-        <ParamsEdit
-          value={sidebarContext.formModel.params}
-          ctx={sidebarContext}
-          onChange={onParamsChange}
-        />
-      </FormItem>
-      <FormItem>
-        <Params
-          onDebugClick={onDebugClick}
-          ctx={sidebarContext}
-          params={params}
-        />
-      </FormItem>
+			<div className={css.paramEditContainer}>
+				{showParamsCode ? (
+					<FormItem label='请求参数'>
+						<textarea
+							ref={codeTextRef}
+							className={css.codeText}
+							cols={30}
+							rows={10}
+							defaultValue={JSON.stringify(sidebarContext.formModel.inputSchema, null, 2)}
+						/>
+					</FormItem>
+				) : (
+					<>
+						<FormItem label='请求参数'>
+							<ParamsEdit
+								value={sidebarContext.formModel.params}
+								ctx={sidebarContext}
+								onChange={onParamsChange}
+							/>
+						</FormItem>
+						<FormItem>
+							<Params
+								onDebugClick={onDebugClick}
+								ctx={sidebarContext}
+								params={params}
+							/>
+						</FormItem>
+					</>
+				)}
+
+
+				<div className={`${css.codeIcon} ${showParamsCode ? css.focus : ''}`} onClick={toggleCodeShow}>
+					<svg viewBox="0 0 1027 1024" width="16" height="16" fill="currentColor">
+						<path d="M321.828571 226.742857c-14.628571-14.628571-36.571429-14.628571-51.2 0L7.314286 482.742857c-14.628571 14.628571-14.628571 36.571429 0 51.2l256 256c14.628571 14.628571 36.571429 14.628571 51.2 0 14.628571-14.628571 14.628571-36.571429 0-51.2L87.771429 512l234.057142-234.057143c7.314286-14.628571 7.314286-36.571429 0-51.2z m263.314286 0c-14.628571 0-36.571429 7.314286-43.885714 29.257143l-131.657143 497.371429c-7.314286 21.942857 7.314286 36.571429 29.257143 43.885714s36.571429-7.314286 43.885714-29.257143l131.657143-497.371429c7.314286-14.628571-7.314286-36.571429-29.257143-43.885714z m431.542857 256l-256-256c-14.628571-14.628571-36.571429-14.628571-51.2 0-14.628571 14.628571-14.628571 36.571429 0 51.2L936.228571 512l-234.057142 234.057143c-14.628571 14.628571-14.628571 36.571429 0 51.2 14.628571 14.628571 36.571429 14.628571 51.2 0l256-256c14.628571-14.628571 14.628571-43.885714 7.314285-58.514286z"></path>
+					</svg>
+				</div>
+			</div>
       {edit ? (
         <>
           <FormItem label='返回数据'>
