@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+	extractParamsAndSchemaByJSON,
 	extractParamsBySchema,
 	formatSchema,
 	getDataByExcludeKeys,
@@ -335,16 +336,21 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 			try {
 				const jsonSchema = JSON.parse(codeTextRef.current?.value);
 
-				if (jsonSchema.type !== 'object') {
-					notice('JSON 最外层必须为对象类型', { type: 'warning' });
-					return;
-				}
+				if (jsonSchema.type === 'object' && !!jsonSchema.properties) {
+					if (JSON.stringify(sidebarContext.formModel.inputSchema) !== JSON.stringify(jsonSchema)) {
+						sidebarContext.formModel.inputSchema = jsonSchema;
+						const params = extractParamsBySchema(jsonSchema);
+						sidebarContext.formModel.params = params;
+						setParams(params);
+					}
+				} else if (Object.prototype.toString.call(jsonSchema) === '[object Object]') {
+					const { params, originSchema } = extractParamsAndSchemaByJSON(jsonSchema);
 
-				if (JSON.stringify(sidebarContext.formModel.inputSchema) !== JSON.stringify(jsonSchema)) {
-					sidebarContext.formModel.inputSchema = jsonSchema;
-					const params = extractParamsBySchema(jsonSchema);
+					sidebarContext.formModel.inputSchema = originSchema;
 					sidebarContext.formModel.params = params;
 					setParams(params);
+				} else {
+					notice('JSON 描述不合法，此次变更被忽略', { type: 'warning' });
 				}
 			} catch (e) {
 				console.warn('JSON 解析错误', e);
@@ -385,6 +391,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 							rows={10}
 							defaultValue={JSON.stringify(sidebarContext.formModel.inputSchema, null, 2)}
 						/>
+						<div>支持识别 JSON、JSON Schema 等描述协议</div>
 					</FormItem>
 				) : (
 					<>
@@ -431,13 +438,16 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 				<>
 					<FormItem label='返回数据'>
 						{showResponseCode ? (
-							<textarea
-								ref={responseCodeTextRef}
-								className={css.codeText}
-								cols={30}
-								rows={10}
-								defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}
-							/>
+							<>
+								<textarea
+									ref={responseCodeTextRef}
+									className={css.codeText}
+									cols={30}
+									rows={10}
+									defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}
+								/>
+								<div>支持识别JSON Schema 描述协议</div>
+							</>
 						) : (
 							<>
 								{sidebarContext.formModel.resultSchema ? (

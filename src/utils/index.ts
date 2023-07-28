@@ -402,3 +402,38 @@ export const extractParamsBySchema = (originSchema) => {
 
 	return params;
 };
+
+export const extractParamsAndSchemaByJSON = (json) => {
+	const params = { id: uuid(), name: 'root', type: 'root', children: [] };
+	const originSchema = jsonToSchema(json);
+	formatSchema(originSchema);
+
+	const dfs = (param, json) => {
+		if (!json) {
+			return;
+		}
+
+		if (Array.isArray(json)) {
+			json.forEach((value, index) => {
+				const type = value === null || value === void 0 ? 'string' : (Array.isArray(value) ? 'array' : typeof value);
+				const item = { name: String(index), id: uuid(), defaultValue: ['object', 'array'].includes(type) ? '' : value, children: [], type };
+
+				param.children.push(item);
+
+				dfs(item, value);
+			});
+		} else if (typeof json === 'object') {
+			Object.keys(json).forEach(key => {
+				const type = json[key] === null || json[key] === void 0 ? 'string' : (Array.isArray(json[key]) ? 'array' : typeof json[key]);
+				const item = { name: key, id: uuid(), defaultValue: ['object', 'array'].includes(type) ? '' : json[key], children: [], type };
+				param.children.push(item);
+
+				dfs(item, json[key]);
+			});
+		}
+	};
+
+	dfs(params, json);
+
+	return { params, originSchema };
+};
