@@ -14,7 +14,7 @@ module.exports = merge(commonCfg, {
     filename: '[name].js',
     path: resolve(process.cwd(), 'runtime'),
     libraryTarget: 'umd',
-    library: 'pluginConnectorHttp'
+    library: '@mybricks/plugins/service'
   },
   externals: [
     {
