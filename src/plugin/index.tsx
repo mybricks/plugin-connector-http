@@ -15,6 +15,7 @@ import {getScript} from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
+import Switch from '../components/Switch';
 import GlobalContext from '../context';
 
 interface Iprops {
@@ -24,7 +25,7 @@ interface Iprops {
   addActions?: any[];
   data: {
     connectors: any[];
-    config: { paramsFn: string; resultFn?: string; envList?: Array<{ name: string; title: string; defaultApiPrePath: string; }> };
+    config: { paramsFn: string; resultFn?: string; envList?: Array<{ name: string; title: string; defaultApiPrePath: string; }>; globalMock?: boolean };
   };
   initialValue: any;
 	envList?: Array<{ name: string; title: string; defaultApiPrePath: string }>;
@@ -113,6 +114,7 @@ export default function Sidebar({
 				  type:
 					  sidebarContext.formModel.type || sidebarContext.type || 'http',
 				  title: others.title,
+					globalMock: data.config.globalMock,
 				  inputSchema: others.inputSchema,
 				  outputSchema: others.outputSchema,
 			  });
@@ -146,6 +148,7 @@ export default function Sidebar({
 							  id: updateAll ? serviceItem.id : id,
 							  title: others.title || serviceItem.content.title,
 							  type: service.type,
+								globalMock: data.config.globalMock,
 							  inputSchema: serviceItem.content.inputSchema,
 							  outputSchema: serviceItem.content.outputSchema,
 						  });
@@ -458,6 +461,7 @@ export default function Sidebar({
           id: item.id,
           type: sidebarContext.formModel.type || sidebarContext.type || 'http',
           title,
+					globalMock: data.config.globalMock,
           inputSchema,
           outputSchema,
         };
@@ -480,6 +484,11 @@ export default function Sidebar({
       });
     }
   }, []);
+
+	const onChangeGlobalMock = useCallback((globalMock) => {
+		data.config.globalMock = globalMock;
+		updateService('updateAll');
+	}, []);
 
   useMemo(() => {
     data && initData();
@@ -510,9 +519,15 @@ export default function Sidebar({
           <div className={css['sidebar-panel-header']}>
             <div className={css['sidebar-panel-header__title']}>
               <span>服务连接</span>
-              <div className={css.icon} onClick={onGlobalConfigClick}>
-                {Icons.set}
-              </div>
+							<div className={css.rightOperate}>
+								<div className={css.globalMock}>
+									<span>全局 Mock:</span>
+									<Switch defaultChecked={data.config.globalMock} onChange={onChangeGlobalMock} />
+								</div>
+								<div className={css.icon} onClick={onGlobalConfigClick}>
+									{Icons.set}
+								</div>
+							</div>
             </div>
             <Toolbar
 	            blurMap={blurMap.current}
