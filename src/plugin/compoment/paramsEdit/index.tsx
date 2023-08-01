@@ -98,6 +98,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
           <select
             className={css.column2}
             value={item.type}
+            style={{ color: '#8d7a34', cursor: 'pointer' }}
             onChange={(e) => set(item, 'type', e.target.value)}
           >
             <option label={'字符'} value={'string'} />
@@ -147,9 +148,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
   return (
     <>
       <div>
-        {value?.children?.length === 0 ? (
-          null
-        ) : (
+        {value?.children?.length === 0 ? null : (
           <>
             <div className={css.header}>
               <p className={css.column1}>字段名</p>
