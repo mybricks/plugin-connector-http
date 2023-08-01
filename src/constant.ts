@@ -1,3 +1,5 @@
+export const PLUGIN_CONNECTOR_NAME = '@mybricks/plugins/service';
+
 export const exampleParamsFunc = `export default function ({ params, data, headers, url, method }) {
   // 设置请求query、请求体、请求头
   return { params, data, headers, url, method };

@@ -18,7 +18,8 @@ import FormItem from '../../../components/FormItem';
 import { getScript } from '../../../script';
 import { cloneDeep } from '../../../utils/lodash';
 import Button from '../../../components/Button';
-import {notice} from '../../../components/Message';
+import { notice } from '../../../components/Message';
+import { PLUGIN_CONNECTOR_NAME } from '../../../constant';
 
 import css from './index.less';
 
@@ -84,6 +85,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
           type: sidebarContext.formModel.type || 'http',
           mode: 'test',
           id: sidebarContext.formModel.id,
+					connectorName: PLUGIN_CONNECTOR_NAME,
           script: getDecodeString(
             getScript({
               ...sidebarContext.formModel,

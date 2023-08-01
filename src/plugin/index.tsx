@@ -4,8 +4,8 @@ import {
 	exampleParamsFunc,
 	exampleResultFunc,
 	GLOBAL_PANEL,
+	PLUGIN_CONNECTOR_NAME,
 	SERVICE_TYPE,
-	templateResultFunc,
 } from '../constant';
 import css from '../style-cssModules.less';
 import {cloneDeep, get} from '../utils/lodash';
@@ -114,6 +114,7 @@ export default function Sidebar({
 				  type:
 					  sidebarContext.formModel.type || sidebarContext.type || 'http',
 				  title: others.title,
+					connectorName: PLUGIN_CONNECTOR_NAME,
 					globalMock: data.config.globalMock,
 				  inputSchema: others.inputSchema,
 				  outputSchema: others.outputSchema,
@@ -148,6 +149,7 @@ export default function Sidebar({
 							  id: updateAll ? serviceItem.id : id,
 							  title: others.title || serviceItem.content.title,
 							  type: service.type,
+								connectorName: PLUGIN_CONNECTOR_NAME,
 								globalMock: data.config.globalMock,
 							  inputSchema: serviceItem.content.inputSchema,
 							  outputSchema: serviceItem.content.outputSchema,
@@ -367,7 +369,9 @@ export default function Sidebar({
             update(item: Record<string, any>) {
               updateService('update', item);
             },
-            test: sidebarContext.connector.test,
+            test: (connector, params, config) => {
+							return sidebarContext.connector.test({ ...connector, connectorName: PLUGIN_CONNECTOR_NAME, mode: 'test' }, params, config);
+						},
           }
         }) || null
 			);
@@ -432,27 +436,6 @@ export default function Sidebar({
     updateService();
   };
   const initData = useCallback(() => {
-    data.config = data.config || {
-      paramsFn:
-        initialValue.paramsFn || encodeURIComponent(exampleParamsFunc),
-      resultFn: initialValue.resultFn || templateResultFunc,
-    };
-    data.config.resultFn =
-      data.config.resultFn || initialValue.resultFn || templateResultFunc;
-
-		/** 初始化 envList */
-		if (envList?.length && data?.config) {
-			data.config.envList = envList.map(env => {
-				const find = data.config.envList?.find(e => e.name === env.name);
-
-				if (find) {
-					return { ...env, defaultApiPrePath: find.defaultApiPrePath };
-				} else {
-					return { ...env };
-				}
-			});
-		}
-
     if (data.connectors.length === 0 && initialValue.serviceList?.length) {
       data.connectors = initialValue.serviceList;
       initialValue.serviceList.forEach((item: any) => {
@@ -461,6 +444,7 @@ export default function Sidebar({
           id: item.id,
           type: sidebarContext.formModel.type || sidebarContext.type || 'http',
           title,
+					connectorName: PLUGIN_CONNECTOR_NAME,
 					globalMock: data.config.globalMock,
           inputSchema,
           outputSchema,
@@ -490,27 +474,8 @@ export default function Sidebar({
 		updateService('updateAll');
 	}, []);
 
-	const onChangeGlobalMock = useCallback((globalMock) => {
-		data.config.globalMock = globalMock;
-		updateService('updateAll');
-	}, []);
-
   useMemo(() => {
     data && initData();
-
-		GlobalContext.init(data.connectors.map(con => {
-			return {
-				id: con.id,
-				type: con.type,
-				title: con.content.title,
-				script: getScript({
-					...con.content,
-					globalParamsFn: data.config.paramsFn,
-					globalResultFn: data.config.resultFn,
-					envList: data.config.envList,
-				}),
-			};
-		}));
   }, []);
 
   return (
