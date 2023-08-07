@@ -490,11 +490,6 @@ export default function Sidebar({
 		updateService('updateAll');
 	}, []);
 
-	const onChangeGlobalMock = useCallback((globalMock) => {
-		data.config.globalMock = globalMock;
-		updateService('updateAll');
-	}, []);
-
   useMemo(() => {
     data && initData();
 
