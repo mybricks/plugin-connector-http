@@ -4,7 +4,7 @@ import data from './data';
 import GlobalContext, { getConnectors, getPureConnectors } from './context';
 import { exampleParamsFunc, PLUGIN_CONNECTOR_NAME, templateResultFunc } from './constant';
 import { call } from './runtime/callConnectorHttp';
-import { getScript } from './script';
+import { getScript, getDecodeString } from './script';
 import { mock } from './script/mock';
 // @ts-ignore
 import pkg from '../package.json';
@@ -82,10 +82,21 @@ export default function pluginEntry(pluginConfig: any = {}) {
         const pureConnectors = { ...getPureConnectors() };
 
         try {
+          pureConnectors.config.paramsFn = getDecodeString(pureConnectors.config.paramsFn);
+          pureConnectors.config.resultFn = getDecodeString(pureConnectors.config.resultFn);
           pureConnectors.connectors = pureConnectors.connectors.map(connector => {
             const { type, id, content: { input, output, method, path, excludeKeys, outputKeys } } = connector;
 
-            return { type, id, input, output, method, path, excludeKeys, outputKeys };
+            return {
+              type,
+              id,
+              input: getDecodeString(input),
+              output: getDecodeString(output),
+              method,
+              path: path?.trim(),
+              excludeKeys,
+              outputKeys
+            };
           });
         } catch (error) {
           console.log('连接器 toJSON 错误', error);

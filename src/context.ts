@@ -32,7 +32,7 @@ export const getConnectors = () => {
 };
 
 export const getPureConnectors = () => {
-	return globalData.pureConnectors as { connectors: any[]; config: Record<string, unknown>; };
+	return globalData.pureConnectors as { connectors: any[]; config: Record<string, string>; };
 };
 
 const GlobalContext = { init, initPureConnectors, add, remove, update, getConnectors };

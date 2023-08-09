@@ -2,7 +2,7 @@
 
 import { exampleParamsFunc } from '../constant';
 
-function getDecodeString(fn: string) {
+export function getDecodeString(fn: string) {
   return fn
     ? decodeURIComponent(fn).replace(
         /export\s+default.*function.*\(/,
