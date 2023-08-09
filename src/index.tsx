@@ -1,7 +1,7 @@
 import Plugin from './plugin';
 import { icon } from './icon';
 import data from './data';
-import GlobalContext, { getConnectors } from './context';
+import GlobalContext, { getConnectors, getPureConnectors } from './context';
 import { exampleParamsFunc, PLUGIN_CONNECTOR_NAME, templateResultFunc } from './constant';
 import { call } from './runtime/callConnectorHttp';
 import { getScript } from './script';
@@ -24,14 +24,13 @@ export default function pluginEntry(pluginConfig: any = {}) {
       if (!data) {
         return;
       }
+
       /** 初始化全局配置 */
       data.config = data.config || {
-        paramsFn:
-          pluginConfig?.initialValue?.paramsFn || encodeURIComponent(exampleParamsFunc),
+        paramsFn: pluginConfig?.initialValue?.paramsFn || exampleParamsFunc,
         resultFn: pluginConfig?.initialValue?.resultFn || templateResultFunc,
       };
-      data.config.resultFn =
-        data.config.resultFn || pluginConfig?.initialValue?.resultFn || templateResultFunc;
+      data.config.resultFn = data.config.resultFn || pluginConfig?.initialValue?.resultFn || templateResultFunc;
 
       /** 初始化 envList */
       if (pluginConfig?.envList?.length && data?.config) {
@@ -46,6 +45,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
         });
       }
 
+      GlobalContext.initPureConnectors(data);
       /** 初始化插件内连接器 script 数据 */
       GlobalContext.init(data.connectors.map(con => {
         return {
@@ -78,6 +78,22 @@ export default function pluginEntry(pluginConfig: any = {}) {
     },
     /** 页面导出 JSON 时，会调用插件 toJSON 方法，数据防止在页面 JSON 中 */
     toJSON: () => {
+      if (pluginConfig?.pure) {
+        const pureConnectors = { ...getPureConnectors() };
+
+        try {
+          pureConnectors.connectors = pureConnectors.connectors.map(connector => {
+            const { type, id, content: { input, output, method, path, excludeKeys, outputKeys } } = connector;
+
+            return { type, id, input, output, method, path, excludeKeys, outputKeys };
+          });
+        } catch (error) {
+          console.log('连接器 toJSON 错误', error);
+        }
+
+        return pureConnectors;
+      }
+
       return getConnectors();
     },
     contributes: {

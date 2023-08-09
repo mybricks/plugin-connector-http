@@ -1,9 +1,14 @@
 const globalData = {
 	connectors: [],
+	pureConnectors: {},
 };
 
 const init = (connectors: Array<Record<string, unknown>>) => {
 	globalData.connectors = [...connectors];
+};
+
+const initPureConnectors = (data) => {
+	globalData.pureConnectors = data;
 };
 
 const add = (connector: Record<string, unknown>) => {
@@ -26,5 +31,9 @@ export const getConnectors = () => {
 	return globalData.connectors;
 };
 
-const GlobalContext = { init, add, remove, update, getConnectors };
+export const getPureConnectors = () => {
+	return globalData.pureConnectors as { connectors: any[]; config: Record<string, unknown>; };
+};
+
+const GlobalContext = { init, initPureConnectors, add, remove, update, getConnectors };
 export default GlobalContext;
