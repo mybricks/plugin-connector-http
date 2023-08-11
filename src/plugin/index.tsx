@@ -473,17 +473,21 @@ export default function Sidebar({
 			});
 		}
 
-		sidebarContext.addActions
-			.reduce((pre, item) => [...pre, ...(sidebarContext.connector.getAllByType(item.type))], [])
-			.forEach(designerConnector => {
-				const pluginConnector = data.connectors?.find(con => con.id === designerConnector.id);
+		try {
+			sidebarContext.addActions
+				.reduce((pre, item) => [...pre, ...(sidebarContext.connector.getAllByType(item.type))], [])
+				.forEach(designerConnector => {
+					const pluginConnector = data.connectors?.find(con => con.id === designerConnector.id);
 
-				if (!pluginConnector) {
-					sidebarContext.connector.remove(designerConnector.id);
-				} else if (pluginConnector.content.title !== designerConnector.title) {
-					sidebarContext.connector.update({ ...designerConnector, title: pluginConnector.content.title });
-				}
-			});
+					if (!pluginConnector) {
+						sidebarContext.connector.remove(designerConnector.id);
+					} else if (pluginConnector.content.title !== designerConnector.title) {
+						sidebarContext.connector.update({ ...designerConnector, title: pluginConnector.content.title });
+					}
+				});
+		} catch (e) {
+			console.log('连接器数据 format 失败', e);
+		}
   }, []);
 
   return (
