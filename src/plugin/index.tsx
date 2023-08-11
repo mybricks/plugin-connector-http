@@ -34,6 +34,7 @@ interface Iprops {
 interface Iconnector {
   add: (params: any) => null;
   remove: (id: number | string) => null;
+	getAllByType: (id: string) => Array<any>;
   update: (params: any) => null;
   test: (...args: any) => any;
 }
@@ -80,6 +81,7 @@ export default function Sidebar({
     connector: {
       add: (args: any) => connector.add({ ...args }),
       remove: (id: string) => connector.remove(id),
+			getAllByType: (type: string) => (connector.getAllByType?.(type) || []),
       update: (args: any) => {
         connector.update({ ...args });
       },
@@ -476,6 +478,18 @@ export default function Sidebar({
 
   useMemo(() => {
     data && initData();
+
+		sidebarContext.addActions
+			.reduce((pre, item) => [...pre, ...(sidebarContext.connector.getAllByType(item.type))], [])
+			.forEach(designerConnector => {
+				const pluginConnector = data.connectors?.find(con => con.id === designerConnector.id);
+
+				if (!pluginConnector) {
+					sidebarContext.connector.remove(designerConnector.id);
+				} else if (pluginConnector.content.title !== designerConnector.title) {
+					sidebarContext.connector.update({ ...designerConnector, title: pluginConnector.content.title });
+				}
+			});
   }, []);
 
   return (
@@ -492,7 +506,7 @@ export default function Sidebar({
 							<div className={css.rightOperate}>
 								<div className={css.globalMock} data-mybricks-tip="开启全局Mock，页面调试时所有接口将默认使用Mock能力">
 									<span className={data.config.globalMock ? css.warning : ''}>全局 Mock:</span>
-									<Switch defaultChecked={data.config.globalMock} onChange={onChangeGlobalMock} />
+									<Switch defaultChecked={data?.config.globalMock} onChange={onChangeGlobalMock} />
 								</div>
 								<div className={css.icon} onClick={onGlobalConfigClick}>
 									{Icons.set}
