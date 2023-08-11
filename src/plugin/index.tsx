@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {uuid} from '../utils';
 import {
 	exampleParamsFunc,
@@ -16,7 +16,6 @@ import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
 import Switch from '../components/Switch';
-import GlobalContext from '../context';
 
 interface Iprops {
   connector: Iconnector;
@@ -117,19 +116,13 @@ export default function Sidebar({
 					globalMock: data.config.globalMock,
 				  inputSchema: others.inputSchema,
 				  outputSchema: others.outputSchema,
+				  script: script || getScript({
+					  ...serviceItem.content,
+					  globalParamsFn: data.config.paramsFn,
+					  globalResultFn: data.config.resultFn,
+					  envList: data.config.envList,
+				  }),
 			  });
-
-				GlobalContext.add({
-					id,
-					type: sidebarContext.formModel.type || sidebarContext.type || 'http',
-					title: others.title,
-					script: script || getScript({
-						...serviceItem.content,
-						globalParamsFn: data.config.paramsFn,
-						globalResultFn: data.config.resultFn,
-						envList: data.config.envList,
-					}),
-				});
 		  } else {
 			  const updateAll = action === 'updateAll';
 			  data.connectors.forEach((service: any, index: number) => {
@@ -151,19 +144,13 @@ export default function Sidebar({
 								globalMock: data.config.globalMock,
 							  inputSchema: serviceItem.content.inputSchema,
 							  outputSchema: serviceItem.content.outputSchema,
-						  });
-
-							GlobalContext.update({
-								id: updateAll ? serviceItem.id : id,
-								title: others.title || serviceItem.content.title,
-								type: service.type,
-								script: serviceItem.script || getScript({
-									...serviceItem.content,
-									globalParamsFn: data.config.paramsFn,
-									globalResultFn: data.config.resultFn,
+							  script: serviceItem.script || getScript({
+								  ...serviceItem.content,
+								  globalParamsFn: data.config.paramsFn,
+								  globalResultFn: data.config.resultFn,
 									envList: data.config.envList,
-								}),
-							});
+							  }),
+						  });
 					  } catch (error) {}
 				  }
 			  });
@@ -185,7 +172,6 @@ export default function Sidebar({
       data.connectors.splice(index, 1);
       try {
         sidebarContext.connector.remove(item.id);
-        GlobalContext.remove(item.id);
       } catch (error) {}
       resolve('');
     });
@@ -439,20 +425,6 @@ export default function Sidebar({
     };
     data.config.resultFn =
       data.config.resultFn || initialValue.resultFn || templateResultFunc;
-
-		/** 初始化 envList */
-		if (envList?.length && data?.config) {
-			data.config.envList = envList.map(env => {
-				const find = data.config.envList?.find(e => e.name === env.name);
-
-				if (find) {
-					return { ...env, defaultApiPrePath: find.defaultApiPrePath };
-				} else {
-					return { ...env };
-				}
-			});
-		}
-
     if (data.connectors.length === 0 && initialValue.serviceList?.length) {
       data.connectors = initialValue.serviceList;
       initialValue.serviceList.forEach((item: any) => {
@@ -464,20 +436,14 @@ export default function Sidebar({
 					globalMock: data.config.globalMock,
           inputSchema,
           outputSchema,
+          script: getScript({
+            ...item.content,
+            globalParamsFn: data.config.paramsFn,
+            globalResultFn: data.config.resultFn,
+          }),
         };
         try {
           sidebarContext.connector.add(ctr);
-          GlobalContext.add({
-						id: item.id,
-						type: sidebarContext.formModel.type || sidebarContext.type || 'http',
-						title,
-						script: getScript({
-							...item.content,
-							globalParamsFn: data.config.paramsFn,
-							globalResultFn: data.config.resultFn,
-							envList: data.config.envList,
-						}),
-					});
         } catch (error) {
           console.log(error);
         }
@@ -493,19 +459,17 @@ export default function Sidebar({
   useMemo(() => {
     data && initData();
 
-		GlobalContext.init(data.connectors.map(con => {
-			return {
-				id: con.id,
-				type: con.type,
-				title: con.content.title,
-				script: getScript({
-					...con.content,
-					globalParamsFn: data.config.paramsFn,
-					globalResultFn: data.config.resultFn,
-					envList: data.config.envList,
-				}),
-			};
-		}));
+		if (envList?.length && data?.config) {
+			data.config.envList = envList.map(env => {
+				const find = data.config.envList?.find(e => e.name === env.name);
+
+				if (find) {
+					return { ...env, defaultApiPrePath: find.defaultApiPrePath };
+				} else {
+					return { ...env };
+				}
+			});
+		}
   }, []);
 
   return (
