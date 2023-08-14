@@ -192,6 +192,11 @@ export default function Sidebar({
   }, []);
 
   const onEditItem = useCallback((item) => {
+		if (sidebarContext.isEdit && item.id === sidebarContext.activeId) {
+			setRender({ type: '', isDebug: false, activeId: void 0, isEdit: false });
+			return;
+		}
+
     const obj: any = {
       isEdit: true,
       isDebug: true,
