@@ -46,7 +46,7 @@
             loader: 'css-loader',
             options: {
               modules: {
-                localIdentName: '[local]_[hash:base64:5]',
+                localIdentName: 'http_plugin_[local]_[hash:base64:5]',
               },
             },
           },
