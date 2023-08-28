@@ -45,6 +45,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
         });
       }
 
+      /** PureConnectors 保存 data 的索引地址，后续无需重复更新 PureConnectors */
       GlobalContext.initPureConnectors(data);
       /** 初始化插件内连接器 script 数据 */
       GlobalContext.init(data.connectors.map(con => {
