@@ -513,8 +513,8 @@ export default function Sidebar({
               <span>服务连接</span>
 							<div className={css.rightOperate}>
 								<div className={css.globalMock} data-mybricks-tip="开启全局Mock，页面调试时所有接口将默认使用Mock能力">
-									<span className={data.config.globalMock ? css.warning : ''}>全局 Mock:</span>
-									<Switch defaultChecked={data?.config.globalMock} onChange={onChangeGlobalMock} />
+									<span className={data?.config?.globalMock ? css.warning : ''}>全局 Mock:</span>
+									<Switch defaultChecked={data?.config?.globalMock} onChange={onChangeGlobalMock} />
 								</div>
 								<div className={css.icon} onClick={onGlobalConfigClick}>
 									{Icons.set}
