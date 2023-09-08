@@ -47,20 +47,6 @@ export default function pluginEntry(pluginConfig: any = {}) {
 
       /** PureConnectors 保存 data 的索引地址，后续无需重复更新 PureConnectors */
       GlobalContext.initPureConnectors(data);
-      /** 初始化插件内连接器 script 数据 */
-      GlobalContext.init(data.connectors.map(con => {
-        return {
-          id: con.id,
-          type: con.type,
-          title: con.content.title,
-          script: getScript({
-            ...con.content,
-            globalParamsFn: data.config.paramsFn,
-            globalResultFn: data.config.resultFn,
-            envList: data.config.envList,
-          }),
-        };
-      }));
     },
     /** 调试时将调用插件的 callConnector 方法 */
     callConnector: (connector, params, config) => {
@@ -69,9 +55,21 @@ export default function pluginEntry(pluginConfig: any = {}) {
         return mock({ ...connector, outputSchema: config.mockSchema });
       }
 
+      const pureConnectors = { ...getPureConnectors() };
       /** mode = test，即在编辑面板点击调试 */
-      const curConnector = connector.mode === 'test' ? connector : getConnectors().find(con => con.id === connector.id);
-      if (curConnector) {
+      const findConnector = connector.mode === 'test' ? connector : pureConnectors.connectors.find(con => con.id === connector.id);
+      if (findConnector) {
+        let curConnector = { ...findConnector };
+        /**  支持 json 方式运行 */
+        if (!curConnector.script) {
+          curConnector = {
+            ...curConnector,
+            globalParamsFn: pureConnectors.config.paramsFn,
+            globalResultFn: pureConnectors.config.resultFn,
+            ...(findConnector.content || {}),
+          };
+        }
+
         return call({ ...connector, ...curConnector, useProxy: true }, params, config);
       } else {
         return Promise.reject('找不到对应连接器 Script 执行脚本.');
