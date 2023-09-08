@@ -1,7 +1,7 @@
 import Plugin from './plugin';
 import { icon } from './icon';
 import data from './data';
-import GlobalContext, { getConnectors, getPureConnectors } from './context';
+import GlobalContext, { getPureConnectors } from './context';
 import { exampleParamsFunc, PLUGIN_CONNECTOR_NAME, templateResultFunc } from './constant';
 import { call } from './runtime/callConnectorHttp';
 import { getScript, getDecodeString } from './script';
@@ -77,9 +77,9 @@ export default function pluginEntry(pluginConfig: any = {}) {
     },
     /** 页面导出 JSON 时，会调用插件 toJSON 方法，数据防止在页面 JSON 中 */
     toJSON: () => {
-      if (pluginConfig?.pure) {
-        const pureConnectors = { ...getPureConnectors() };
+      const pureConnectors = { ...getPureConnectors() };
 
+      if (pluginConfig?.pure) {
         try {
           pureConnectors.config.paramsFn = getDecodeString(pureConnectors.config.paramsFn);
           pureConnectors.config.resultFn = getDecodeString(pureConnectors.config.resultFn);
@@ -104,7 +104,19 @@ export default function pluginEntry(pluginConfig: any = {}) {
         return pureConnectors;
       }
 
-      return getConnectors();
+      return pureConnectors.connectors.map(con => {
+        return {
+          id: con.id,
+          type: con.type,
+          title: con.content.title,
+          script: getScript({
+            ...con.content,
+            globalParamsFn: pureConnectors.config.paramsFn,
+            globalResultFn: pureConnectors.config.resultFn,
+            envList: pureConnectors.config.envList,
+          }),
+        };
+      });
     },
     contributes: {
       sliderView: {

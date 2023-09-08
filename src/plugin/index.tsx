@@ -11,12 +11,10 @@ import css from '../style-cssModules.less';
 import {cloneDeep, get} from '../utils/lodash';
 import {formatDate} from '../utils/moment';
 import DefaultPanel from './compoment/defaultPanel';
-import {getScript} from '../script';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
 import Switch from '../components/Switch';
-import GlobalContext from '../context';
 
 interface Iprops {
   connector: Iconnector;
@@ -121,18 +119,6 @@ export default function Sidebar({
 				  inputSchema: others.inputSchema,
 				  outputSchema: others.outputSchema,
 			  });
-
-				GlobalContext.add({
-					id,
-					type: sidebarContext.formModel.type || sidebarContext.type || 'http',
-					title: others.title,
-					script: script || getScript({
-						...serviceItem.content,
-						globalParamsFn: data.config.paramsFn,
-						globalResultFn: data.config.resultFn,
-						envList: data.config.envList,
-					}),
-				});
 		  } else {
 			  const updateAll = action === 'updateAll';
 			  data.connectors.forEach((service: any, index: number) => {
@@ -156,18 +142,6 @@ export default function Sidebar({
 							  inputSchema: serviceItem.content.inputSchema,
 							  outputSchema: serviceItem.content.outputSchema,
 						  });
-
-							GlobalContext.update({
-								id: updateAll ? serviceItem.id : id,
-								title: others.title || serviceItem.content.title,
-								type: service.type,
-								script: serviceItem.script || getScript({
-									...serviceItem.content,
-									globalParamsFn: data.config.paramsFn,
-									globalResultFn: data.config.resultFn,
-									envList: data.config.envList,
-								}),
-							});
 					  } catch (error) {}
 				  }
 			  });
@@ -189,7 +163,6 @@ export default function Sidebar({
       data.connectors.splice(index, 1);
       try {
         sidebarContext.connector.remove(item.id);
-        GlobalContext.remove(item.id);
       } catch (error) {}
       resolve('');
     });
@@ -458,17 +431,6 @@ export default function Sidebar({
         };
         try {
           sidebarContext.connector.add(ctr);
-          GlobalContext.add({
-						id: item.id,
-						type: sidebarContext.formModel.type || sidebarContext.type || 'http',
-						title,
-						script: getScript({
-							...item.content,
-							globalParamsFn: data.config.paramsFn,
-							globalResultFn: data.config.resultFn,
-							envList: data.config.envList,
-						}),
-					});
         } catch (error) {
           console.log(error);
         }
