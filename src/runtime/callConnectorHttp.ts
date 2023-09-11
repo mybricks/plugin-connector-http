@@ -49,7 +49,8 @@ export function call(
               reject('请求路径不能为空');
             }
 
-            if (connector.useProxy && httpRegExp.test(url) && url.match(/^https?:\/\/([^/#&?])+/g)?.[0] !== location.origin) {
+            /** TODO: formData 代理转发会丢失 formData 类型，暂时不代理 */
+            if (connector.useProxy && httpRegExp.test(url) && url.match(/^https?:\/\/([^/#&?])+/g)?.[0] !== location.origin && Object.prototype.toString.call(opts.data) !== '[object FormData]') {
               const curOptions = {url: '/paas/api/proxy', method: 'post', data: opts || options} as Record<string, unknown>;
 
               if (opts.responseType) {
