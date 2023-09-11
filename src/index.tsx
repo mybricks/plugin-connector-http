@@ -66,6 +66,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
             ...curConnector,
             globalParamsFn: pureConnectors.config.paramsFn,
             globalResultFn: pureConnectors.config.resultFn,
+            envList: pureConnectors.config.envList,
             ...(findConnector.content || {}),
           };
         }
