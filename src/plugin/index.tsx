@@ -114,8 +114,8 @@ export default function Sidebar({
 				  type:
 					  sidebarContext.formModel.type || sidebarContext.type || 'http',
 				  title: others.title,
-					connectorName: PLUGIN_CONNECTOR_NAME,
-					globalMock: data.config.globalMock,
+                  connectorName: PLUGIN_CONNECTOR_NAME,
+                  globalMock: data.config.globalMock,
 				  inputSchema: others.inputSchema,
 				  outputSchema: others.outputSchema,
 			  });
@@ -137,8 +137,8 @@ export default function Sidebar({
 							  id: updateAll ? serviceItem.id : id,
 							  title: others.title || serviceItem.content.title,
 							  type: service.type,
-								connectorName: PLUGIN_CONNECTOR_NAME,
-								globalMock: data.config.globalMock,
+                              connectorName: PLUGIN_CONNECTOR_NAME,
+                              globalMock: data.config.globalMock,
 							  inputSchema: serviceItem.content.inputSchema,
 							  outputSchema: serviceItem.content.outputSchema,
 						  });
