@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getDecodeString } from '../script';
+import {getDecodeString} from '../script';
 
 interface IOptions {
   method: string;
@@ -49,16 +49,13 @@ export function call(
               reject('请求路径不能为空');
             }
 
-            /** TODO: formData 代理转发会丢失 formData 类型，暂时不代理 */
-            if (connector.useProxy && httpRegExp.test(url) && url.match(/^https?:\/\/([^/#&?])+/g)?.[0] !== location.origin && Object.prototype.toString.call(opts.data) !== '[object FormData]') {
-              const curOptions = {url: '/paas/api/proxy', method: 'post', data: opts || options} as Record<string, unknown>;
-
-              if (opts.responseType) {
-                curOptions.responseType = opts.responseType;
-              }
-              return axios(curOptions).then((res: any) => res.data).catch(error => {
-                reject(error)
-              })
+            if (connector.useProxy && httpRegExp.test(url) && url.match(/^https?:\/\/([^/#&?])+/g)?.[0] !== location.origin) {
+              return axios({
+                ...opts,
+                url: '/paas/api/proxy',
+                headers: {...(opts.headers || {}), ['x-target-url']: opts.url},
+                data: opts.data
+              }).then((res: any) => res.data).catch(reject);
             }
 
             return axios(opts || options).then((res: any) => res.data).catch(error => {
