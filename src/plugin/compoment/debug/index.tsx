@@ -91,7 +91,6 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
               ...sidebarContext.formModel,
               globalParamsFn: globalConfig.paramsFn,
               globalResultFn: globalConfig.resultFn,
-							envList: globalConfig.envList,
               path: sidebarContext.formModel.path.trim(),
               resultTransformDisabled: true,
             })

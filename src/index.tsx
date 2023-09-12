@@ -32,19 +32,6 @@ export default function pluginEntry(pluginConfig: any = {}) {
       };
       data.config.resultFn = data.config.resultFn || pluginConfig?.initialValue?.resultFn || templateResultFunc;
 
-      /** 初始化 envList */
-      if (pluginConfig?.envList?.length && data?.config) {
-        data.config.envList = pluginConfig.envList.map(env => {
-          const find = data.config.envList?.find(e => e.name === env.name);
-
-          if (find) {
-            return { ...env, defaultApiPrePath: find.defaultApiPrePath };
-          } else {
-            return { ...env };
-          }
-        });
-      }
-
       /** PureConnectors 保存 data 的索引地址，后续无需重复更新 PureConnectors */
       GlobalContext.initPureConnectors(data);
     },
@@ -66,7 +53,6 @@ export default function pluginEntry(pluginConfig: any = {}) {
             ...curConnector,
             globalParamsFn: pureConnectors.config.paramsFn,
             globalResultFn: pureConnectors.config.resultFn,
-            envList: pureConnectors.config.envList,
             ...(findConnector.content || {}),
           };
         }
@@ -114,7 +100,6 @@ export default function pluginEntry(pluginConfig: any = {}) {
             ...con.content,
             globalParamsFn: pureConnectors.config.paramsFn,
             globalResultFn: pureConnectors.config.resultFn,
-            envList: pureConnectors.config.envList,
           }),
         };
       });

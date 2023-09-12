@@ -149,12 +149,6 @@ const getFetch = (connector) => {
         return param;
       });
       options.method = options.method || method;
-      if (connector.envList?.length && config.executeEnv) {
-        const env = connector.envList.find(e => e.name === config.executeEnv);
-        if (env && env.defaultApiPrePath && !/^(https?|ws)/.test(options.url)) {
-          options.url = env.defaultApiPrePath + options.url;
-        }
-      }
       config
           .ajax(options)
           .then((response) => {

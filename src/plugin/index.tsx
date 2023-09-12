@@ -23,10 +23,9 @@ interface Iprops {
   addActions?: any[];
   data: {
     connectors: any[];
-    config: { paramsFn: string; resultFn?: string; envList?: Array<{ name: string; title: string; defaultApiPrePath: string; }>; globalMock?: boolean };
+    config: { paramsFn: string; resultFn?: string; globalMock?: boolean };
   };
   initialValue: any;
-	envList?: Array<{ name: string; title: string; defaultApiPrePath: string }>;
 }
 
 interface Iconnector {
@@ -52,7 +51,6 @@ export default function Sidebar({
   data,
 	serviceListUrl,
   initialValue = {},
-	envList = []
 }: Iprops) {
   const ref = useRef<HTMLDivElement>(null);
   const blurMap = useRef<Record<string, () => void>>({});
@@ -383,11 +381,10 @@ export default function Sidebar({
         style={{ top: ref.current?.getBoundingClientRect().top }}
         closeTemplateForm={closeTemplateForm}
         data={data}
-				envList={envList}
         onChange={onGlobalConfigChange}
       />
     ) : null;
-  }, [sidebarContext, envList]);
+  }, [sidebarContext]);
 
   const getInterfaceParams = useCallback((item) => {
     if (item.type === SERVICE_TYPE.TG) {
