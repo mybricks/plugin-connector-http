@@ -46,9 +46,11 @@ export default function GlobalPanel({
 							  verticalScrollbarSize: 2,
 						  }}
 						  value={decodeURIComponent(data.config.paramsFn)}
-						  onChange={(code) => {
-							  data.config.paramsFn = decodeURIComponent(code);
-							  onChange({ paramsFn: code });
+						  onBlur={e => {
+							  if (data.config.paramsFn !== decodeURIComponent(e.target.value)) {
+								  data.config.paramsFn = decodeURIComponent(e.target.value);
+								  onChange({ paramsFn: e.target.value });
+							  }
 						  }}
 						  env={{
 							  isNode: false,
@@ -73,9 +75,11 @@ export default function GlobalPanel({
 								  verticalScrollbarSize: 2,
 							  }}
 							  value={decodeURIComponent(data.config.resultFn)}
-							  onChange={(code) => {
-								  data.config.resultFn = decodeURIComponent(code);
-								  onChange({ resultFn: code });
+							  onBlur={e => {
+								  if (data.config.resultFn !== decodeURIComponent(e.target.value)) {
+									  data.config.resultFn = decodeURIComponent(e.target.value);
+									  onChange({ resultFn: e.target.value });
+								  }
 							  }}
 							  env={{
 								  isNode: false,

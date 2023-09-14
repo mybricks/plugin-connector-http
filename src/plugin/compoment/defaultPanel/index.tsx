@@ -213,9 +213,11 @@ export default function DefaultPanel({
 											isNode: false,
 											isElectronRenderer: false,
 										}}
-										onChange={(code: string) => {
-											sidebarContext.formModel.input = encodeURIComponent(code);
-											setParamsFn(code);
+										onBlur={e => {
+											if (sidebarContext.formModel.input !== encodeURIComponent(e.target.value)) {
+												sidebarContext.formModel.input = encodeURIComponent(e.target.value);
+												setParamsFn(e.target.value);
+											}
 										}}
 										value={safeDecode(paramsFn)}
 										width='100%'
@@ -263,9 +265,13 @@ export default function DefaultPanel({
 											isNode: false,
 											isElectronRenderer: false,
 										}}
+										onBlur={e => {
+											if (sidebarContext.formModel.output !== encodeURIComponent(e.target.value)) {
+												sidebarContext.formModel.output = encodeURIComponent(e.target.value);
+												setOutputFn(encodeURIComponent(e.target.value));
+											}
+										}}
 										onChange={(code: string) => {
-											sidebarContext.formModel.output = encodeURIComponent(code);
-											setOutputFn(encodeURIComponent(code));
 										}}
 										value={safeDecode(outputFn)}
 										width='100%'
