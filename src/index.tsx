@@ -100,6 +100,24 @@ export default function pluginEntry(pluginConfig: any = {}) {
         };
       });
     },
+    getConnectorScript(connector) {
+      const curConnector = this.data.connectors.find(con => con.id === connector.id);
+
+      if (curConnector) {
+        return {
+          id: curConnector.id,
+          type: curConnector.type,
+          title: curConnector.content.title,
+          script: getScript({
+            ...curConnector.content,
+            globalParamsFn: this.data.config.paramsFn,
+            globalResultFn: this.data.config.resultFn,
+          }),
+        };
+      } else {
+        throw Error('找不到对应连接器数据');
+      }
+    },
     contributes: {
       sliderView: {
         tab: {
