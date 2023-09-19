@@ -47,9 +47,10 @@ export default function GlobalPanel({
 						  }}
 						  value={decodeURIComponent(data.config.paramsFn)}
 						  onBlur={e => {
-							  if (data.config.paramsFn !== decodeURIComponent(e.target.value)) {
-								  data.config.paramsFn = decodeURIComponent(e.target.value);
-								  onChange({ paramsFn: e.target.value });
+							  const value = e.getValue();
+							  if (data.config.paramsFn !== decodeURIComponent(value)) {
+								  data.config.paramsFn = decodeURIComponent(value);
+								  onChange({ paramsFn: value });
 							  }
 						  }}
 						  env={{
@@ -76,9 +77,10 @@ export default function GlobalPanel({
 							  }}
 							  value={decodeURIComponent(data.config.resultFn)}
 							  onBlur={e => {
-								  if (data.config.resultFn !== decodeURIComponent(e.target.value)) {
-									  data.config.resultFn = decodeURIComponent(e.target.value);
-									  onChange({ resultFn: e.target.value });
+								  const value = e.getValue();
+								  if (data.config.resultFn !== decodeURIComponent(value)) {
+									  data.config.resultFn = decodeURIComponent(value);
+									  onChange({ resultFn: value });
 								  }
 							  }}
 							  env={{
