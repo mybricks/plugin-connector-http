@@ -10,7 +10,6 @@ import FormItem from '../../../components/FormItem';
 import Input, { TextArea } from '../../../components/Input';
 import { safeDecode } from '../../../utils';
 import { DefaultPanelContext } from './context';
-import { debounce } from '../../../utils/lodash';
 
 import parentCss from '../../../style-cssModules.less';
 import css from './index.less';
@@ -214,10 +213,12 @@ export default function DefaultPanel({
 											isNode: false,
 											isElectronRenderer: false,
 										}}
-										onChange={debounce((code: string) => {
-											sidebarContext.formModel.input = encodeURIComponent(code);
-											setParamsFn(code);
-										}, 200)}
+										onBlur={e => {
+											if (sidebarContext.formModel.input !== encodeURIComponent(e.target.value)) {
+												sidebarContext.formModel.input = encodeURIComponent(e.target.value);
+												setParamsFn(e.target.value);
+											}
+										}}
 										value={safeDecode(paramsFn)}
 										width='100%'
 										height='100%'
@@ -264,10 +265,14 @@ export default function DefaultPanel({
 											isNode: false,
 											isElectronRenderer: false,
 										}}
-										onChange={debounce((code: string) => {
-											sidebarContext.formModel.output = encodeURIComponent(code);
-											setOutputFn(encodeURIComponent(code));
-										}, 200)}
+										onBlur={e => {
+											if (sidebarContext.formModel.output !== encodeURIComponent(e.target.value)) {
+												sidebarContext.formModel.output = encodeURIComponent(e.target.value);
+												setOutputFn(encodeURIComponent(e.target.value));
+											}
+										}}
+										onChange={(code: string) => {
+										}}
 										value={safeDecode(outputFn)}
 										width='100%'
 										height='100%'

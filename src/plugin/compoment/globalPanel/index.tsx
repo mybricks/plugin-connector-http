@@ -4,7 +4,6 @@ import Editor from '@mybricks/code-editor';
 import css from '../../../../src/style-cssModules.less';
 import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
-import { debounce } from '../../../utils/lodash';
 import curCss from './index.less';
 
 export default function GlobalPanel({
@@ -47,10 +46,12 @@ export default function GlobalPanel({
 							  verticalScrollbarSize: 2,
 						  }}
 						  value={decodeURIComponent(data.config.paramsFn)}
-						  onChange={debounce((code) => {
-							  data.config.paramsFn = decodeURIComponent(code);
-							  onChange({ paramsFn: code });
-						  }, 200)}
+						  onBlur={e => {
+							  if (data.config.paramsFn !== decodeURIComponent(e.target.value)) {
+								  data.config.paramsFn = decodeURIComponent(e.target.value);
+								  onChange({ paramsFn: e.target.value });
+							  }
+						  }}
 						  env={{
 							  isNode: false,
 							  isElectronRenderer: false,
@@ -74,10 +75,12 @@ export default function GlobalPanel({
 								  verticalScrollbarSize: 2,
 							  }}
 							  value={decodeURIComponent(data.config.resultFn)}
-							  onChange={debounce((code) => {
-								  data.config.resultFn = decodeURIComponent(code);
-								  onChange({ resultFn: code });
-							  }, 200)}
+							  onBlur={e => {
+								  if (data.config.resultFn !== decodeURIComponent(e.target.value)) {
+									  data.config.resultFn = decodeURIComponent(e.target.value);
+									  onChange({ resultFn: e.target.value });
+								  }
+							  }}
 							  env={{
 								  isNode: false,
 								  isElectronRenderer: false,
