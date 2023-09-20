@@ -84,10 +84,28 @@ function getScript(serviceItem) {
         newParams.url = newParams.url || url;
         newParams.method = newParams.method || method;
         const options = __input__(newParams);
-        options.url = (options.url || url).replace(/{(\w+)}/g, (match, key) => {
-          const param = params[key] || '';
-          Reflect.deleteProperty(options.params || {}, key);
-          return param;
+        const templateParamKeys = [];
+        options.url = (options.url || url).replace(/{([^}]+)}/g, (match, key) => {
+          const keys = key ? key.split('.') : [];
+          let curParams = options.params || options.data;
+
+          if (!keys.length) {
+            onError(`请求路径中模板字符串错误`);
+          }
+          templateParamKeys.push(keys[0]);
+          while (keys.length) {
+            const curKey = keys.shift();
+            if (!curParams || curParams[curKey] === undefined || curParams[curKey] === null) {
+              onError(`请求路径中模板字符串的参数(${key})缺失`);
+            }
+
+            curParams = curParams[curKey];
+          }
+
+          return curParams;
+        });
+        templateParamKeys.forEach(key => {
+          Reflect.deleteProperty(options.params || options.data || {}, key);
         });
         options.method = options.method || method;
         config
