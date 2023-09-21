@@ -166,6 +166,7 @@ const getFetch = (connector) => {
       templateParamKeys.forEach(key => {
         Reflect.deleteProperty(options.params || options.data || {}, key);
       });
+      Reflect.deleteProperty(options.params || options.data || {}, 'MYBRICKS_HOST');
       options.method = options.method || method;
       config
           .ajax(options)
