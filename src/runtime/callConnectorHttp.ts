@@ -51,16 +51,18 @@ export function call(
 
             if (connector.useProxy && httpRegExp.test(url) && url.match(/^https?:\/\/([^/#&?])+/g)?.[0] !== location.origin) {
               return axios({
-                ...opts,
-                url: '/paas/api/proxy',
-                headers: {...(opts.headers || {}), ['x-target-url']: opts.url},
-                data: opts.data
-              }).then((res: any) => res.data).catch(reject);
+                  ...opts,
+                  url: '/paas/api/proxy',
+                  headers: {...(opts.headers || {}), ['x-target-url']: opts.url},
+                  data: opts.data
+                })
+                .then((res: any) => res.data)
+                .catch(error => reject(error.response.data?.message || error));
             }
 
-            return axios(opts || options).then((res: any) => res.data).catch(error => {
-              reject(error)
-            })
+            return axios(opts || options)
+              .then(res => res.data)
+              .catch(error => reject(error.response.data?.message || error));
           },
         }
       );
