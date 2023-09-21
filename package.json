@@ -1,6 +1,6 @@
 {
   "name": "@mybricks/plugin-connector-http",
-  "version": "1.1.62",
+  "version": "1.1.63",
   "author": "CheMingjun",
   "license": "",
   "main": "runtime/plugin.js",
@@ -16,7 +16,7 @@
     "Readme.md"
   ],
   "dependencies": {
-    "@mybricks/code-editor": "1.1.5",
+    "@mybricks/code-editor": "1.1.6",
     "axios": "^1.1.3"
   },
   "devDependencies": {
