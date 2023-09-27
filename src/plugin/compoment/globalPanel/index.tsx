@@ -4,6 +4,8 @@ import Editor from '@mybricks/code-editor';
 import css from '../../../../src/style-cssModules.less';
 import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
+import { CDN } from '../../../constant';
+
 import curCss from './index.less';
 
 export default function GlobalPanel({
@@ -40,6 +42,7 @@ export default function GlobalPanel({
 						  language='javascript'
 						  theme='light'
 						  lineNumbers='off'
+						  CDN={CDN}
 						  /** @ts-ignore */
 						  scrollbar={{
 							  horizontalScrollbarSize: 2,
@@ -70,6 +73,7 @@ export default function GlobalPanel({
 							  language='javascript'
 							  theme='light'
 							  lineNumbers='off'
+							  CDN={CDN}
 							  /** @ts-ignore */
 							  scrollbar={{
 								  horizontalScrollbarSize: 2,

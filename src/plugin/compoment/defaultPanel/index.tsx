@@ -9,6 +9,7 @@ import Collapse from '../../../components/Collapse';
 import FormItem from '../../../components/FormItem';
 import Input, { TextArea } from '../../../components/Input';
 import { safeDecode } from '../../../utils';
+import { CDN } from '../../../constant';
 import { DefaultPanelContext } from './context';
 
 import parentCss from '../../../style-cssModules.less';
@@ -213,6 +214,7 @@ export default function DefaultPanel({
 											isNode: false,
 											isElectronRenderer: false,
 										}}
+										CDN={CDN}
 										onBlur={e => {
 											const value = e.getValue();
 											if (sidebarContext.formModel.input !== encodeURIComponent(value)) {
@@ -266,6 +268,7 @@ export default function DefaultPanel({
 											isNode: false,
 											isElectronRenderer: false,
 										}}
+										CDN={CDN}
 										onBlur={e => {
 											const value = e.getValue();
 											if (sidebarContext.formModel.output !== encodeURIComponent(value)) {

@@ -7,9 +7,9 @@ import JSONView from '@mybricks/code-editor';
 import * as Icons from '../../../icon';
 import { uuid } from '../../../utils';
 import { schema2params, params2schema } from './utils';
-import { schema2data } from '../../../utils';
 import { isEmpty } from '../../../utils/lodash';
 import FormItem from '../../../components/FormItem';
+import { CDN } from '../../../constant';
 
 import css from './index.less';
 
@@ -25,6 +25,7 @@ function DataShow({ data }: any) {
         width={430}
         value={valueStr}
         language='json'
+        CDN={CDN}
         env={{
           isNode: false,
           isElectronRenderer: false,

@@ -19,7 +19,7 @@ import { getScript } from '../../../script';
 import { cloneDeep } from '../../../utils/lodash';
 import Button from '../../../components/Button';
 import { notice } from '../../../components/Message';
-import { PLUGIN_CONNECTOR_NAME } from '../../../constant';
+import { CDN, PLUGIN_CONNECTOR_NAME } from '../../../constant';
 
 import css from './index.less';
 
@@ -36,6 +36,7 @@ function DataShow({ data }: any) {
 			<div className={css.title}>标记后的返回结果示例</div>
 			{/* @ts-ignore */}
 			<JSONView
+				CDN={CDN}
 				value={valueStr}
 				language='json'
 				env={{

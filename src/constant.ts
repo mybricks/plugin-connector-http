@@ -128,3 +128,15 @@ export const KDEV_PANEL_VISIBLE = 0b100;
 export const SQL_PANEL_VISIBLE = 0b1000;
 export const DOMAIN_PANEL_VISIBLE = 0b10000;
 export const AGGREGATION_MODEL_VISIBLE = 0b100000;
+
+export const CDN = {
+  prettier: {
+    standalone: '/mfs/editor_assets/prettier/2.6.2/standalone.js',
+      babel: '/mfs/editor_assets/prettier/2.6.2/parser-babel.js'
+  },
+  eslint: '/mfs/editor_assets/eslint/8.15.0/eslint.js',
+    paths: {
+    vs: "/mfs/editor_assets/monaco-editor/0.33.0/min/vs",
+  },
+  monacoLoader: '/mfs/editor_assets/monaco-editor/0.33.0/min/vs/loader.min.js'
+}
