@@ -136,7 +136,7 @@ export const CDN = {
   },
   eslint: '/mfs/editor_assets/eslint/8.15.0/eslint.js',
     paths: {
-    vs: "/mfs/editor_assets/monaco-editor/0.33.0/min/vs",
+    vs: '/mfs/editor_assets/monaco-editor/0.33.0/min/vs',
   },
   monacoLoader: '/mfs/editor_assets/monaco-editor/0.33.0/min/vs/loader.min.js'
 }

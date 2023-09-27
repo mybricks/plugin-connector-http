@@ -120,11 +120,40 @@ export function getDataByExcludeKeys(data, excludeKeys) {
   return res;
 }
 
+export function paramsToSchema(node) {
+	let schema: any = { type: node.type };
+
+	switch (node.type) {
+		case 'root':
+			schema.type = 'object';
+			schema.properties = {};
+			node.children.forEach((childNode) => {
+				schema.properties[childNode.name] = paramsToSchema(childNode);
+			});
+			break;
+		case 'object':
+			schema.properties = {};
+			node.children.forEach((childNode) => {
+				schema.properties[childNode.name] = paramsToSchema(childNode);
+			});
+			break;
+		case 'array':
+			schema.type = 'array';
+			schema.items = node.children[0] ? paramsToSchema(node.children[0]) : {};
+			break;
+	}
+
+	return schema;
+}
+
 export function params2data(params: any) {
   if (!params) return;
   let obj: any = {};
 
   if (params.type === 'string') {
+    return params.defaultValue || '';
+  }
+  if (params.type === 'any') {
     return params.defaultValue || '';
   }
   if (params.type === 'number') {
@@ -137,6 +166,23 @@ export function params2data(params: any) {
     }
     params.children.forEach((child: any) => {
       obj[child.name] = params2data(child);
+    });
+  }
+
+  return obj;
+}
+
+export function hasFile(params: any) {
+  if (!params) return false;
+  let obj = false;
+
+  if (params.type === 'any') {
+    return params.defaultValue instanceof File;
+  }
+
+  if (params.children) {
+    params.children.forEach((child: any) => {
+      obj = obj || hasFile(child);
     });
   }
 

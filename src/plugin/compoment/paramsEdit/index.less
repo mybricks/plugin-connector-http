@@ -8,16 +8,42 @@
   .column1 {
     width: 270px;
   }
+
   .column2 {
     text-align: center;
     width: 45px;
     border: none;
     background-color: transparent;
   }
+
   .column3 {
     text-align: center;
     width: 68px;
   }
+
+  .uploadFile {
+    border: none;
+    text-align: center;
+    width: 68px;
+    background: none;
+    padding: 0 0 0 4px;
+  }
+
+  .uploadFileName {
+    border: none;
+    text-align: center;
+    width: 68px;
+    background: none;
+    padding: 0;
+
+    .clear {
+      color: #fa6400;
+      cursor: pointer;
+      padding: 0 2px;
+      vertical-align: middle;
+    }
+  }
+
   .column4 {
     width: 46px;
     margin-left: 8px;
@@ -26,7 +52,6 @@
   p {
     margin-bottom: 0;
   }
-
 }
 
 .content {
@@ -58,6 +83,7 @@
     line-height: 1;
     text-align: left !important;
     box-sizing: border-box;
+
     &:focus {
       outline: 1px solid @color-primary;
     }
@@ -73,6 +99,7 @@
 
   .iconRemove {
     cursor: pointer;
+
     &:hover {
       color: @color-primary;
     }

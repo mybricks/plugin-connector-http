@@ -6,8 +6,10 @@ import {
 	getDataByExcludeKeys,
 	getDataByOutputKeys,
 	getDecodeString,
+	hasFile,
 	jsonToSchema,
 	params2data,
+	paramsToSchema,
 } from '../../../utils';
 import JSONView from '@mybricks/code-editor';
 import ReturnShema from '../returnSchema';
@@ -77,8 +79,29 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const onDebugClick = async () => {
     try {
       if (!validate()) return;
-      const originParams = sidebarContext.formModel.paramsList?.[0].data || [];
-      const params = params2data(originParams);
+      const originParams = sidebarContext.formModel.params || {};
+      let params = params2data(originParams);
+
+			/** 存在文件调试时，转为 formDta */
+	    if (['POST', 'PUT'].includes(sidebarContext.formModel.method) && hasFile(originParams)) {
+				const formData = new FormData();
+
+				Object.keys(params).forEach(key => {
+					const value = params[key];
+					if(Array.isArray(value)) {
+						if (value[0] instanceof File) {
+							value.forEach(file => formData.append(key, file));
+						} else {
+							formData.append(key, JSON.stringify(value));
+						}
+					} else if (typeof value === 'object') {
+						formData.append(key, value instanceof File ? value : JSON.stringify(value));
+					} else {
+						formData.append(key, value);
+					}
+				});
+		    params = formData;
+	    }
       // setData([]);
       setError('');
       const data = await sidebarContext.connector.test(
@@ -161,7 +184,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 	
       formatSchema(sidebarContext.formModel.resultSchema);
 	    formatSchema(outputSchema);
-	    const inputSchema = jsonToSchema(params || {});
+	    const inputSchema = paramsToSchema(originParams);
 	    formatSchema(inputSchema);
 	    sidebarContext.formModel.outputKeys = outputKeys;
 	    sidebarContext.formModel.excludeKeys = excludeKeys;
@@ -178,8 +201,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 
   const onParamsChange = useCallback((params) => {
     if (params !== void 0) {
-      const data = params2data(params || []);
-      const inputSchema = jsonToSchema(data);
+      const inputSchema = paramsToSchema(params);
       formatSchema(inputSchema);
       sidebarContext.formModel.inputSchema = inputSchema;
       sidebarContext.formModel.params = params;

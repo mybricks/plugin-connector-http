@@ -77,7 +77,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
         parent.children?.[
           Math.min(
             parent.children.findLastIndex(
-              ({ type }: any) => type === 'string' || type === 'number'
+              ({ type }: any) => type === 'string' || type === 'number' || type === 'any'
             ),
             parent.children.length - 1
           )
@@ -106,14 +106,40 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
             <option label={'布尔'} value={'boolean'} />
             <option label={'对象'} value={'object'} />
             <option label={'列表'} value={'array'} />
+            <option label={'文件'} value={'any'} />
           </select>
-          <input
-            className={css.column3}
-            type={'text'}
-            disabled={item.type === 'object' || item.type === 'array'}
-            value={item.defaultValue}
-            onChange={(e) => set(item, 'defaultValue', e.target.value)}
-          />
+          {item.type === 'any' ? (
+            item.defaultValue ? (
+              <span className={css.uploadFileName}>
+                {item.defaultValueFileName}
+                <span
+                  className={css.clear}
+                  onClick={() => {
+                    set(item, 'defaultValue', undefined);
+                    set(item, 'defaultValueFileName', undefined);
+                  }}
+                >X</span>
+              </span>
+            ) : (
+              <input
+                className={css.uploadFile}
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  set(item, 'defaultValue', file);
+                  set(item, 'defaultValueFileName', file.name);
+                }}
+              />
+            )
+          ) : (
+            <input
+              className={css.column3}
+              type={'text'}
+              disabled={item.type === 'object' || item.type === 'array'}
+              value={item.defaultValue}
+              onChange={(e) => set(item, 'defaultValue', e.target.value)}
+            />
+          )}
           <div className={`${css.column4} ${css.flex}`}>
             <span
               className={`${css.iconRemove}`}
