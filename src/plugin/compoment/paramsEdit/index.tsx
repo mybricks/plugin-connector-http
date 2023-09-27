@@ -3,9 +3,11 @@
  */
 
 import React, { useCallback, useRef } from 'react';
-import css from './index.less';
 import * as Icons from '../../../icon';
 import { uuid } from '../../../utils';
+
+import css from './index.less';
+
 export default function ParamsEdit({ value, onChange, ctx }: any) {
   const valueRef = useRef(value);
   valueRef.current = value;
@@ -111,24 +113,16 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
           {item.type === 'any' ? (
             item.defaultValue ? (
               <span className={css.uploadFileName}>
-                {item.defaultValueFileName}
-                <span
-                  className={css.clear}
-                  onClick={() => {
-                    set(item, 'defaultValue', undefined);
-                    set(item, 'defaultValueFileName', undefined);
-                  }}
-                >X</span>
+                {item.defaultValue.name}
+                <span className={css.clear} onClick={() => set(item, 'defaultValue', undefined)}>
+                  X
+                </span>
               </span>
             ) : (
               <input
                 className={css.uploadFile}
                 type="file"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  set(item, 'defaultValue', file);
-                  set(item, 'defaultValueFileName', file.name);
-                }}
+                onChange={(e) => set(item, 'defaultValue', e.target.files?.[0])}
               />
             )
           ) : (

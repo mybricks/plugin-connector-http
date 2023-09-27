@@ -40,12 +40,12 @@ export default function Params({ onDebugClick, params }: any) {
           </div>
           {hide ? null : (
             <input
-              key={item.type === 'any' ? item.defaultValueFileName : item.defaultValue}
+              key={item.type === 'any' ? item.defaultValue?.name : item.defaultValue}
               className={css.column}
               type="text"
               disabled
-              value={item.type === 'any' ? item.defaultValueFileName : item.defaultValue}
-              title={item.type === 'any' ? item.defaultValueFileName : item.defaultValue}
+              value={item.type === 'any' ? item.defaultValue?.name : item.defaultValue}
+              title={item.type === 'any' ? item.defaultValue?.name : item.defaultValue}
             />
           )}
         </div>
