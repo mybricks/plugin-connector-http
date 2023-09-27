@@ -111,7 +111,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
             <option label={'文件'} value={'any'} />
           </select>
           {item.type === 'any' ? (
-            item.defaultValue ? (
+            item.defaultValue && !!Object.keys(item.defaultValue).length ? (
               <span className={css.uploadFileName}>
                 {item.defaultValue.name}
                 <span className={css.clear} onClick={() => set(item, 'defaultValue', undefined)}>
