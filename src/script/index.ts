@@ -84,7 +84,9 @@ function getScript(serviceItem) {
         newParams.url = newParams.url || url;
         newParams.method = newParams.method || method;
         const options = __input__(newParams);
+        const isFormData = (options.params || options.data) instanceof FormData;
         const templateParamKeys = [];
+        /** url 里支持模板字符串 */
         options.url = (options.url || url).replace(/{([^}]+)}/g, (match, key) => {
           const keys = key ? key.split('.') : [];
           let curParams = options.params || options.data;
@@ -92,22 +94,51 @@ function getScript(serviceItem) {
           if (!keys.length) {
             onError(`请求路径中模板字符串错误`);
           }
+          let index = 0;
           templateParamKeys.push(keys[0]);
           while (keys.length) {
             const curKey = keys.shift();
-            if (!curParams || curParams[curKey] === undefined || curParams[curKey] === null) {
+            if (!curParams) {
+              onError(`请求路径中模板字符串的参数(${key})缺失`);
+              return ;
+            }
+            let value = curParams[curKey];
+            if (curParams instanceof FormData) {
+              value = curParams.get(curKey);
+
+              /** 存在嵌套变量 */
+              if (index === 0 && keys.length) {
+                try {
+                  value = JSON.parse(value);
+                } catch {
+                  onError(`请求路径中模板字符串的参数(${key})缺失`);
+                  return ;
+                }
+              }
+            }
+
+            if (value === undefined || value === null) {
               onError(`请求路径中模板字符串的参数(${key})缺失`);
             }
 
-            curParams = curParams[curKey];
+            index++;
+            curParams = value;
           }
 
           return curParams;
         });
-        templateParamKeys.forEach(key => {
-          Reflect.deleteProperty(options.params || options.data || {}, key);
-        });
-        Reflect.deleteProperty(options.params || options.data || {}, 'MYBRICKS_HOST');
+        if (isFormData) {
+          templateParamKeys.forEach(key => {
+            (options.params || options.data).delete(key)
+          });
+
+          (options.params || options.data).delete('MYBRICKS_HOST')
+        } else {
+          templateParamKeys.forEach(key => {
+            Reflect.deleteProperty(options.params || options.data || {}, key);
+          });
+          Reflect.deleteProperty(options.params || options.data || {}, 'MYBRICKS_HOST');
+        }
         options.method = options.method || method;
         config
           .ajax(options)
