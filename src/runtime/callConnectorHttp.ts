@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {getDecodeString} from '../script';
+import { cloneDeep } from '../utils/lodash';
 
 interface IOptions {
   method: string;
@@ -133,17 +134,32 @@ const getFetch = (connector) => {
     const path = connector.path.trim();
     const outputKeys = connector.outputKeys || [];
     const excludeKeys = connector.excludeKeys || [];
+    const showLog = connector.mode === 'test';
 
     try {
+      showLog && console.log('【连接器调试日志】接口传入参数：', cloneDeep(params));
+
       const url = path;
+      const originParams = method.startsWith('GET') ? { params, url, method } : { data: params, url, method };
+
+      showLog && console.log('【连接器调试日志】全局入参拦截器(执行前配置)：', cloneDeep(originParams));
+
       /** 全局入参处理 */
-      const newParams = pluginRun(connector.globalParamsFn)(
-          method.startsWith('GET') ? { params, url, method } : { data: params, url, method }
-      );
+      const newParams = pluginRun(connector.globalParamsFn)(originParams);
+
+      showLog && console.log('【连接器调试日志】全局入参拦截器(执行后配置)：', cloneDeep(newParams));
+
       newParams.url = newParams.url || url;
       newParams.method = newParams.method || method;
+
+      showLog && console.log('【连接器调试日志】接口自定义入参拦截器(执行前配置)：', cloneDeep(newParams));
+
       /** 局部入参处理 */
       const options = pluginRun(connector.input)(newParams);
+
+      showLog && console.log('【连接器调试日志】接口自定义入参拦截器(执行后配置)：', cloneDeep(options));
+      showLog && console.log('【连接器调试日志】接口请求路径模板字符串处理(执行前配置)：', cloneDeep(options));
+
       const isFormData = (options.params || options.data) instanceof FormData;
       const templateParamKeys = [];
       /** url 里支持模板字符串 */
@@ -200,21 +216,35 @@ const getFetch = (connector) => {
         });
         Reflect.deleteProperty(options.params || options.data || {}, 'MYBRICKS_HOST');
       }
+
+      showLog && console.log('【连接器调试日志】接口请求路径模板字符串处理(执行后配置)：', cloneDeep(options));
+
       options.method = options.method || method;
       config
           .ajax(options)
           .then((response) => {
+            showLog && console.log('【连接器调试日志】全局出参拦截器(执行前数据)：', cloneDeep(response));
+
             /** 全局响应值处理 */
-            return pluginRun(connector.globalResultFn)(
-                { response, config: options },
-                { throwStatusCodeError: onError }
-            );
+            const result = pluginRun(connector.globalResultFn)({ response, config: options }, { throwStatusCodeError: onError });
+
+            showLog && console.log('【连接器调试日志】全局出参拦截器(执行后数据)：', cloneDeep(result));
+            return result;
           })
           .then((response) => {
+            showLog && console.log('【连接器调试日志】接口自定义出参拦截器(执行前数据)：', cloneDeep(response));
+
             /** 局部响应值处理 */
-            return pluginRun(connector.output)(response, Object.assign({}, options), { throwStatusCodeError: onError });
+            const result = pluginRun(connector.output)(response, Object.assign({}, options), { throwStatusCodeError: onError });
+
+            showLog && console.log('【连接器调试日志】接口自定义出参拦截器(执行后数据)：', cloneDeep(result));
+            return result;
           })
           .then((response) => {
+            if (connector.mode === 'test') {
+              then(response);
+              return;
+            }
             excludeKeys?.forEach((key) => del(response, key.split('.')));
 
             return response;

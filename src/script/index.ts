@@ -71,7 +71,6 @@ function getScript(serviceItem) {
       const path = `__path__`;
       const outputKeys = __outputKeys__;
       const excludeKeys = __excludeKeys__;
-      const resultTransformDisabled = __resultTransformDisabled__;
 
       try {
         const url = path;
@@ -165,9 +164,6 @@ function getScript(serviceItem) {
             return res;
           })
           .then((response) => {
-            if (resultTransformDisabled) {
-              return then(response);
-            }
             if (excludeKeys.length === 0) {
               return response;
             }
@@ -243,10 +239,6 @@ function getScript(serviceItem) {
       .replace('__path__', serviceItem.path.trim())
       .replace('__outputKeys__', JSON.stringify(serviceItem.outputKeys))
       .replace('__excludeKeys__', JSON.stringify(serviceItem.excludeKeys || []))
-      .replace(
-        '__resultTransformDisabled__',
-        serviceItem.resultTransformDisabled
-      )
       .replace(
         '__globalParamsFn__',
         getDecodeString(serviceItem.globalParamsFn || exampleParamsFunc)

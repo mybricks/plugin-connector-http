@@ -110,15 +110,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
           mode: 'test',
           id: sidebarContext.formModel.id,
 					connectorName: PLUGIN_CONNECTOR_NAME,
-          script: getDecodeString(
-            getScript({
-              ...sidebarContext.formModel,
-              globalParamsFn: globalConfig.paramsFn,
-              globalResultFn: globalConfig.resultFn,
-              path: sidebarContext.formModel.path.trim(),
-              resultTransformDisabled: true,
-            })
-          ),
+	        content: sidebarContext.formModel,
         },
         params
       );
