@@ -12,7 +12,6 @@ export default function GlobalPanel({
   closeTemplateForm,
   style,
   data,
-  onChange,
 }: any) {
 	return ReactDOM.createPortal(
 	  (
@@ -53,7 +52,6 @@ export default function GlobalPanel({
 							  const value = e.getValue();
 							  if (data.config.paramsFn !== decodeURIComponent(value)) {
 								  data.config.paramsFn = decodeURIComponent(value);
-								  onChange({ paramsFn: value });
 							  }
 						  }}
 						  env={{
@@ -84,7 +82,6 @@ export default function GlobalPanel({
 								  const value = e.getValue();
 								  if (data.config.resultFn !== decodeURIComponent(value)) {
 									  data.config.resultFn = decodeURIComponent(value);
-									  onChange({ resultFn: value });
 								  }
 							  }}
 							  env={{

@@ -372,17 +372,12 @@ export default function Sidebar({
 		return node;
   }, [sidebarContext, sidebarContext.type, serviceListUrl, updateService]);
 
-  const onGlobalConfigChange = useCallback(() => {
-    updateService('updateAll');
-  }, []);
-
   const renderGlobalPanel = useCallback(() => {
     return sidebarContext.type === GLOBAL_PANEL ? (
       <GlobalPanel
         style={{ top: ref.current?.getBoundingClientRect().top }}
         closeTemplateForm={closeTemplateForm}
         data={data}
-        onChange={onGlobalConfigChange}
       />
     ) : null;
   }, [sidebarContext]);
@@ -440,7 +435,6 @@ export default function Sidebar({
 
 	const onChangeGlobalMock = useCallback((globalMock) => {
 		data.config.globalMock = globalMock;
-		updateService('updateAll');
 	}, []);
 
   useMemo(() => {
@@ -588,11 +582,7 @@ export default function Sidebar({
 		                            >
 		                              {param.name}:
 		                            </span>
-		                            <span
-		                              className={
-		                                css['sidebar-panel-list-item__content']
-		                              }
-		                            >
+		                            <span className={css['sidebar-panel-list-item__content']}>
 		                              {renderParam(item, param)}
 		                            </span>
 		                          </div>

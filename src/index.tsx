@@ -33,12 +33,13 @@ export default function pluginEntry(pluginConfig: any = {}) {
     },
     /** 调试时将调用插件的 callConnector 方法 */
     callConnector(connector, params, config) {
+      const pureConnectors = { ...this.data };
+
       /** 启动 Mock */
-      if (config?.openMock) {
+      if (pureConnectors.config.globalMock || config?.openMock) {
         return mock({ ...connector, outputSchema: config.mockSchema });
       }
 
-      const pureConnectors = { ...this.data };
       /** mode = test，即在编辑面板点击调试 */
       const findConnector = connector.mode === 'test' ? connector : pureConnectors.connectors.find(con => con.id === connector.id);
       if (findConnector) {
