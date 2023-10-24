@@ -35,8 +35,8 @@ export default function pluginEntry(pluginConfig: any = {}) {
     callConnector(connector, params, config) {
       const pureConnectors = { ...this.data };
 
-      /** 启动 Mock */
-      if (pureConnectors.config.globalMock || config?.openMock) {
+      /** 非连接测试情况，启动 Mock */
+      if (connector.mode !== 'test' && (pureConnectors.config.globalMock || config?.openMock)) {
         return mock({ ...connector, outputSchema: config.mockSchema });
       }
 

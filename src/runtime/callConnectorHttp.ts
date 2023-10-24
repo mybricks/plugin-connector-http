@@ -63,7 +63,7 @@ export function call(
 
             return axios(opts || options)
               .then(res => res.data)
-              .catch(error => reject(error.response.data?.message || error));
+              .catch(error => reject(error.response?.data?.message || error));
           },
         }
       );

@@ -184,7 +184,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
       sidebarContext.formModel.inputSchema = inputSchema;
       setSchema({ ...sidebarContext.formModel.resultSchema });
     } catch (error: any) {
-      console.log(error);
+      console.error(error);
       sidebarContext.formModel.outputSchema = void 0;
       sidebarContext.formModel.resultSchema = void 0;
       setError(error?.message || error);
