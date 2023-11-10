@@ -54,7 +54,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
           };
         }
 
-        return call({ ...connector, ...curConnector, useProxy: true }, params, config);
+        return call({ useProxy: true, ...connector, ...curConnector }, params, config);
       } else {
         return Promise.reject('找不到对应连接器 Script 执行脚本.');
       }
