@@ -210,6 +210,7 @@ export default function DefaultPanel({
 												}
 											};
 										}}
+										key={sidebarContext.formModel.id}
 										env={{
 											isNode: false,
 											isElectronRenderer: false,
@@ -264,6 +265,7 @@ export default function DefaultPanel({
 												}
 											};
 										}}
+										key={sidebarContext.formModel.id}
 										env={{
 											isNode: false,
 											isElectronRenderer: false,

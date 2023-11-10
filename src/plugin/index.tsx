@@ -15,6 +15,7 @@ import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
 import Switch from '../components/Switch';
+import {copyText} from '../utils/copy';
 
 interface Iprops {
   connector: Iconnector;
@@ -437,6 +438,14 @@ export default function Sidebar({
 		data.config.globalMock = globalMock;
 	}, []);
 
+	const onDoubleClick = useCallback(() => {
+		copyText(JSON.stringify({
+			pluginData: data,
+			designerData: sidebarContext.addActions
+				.reduce((pre, item) => ({ ...pre, [item.type]: sidebarContext.connector.getAllByType(item.type) }), {}),
+		}))
+	}, [data, sidebarContext]);
+
   useMemo(() => {
 		if (!data) {
 			return;
@@ -469,7 +478,7 @@ export default function Sidebar({
         <div className={`${css['sidebar-panel-view']}`}>
           <div className={css['sidebar-panel-header']}>
             <div className={css['sidebar-panel-header__title']}>
-              <span>服务连接</span>
+              <span onDoubleClick={onDoubleClick}>服务连接</span>
 							<div className={css.rightOperate}>
 								<div className={css.globalMock} data-mybricks-tip="开启全局Mock，页面调试时所有接口将默认使用Mock能力">
 									<span className={data?.config?.globalMock ? css.warning : ''}>全局 Mock:</span>
