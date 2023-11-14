@@ -233,7 +233,6 @@ export default function Sidebar({
 		  path: '',
 		  desc: '',
 		  method: 'GET',
-		  useMock: false,
 		  input: encodeURIComponent(exampleParamsFunc),
 		  output: encodeURIComponent(exampleResultFunc),
 	  };
@@ -393,24 +392,6 @@ export default function Sidebar({
     return interfaceParams;
   }, []);
 
-  const onServiceItemTitleClick = (e, item) => {
-    e.stopPropagation();
-    const { id, content, type } = item;
-    if (type === SERVICE_TYPE.TG) return;
-    if (!content.mockAddress) {
-      sidebarContext.toolTipId = id;
-      setTimeout(() => {
-        sidebarContext.toolTipId = void 0;
-      }, 2500);
-      return;
-    }
-    sidebarContext.formModel = {
-      id,
-      ...content,
-      useMock: !content.useMock,
-    };
-    updateService();
-  };
   const initData = useCallback(() => {
     if (data.connectors.length === 0 && initialValue.serviceList?.length) {
       data.connectors = initialValue.serviceList;
@@ -504,13 +485,11 @@ export default function Sidebar({
 		            .map((item) => {
 		              const expand = sidebarContext.expandId === item.id;
 		              item.updateTime = formatDate(item.updateTime || item.createTime);
-		              const { useMock, type } = item.content;
+		              const { type } = item.content;
                   const curAction = sidebarContext.addActions.find(action => action.type === type);
 									let typeLabel = '接口';
 			
-									if (useMock) {
-										typeLabel = 'Mock';
-									} else if (sidebarContext.addActions.length > 1) {
+									if (sidebarContext.addActions.length > 1) {
                     typeLabel = curAction?.title || typeLabel;
 									}
                   const curTitle = curAction?.getTitle?.(item) || item.content.title;
@@ -541,10 +520,7 @@ export default function Sidebar({
 		                        >
 		                          {Icons.arrowR}
 		                        </div>
-		                        <div
-		                          className={css.tag}
-		                          onClick={(e) => onServiceItemTitleClick(e, item)}
-		                        >
+		                        <div className={css.tag}>
 		                          {typeLabel}
 		                        </div>
 		                        <div className={css.name}>
