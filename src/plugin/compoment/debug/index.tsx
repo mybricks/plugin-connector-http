@@ -385,6 +385,9 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 
 				if (JSON.stringify(sidebarContext.formModel.resultSchema) !== JSON.stringify(jsonSchema)) {
 					sidebarContext.formModel.resultSchema = jsonSchema;
+					sidebarContext.formModel.outputKeys = [];
+					sidebarContext.formModel.excludeKeys = [];
+					sidebarContext.formModel.outputSchema = jsonSchema;
 				}
 			} catch (e) {
 				console.warn('JSON 解析错误', e);
