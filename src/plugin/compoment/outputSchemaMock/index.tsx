@@ -3,38 +3,12 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import JSONView from '@mybricks/code-editor';
 import * as Icons from '../../../icon';
 import { uuid } from '../../../utils';
 import { schema2params, params2schema } from './utils';
-import { isEmpty } from '../../../utils/lodash';
-import FormItem from '../../../components/FormItem';
-import { CDN } from '../../../constant';
+import { findLastIndex } from '../../../utils/lodash';
 
 import css from './index.less';
-
-function DataShow({ data }: any) {
-  let valueStr = '';
-  try {
-    valueStr = JSON.stringify(data, null, 2);
-  } catch (error) {}
-  return isEmpty(data) ? null : (
-    <FormItem label='Mock数据'>
-      {/* @ts-ignore */}
-      <JSONView
-        width={430}
-        value={valueStr}
-        language='json'
-        CDN={CDN}
-        env={{
-          isNode: false,
-          isElectronRenderer: false,
-        }}
-        readOnly
-      />
-    </FormItem>
-  );
-}
 
 export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
   const valueRef = useRef(value);
@@ -120,16 +94,11 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
     }
 
     const isArray = parent.type === 'array';
-    const hasDefaultValue =
-      item.defaultValue !== void 0 && item.defaultValue !== '';
-
     const addAble =
       (depth === 0 &&
         parent.children?.[
           Math.min(
-            parent.children.findLastIndex(
-              ({ type }: any) => type === 'string' || type === 'number'
-            ),
+            findLastIndex(parent.children, ({ type }) => type === 'string' || type === 'number'),
             parent.children.length - 1
           )
         ]?.name === item.name) ||
@@ -161,50 +130,11 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
             <option label={'对象'} value={'object'} />
             <option label={'列表'} value={'array'} />
           </select>
-          {/* <input
-            className={css.defaultValue}
-            type='text'
-            disabled={type === 'object' || type === 'array'}
-            value={item.defaultValue}
-            onChange={(e) => {
-              const { value } = e.target;
-              set(
-                item,
-                'defaultValue',
-                value === '' ? void 0 : type === 'number' ? +value : value
-              );
-            }}
-          /> */}
-          {/* <div className={css.range}>
-            <input
-              className={`${css.min} ${item.minError ? css.error : ''}`}
-              type='text'
-              placeholder={getPlaceholder(item, false)}
-              disabled={type === 'object' || hasDefaultValue}
-              defaultValue={getValue(item, false)}
-              onChange={(e) => {
-                const { value } = e.target;
-                set(item, getKey(item, false), value === '' ? void 0 : +value);
-              }}
-            />
-            <div>~</div>
-            <input
-              className={`${css.max} ${item.maxError ? css.error : ''}`}
-              placeholder={getPlaceholder(item)}
-              type='text'
-              disabled={type === 'object' || hasDefaultValue}
-              defaultValue={getValue(item, true)}
-              onChange={(e) => {
-                const { value } = e.target;
-                set(item, getKey(item, true), value == '' ? void 0 : +value);
-              }}
-            />
-          </div> */}
           <div className={`${css.operate} ${css.flex}`}>
             {removeAble ? (
               <span
                 className={`${css.iconRemove}`}
-                onClick={(e) => removeItem(item, parent)}
+                onClick={() => removeItem(item, parent)}
               >
                 {Icons.remove}
               </span>
@@ -255,41 +185,8 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
       ) : (
         <div className={css.empty}>类型无效</div>
       )}
-      {/* <div className={css.mockData}>
-        <DataShow data={mockData} />
-      </div> */}
     </>
   );
-}
-
-function getPlaceholder(item: any, max: boolean = true) {
-  switch (item.type) {
-    case 'array':
-    case 'string':
-      return max ? '最大长度' : '最小长度';
-
-    case 'number':
-      return max ? '最大值' : '最小值';
-
-    default:
-      return void 0;
-  }
-}
-
-function getKey({ type }: any, max: boolean) {
-  if (type === 'array') {
-    return max ? 'maxItems' : 'minItems';
-  }
-  if (type === 'string') {
-    return max ? 'maxLength' : 'minLength';
-  }
-  if (type === 'number') {
-    return max ? 'maximum' : 'minimum';
-  }
-}
-
-function getValue(item: any, max: boolean) {
-  return item[getKey(item, max)];
 }
 
 function formatValue(item, key, val) {

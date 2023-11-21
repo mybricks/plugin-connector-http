@@ -5,6 +5,7 @@
 import React, { useCallback, useRef } from 'react';
 import * as Icons from '../../../icon';
 import { uuid } from '../../../utils';
+import { findLastIndex } from '../../../utils/lodash';
 
 import css from './index.less';
 
@@ -78,9 +79,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
       (depth === 0 &&
         parent.children?.[
           Math.min(
-            parent.children.findLastIndex(
-              ({ type }: any) => type === 'string' || type === 'number' || type === 'any'
-            ),
+            findLastIndex(parent.children, ({ type }) => type === 'string' || type === 'number' || type === 'any'),
             parent.children.length - 1
           )
         ]?.name === item.name) ||
@@ -137,7 +136,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
           <div className={`${css.column4} ${css.flex}`}>
             <span
               className={`${css.iconRemove}`}
-              onClick={(e) => removeItem(item, parent)}
+              onClick={() => removeItem(item, parent)}
             >
               {Icons.remove}
             </span>
