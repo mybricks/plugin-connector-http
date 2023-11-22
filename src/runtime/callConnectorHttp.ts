@@ -38,7 +38,7 @@ export function call(
       const fn = connector.script ? eval(`(${decodeURIComponent(connector.script)})`) : getFetch(connector);
       const { before = defaultFn } = config || {};
       fn(
-        params,
+        typeof params === 'object' ? params : {},
         { then: resolve, onError: reject },
         {
           executeEnv: connector.executeEnv,
