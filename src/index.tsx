@@ -41,7 +41,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
       }
 
       /** mode = test，即在编辑面板点击调试 */
-      const findConnector = connector.mode === 'test' ? connector : pureConnectors.connectors.find(con => con.id === connector.id);
+      const findConnector = connector.mode === 'test' ? connector : (pureConnectors.connectors.find(con => con.id === connector.id) ?? (connector.script ? connector : null));
       if (findConnector) {
         let curConnector = { ...findConnector };
         /**  支持 json 方式运行 */
