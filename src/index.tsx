@@ -62,6 +62,9 @@ export default function pluginEntry(pluginConfig: any = {}) {
     /** 页面导出 JSON 时，会调用插件 toJSON 方法，数据防止在页面 JSON 中 */
     toJSON({ data }) {
       const pureConnectors = { ...data };
+      if (!pureConnectors.config) {
+        pureConnectors.config = {};
+      }
 
       if (pluginConfig?.pure) {
         try {
@@ -93,6 +96,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
           id: con.id,
           type: con.type,
           title: con.content.title,
+          globalMock: pureConnectors.config.globalMock,
           script: getScript({
             ...con.content,
             globalParamsFn: pureConnectors.config.paramsFn,
