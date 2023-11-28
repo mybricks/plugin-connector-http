@@ -13,6 +13,7 @@ interface IOptions {
 
 interface IConfig {
   before: (options: IOptions) => any;
+  onResponseInterception?(response): any;
 }
 
 const defaultFn = (options: IOptions, ...args: any) => ({
@@ -57,12 +58,18 @@ export function call(
                   headers: {...(opts.headers || {}), ['x-target-url']: opts.url},
                   data: opts.data
                 })
-                .then((res: any) => res.data)
+                .then((res: any) => {
+                  config?.onResponseInterception?.(res);
+                  return res.data;
+                })
                 .catch(error => reject(error.response.data?.message || error));
             }
 
             return axios(opts || options)
-              .then(res => res.data)
+              .then(res => {
+                config?.onResponseInterception?.(res);
+                return res.data;
+              })
               .catch(error => reject(error.response?.data?.message || error));
           },
         }
