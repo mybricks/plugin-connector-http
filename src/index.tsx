@@ -1,7 +1,7 @@
 import Plugin from './plugin';
 import { icon } from './icon';
 import data from './data';
-import { exampleParamsFunc, PLUGIN_CONNECTOR_NAME, templateResultFunc } from './constant';
+import { exampleParamsFunc, PLUGIN_CONNECTOR_NAME, resetCDN, templateResultFunc } from './constant';
 import { call } from './runtime/callConnectorHttp';
 import { getScript, getDecodeString } from './script';
 import { mock } from './script/mock';
@@ -22,6 +22,11 @@ export default function pluginEntry(pluginConfig: any = {}) {
     onLoad() {
       if (!this.data) {
         return;
+      }
+
+      /** 关闭私有化离线模式，使用默认 CDN 链接 */
+      if (pluginConfig.isPrivatization === false) {
+        resetCDN();
       }
 
       /** 初始化全局配置 */

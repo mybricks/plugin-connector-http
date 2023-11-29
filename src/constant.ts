@@ -129,7 +129,7 @@ export const SQL_PANEL_VISIBLE = 0b1000;
 export const DOMAIN_PANEL_VISIBLE = 0b10000;
 export const AGGREGATION_MODEL_VISIBLE = 0b100000;
 
-export const CDN = {
+export let CDN = {
   prettier: {
     standalone: '/mfs/editor_assets/prettier/2.6.2/standalone.js',
       babel: '/mfs/editor_assets/prettier/2.6.2/parser-babel.js'
@@ -140,3 +140,7 @@ export const CDN = {
   },
   monacoLoader: '/mfs/editor_assets/monaco-editor/0.33.0/min/vs/loader.min.js'
 }
+
+export const resetCDN = () => {
+  CDN = undefined;
+};
