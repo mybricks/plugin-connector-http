@@ -111,7 +111,8 @@ export default function pluginEntry(pluginConfig: any = {}) {
       });
     },
     getConnectorScript(connector) {
-      const curConnector = this.data.connectors.find(con => con.id === connector.id) || connector;
+      const isTestMode = connector.mode === 'test';
+      const curConnector = isTestMode ? connector : this.data.connectors.find(con => con.id === connector.id);
 
       try {
         return {
@@ -119,7 +120,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
           type: curConnector.type,
           title: curConnector.content.title,
           script: getScript({
-            isTestMode: connector.mode === 'test',
+            isTestMode,
             ...curConnector.content,
             globalParamsFn: this.data.config.paramsFn,
             globalResultFn: this.data.config.resultFn,
