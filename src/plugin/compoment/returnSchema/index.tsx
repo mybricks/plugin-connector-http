@@ -176,10 +176,12 @@ export default function ReturnShema({
   }, []);
 
   if (error) {
+    const isErrorMessage = typeof error === 'string';
+    const errorMessage = isErrorMessage ? error : (error?.message || '接口错误：无具体错误信息');
     return (
       <div className={css.errorInfo}>
-        <span>{error}</span>
-        <div>{getErrorTips(error)}</div>
+        <span>{errorMessage}</span>
+        <div>{getErrorTips(errorMessage)}</div>
       </div>
     );
   }
@@ -219,10 +221,10 @@ function getTypeName(v: string) {
 }
 
 function getErrorTips(message: string) {
-  if (message.includes('Network Error')) {
+  if (message.includes?.('Network Error')) {
     return '请检查网络是否正常、当前请求是否存在跨域';
   }
-  if (message.includes('404')) {
+  if (message.includes?.('404')) {
     return '请检查请求地址是否拼写错误';
   }
   return '';
