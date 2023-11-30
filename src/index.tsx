@@ -111,9 +111,9 @@ export default function pluginEntry(pluginConfig: any = {}) {
       });
     },
     getConnectorScript(connector) {
-      const curConnector = this.data.connectors.find(con => con.id === connector.id);
+      const curConnector = this.data.connectors.find(con => con.id === connector.id) || connector;
 
-      if (curConnector) {
+      try {
         return {
           id: curConnector.id,
           type: curConnector.type,
@@ -124,7 +124,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
             globalResultFn: this.data.config.resultFn,
           }),
         };
-      } else {
+      } catch (e) {
         throw Error('找不到对应连接器数据');
       }
     },
