@@ -71,6 +71,7 @@ function getScript(serviceItem) {
       const path = `__path__`;
       const outputKeys = __outputKeys__;
       const excludeKeys = __excludeKeys__;
+      const isTestMode = __isTestMode__;
 
       try {
         const url = path;
@@ -164,6 +165,10 @@ function getScript(serviceItem) {
             return res;
           })
           .then((response) => {
+            if (isTestMode) {
+              then(response);
+              return;
+            }
             if (excludeKeys.length === 0) {
               return response;
             }
@@ -236,6 +241,7 @@ function getScript(serviceItem) {
         serviceItem.globalResultFn ? true : false
       )
       .replace('__method__', serviceItem.method)
+      .replace('__isTestMode__', JSON.stringify(serviceItem.isTestMode || false))
       .replace('__path__', serviceItem.path.trim())
       .replace('__outputKeys__', JSON.stringify(serviceItem.outputKeys))
       .replace('__excludeKeys__', JSON.stringify(serviceItem.excludeKeys || []))

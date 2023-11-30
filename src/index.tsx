@@ -119,6 +119,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
           type: curConnector.type,
           title: curConnector.content.title,
           script: getScript({
+            isTestMode: connector.mode === 'test',
             ...curConnector.content,
             globalParamsFn: this.data.config.paramsFn,
             globalResultFn: this.data.config.resultFn,
