@@ -11,6 +11,7 @@ import Input, { TextArea } from '../../../components/Input';
 import { safeDecode } from '../../../utils';
 import { CDN } from '../../../constant';
 import { DefaultPanelContext } from './context';
+import { debounce } from '../../../utils/lodash';
 
 import parentCss from '../../../style-cssModules.less';
 import css from './index.less';
@@ -216,13 +217,10 @@ export default function DefaultPanel({
 											isElectronRenderer: false,
 										}}
 										CDN={CDN}
-										onBlur={e => {
-											const value = e.getValue();
-											if (sidebarContext.formModel.input !== encodeURIComponent(value)) {
-												sidebarContext.formModel.input = encodeURIComponent(value);
-												setParamsFn(value);
-											}
-										}}
+										onChange={debounce((code: string) => {
+											sidebarContext.formModel.input = encodeURIComponent(code);
+											setParamsFn(code);
+										}, 200)}
 										value={safeDecode(paramsFn)}
 										width='100%'
 										height='100%'
@@ -271,15 +269,10 @@ export default function DefaultPanel({
 											isElectronRenderer: false,
 										}}
 										CDN={CDN}
-										onBlur={e => {
-											const value = e.getValue();
-											if (sidebarContext.formModel.output !== encodeURIComponent(value)) {
-												sidebarContext.formModel.output = encodeURIComponent(value);
-												setOutputFn(encodeURIComponent(value));
-											}
-										}}
-										onChange={(code: string) => {
-										}}
+										onChange={debounce((code: string) => {
+											sidebarContext.formModel.output = encodeURIComponent(code);
+											setOutputFn(encodeURIComponent(code));
+										}, 200)}
 										value={safeDecode(outputFn)}
 										width='100%'
 										height='100%'
