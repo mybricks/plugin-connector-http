@@ -5,7 +5,7 @@ import css from '../../../../src/style-cssModules.less';
 import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
 import { CDN } from '../../../constant';
-
+import { debounce } from '../../../utils/lodash';
 import curCss from './index.less';
 
 export default function GlobalPanel({
@@ -48,12 +48,11 @@ export default function GlobalPanel({
 							  verticalScrollbarSize: 2,
 						  }}
 						  value={decodeURIComponent(data.config.paramsFn)}
-						  onBlur={e => {
-							  const value = e.getValue();
-							  if (data.config.paramsFn !== decodeURIComponent(value)) {
-								  data.config.paramsFn = decodeURIComponent(value);
-							  }
-						  }}
+							onChange={debounce((code: string) => {
+								if (data.config.paramsFn !== decodeURIComponent(code)) {
+									data.config.paramsFn = decodeURIComponent(code);
+								}
+							}, 200)}
 						  env={{
 							  isNode: false,
 							  isElectronRenderer: false,
@@ -78,12 +77,11 @@ export default function GlobalPanel({
 								  verticalScrollbarSize: 2,
 							  }}
 							  value={decodeURIComponent(data.config.resultFn)}
-							  onBlur={e => {
-								  const value = e.getValue();
-								  if (data.config.resultFn !== decodeURIComponent(value)) {
-									  data.config.resultFn = decodeURIComponent(value);
+								onChange={debounce((code: string) => {
+									if (data.config.resultFn !== decodeURIComponent(code)) {
+									  data.config.resultFn = decodeURIComponent(code);
 								  }
-							  }}
+								}, 200)}
 							  env={{
 								  isNode: false,
 								  isElectronRenderer: false,
