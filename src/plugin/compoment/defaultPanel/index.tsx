@@ -33,7 +33,11 @@ export default function DefaultPanel({
 	const blurMapRef = useRef<any>({});
 	const paramRef = useRef<HTMLDivElement>(null);
 	const resultRef = useRef<HTMLDivElement>(null);
-	const addresRef = useRef<any>();
+	const addressRef = useRef<any>();
+	const [paramsFn, setParamsFn] = useState<string>(sidebarContext.formModel.input);
+	const [outputFn, setOutputFn] = useState<string>(sidebarContext.formModel.output);
+	const [, forceUpdate] = useState(0);
+
 	const onClosePanel = useCallback(() => {
 		sidebarContext.type = '';
 		sidebarContext.isDebug = false;
@@ -41,8 +45,6 @@ export default function DefaultPanel({
 		sidebarContext.isEdit = false;
 		setRender(sidebarContext);
 	}, []);
-	const [paramsFn, setParamsFn] = useState(sidebarContext.formModel.input);
-	const [outputFn, setOutputFn] = useState(sidebarContext.formModel.output);
 
 	const onParamsEditorFullscreen = () => {
 		paramRef.current?.classList.add(parentCss['sidebar-panel-code-full']);
@@ -68,10 +70,10 @@ export default function DefaultPanel({
 
 	const validate = () => {
 		if (sidebarContext.formModel.path) {
-			addresRef.current?.classList.remove(css.error);
+			addressRef.current?.classList.remove(css.error);
 			return true;
 		}
-		addresRef.current?.classList.add(css.error);
+		addressRef.current?.classList.add(css.error);
 		return false;
 	};
 
@@ -94,7 +96,7 @@ export default function DefaultPanel({
 
 	useEffect(() => {
 		if (sidebarContext.formModel.path) {
-			addresRef.current?.classList.remove(css.error);
+			addressRef.current?.classList.remove(css.error);
 		}
 	}, [sidebarContext.formModel.path]);
 	const contextValue = useMemo(() => {
@@ -128,20 +130,20 @@ export default function DefaultPanel({
 					<div className={parentCss['sidebar-panel-content']}>
 						<>
 							<div className={css.ct}>
-								<Collapse header='基本信息' defaultFold={false}>
+								<Collapse header="基本信息" defaultFold={false}>
 									<div className={css.item}>
 										<label>名称</label>
 										<div
-											className={`${css.editor} ${css.textEdt} ${
-												sidebarContext.titleErr ? css.error : ''
-											}`}
+											className={`${css.editor} ${css.textEdt} ${sidebarContext.titleErr ? css.error : ''}`}
 											data-err={sidebarContext.titleErr}
 										>
 											<input
-												type={'text'}
-												placeholder={'服务接口的标题'}
+												type="text"
+												placeholder="服务接口的标题"
 												defaultValue={sidebarContext.formModel.title}
 												key={sidebarContext.formModel.title}
+												/** 防止 Collapse 面板折叠后 UI 展示数据丢失 */
+												onBlur={() => forceUpdate(Math.random())}
 												onChange={(e) => {
 													sidebarContext.titleErr = void 0;
 													sidebarContext.formModel.title = e.target.value;
@@ -154,24 +156,25 @@ export default function DefaultPanel({
 											<i>*</i>地址
 										</label>
 										<div
-											ref={addresRef}
+											ref={addressRef}
 											className={`${css.editor} ${css.textEdt}`}
-											data-err='请填写完整的地址'
+											data-err="请填写完整的地址"
 										>
 											<textarea
 												defaultValue={sidebarContext.formModel.path}
 												key={sidebarContext.formModel.path}
-												placeholder={'接口的请求路径'}
+												placeholder="接口的请求路径"
+												/** 防止 Collapse 面板折叠后 UI 展示数据丢失 */
+												onBlur={() => forceUpdate(Math.random())}
 												onChange={(e) => {
 													sidebarContext.formModel.path = e.target.value;
 													if (sidebarContext.formModel.path) {
-														addresRef.current?.classList.remove(css.error);
+														addressRef.current?.classList.remove(css.error);
 													}
 												}}
 											/>
 										</div>
 									</div>
-									<div className={css.sperator}></div>
 									<div className={css.item}>
 										<label>
 											<i>*</i>请求方法

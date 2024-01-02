@@ -6,8 +6,8 @@ export default function RadioBtns({ options, binding }) {
   const [select, setSelect] = useState(from[key]);
   
   useEffect(() => {
-    setSelect(from[key])
-  }, [from[key]])
+    setSelect(from[key]);
+  }, [from[key]]);
 
   return (
     <div className={css.edt}>
@@ -15,9 +15,7 @@ export default function RadioBtns({ options, binding }) {
         return (
           <div
             key={opt.value}
-            className={`${css.opt} ${
-              opt.value === select ? css.selected : ''
-            }`}
+            className={`${css.opt} ${opt.value === select ? css.selected : ''}`}
             onClick={() => {
               from[key] = opt.value;
               setSelect(opt.value);
