@@ -20,7 +20,7 @@ export default function ({ ctx, setRender, blurMap }: any) {
   const renderAddActionList = () => {
 	  if (!ctx.addActions || ctx.addActions.length === 1) {
 		  return (
-			  <div className={css.icon} onClick={() => onAddClick('http')}>
+			  <div className={css.icon} onClick={() => onAddClick('http')} data-mybricks-tip="创建接口">
 				  {plus}
 			  </div>
 		  );
@@ -35,7 +35,7 @@ export default function ({ ctx, setRender, blurMap }: any) {
 	
 	  return (
 		  <Dropdown dropDownStyle={ctx.type ? { right: 0 } : undefined} onBlur={fn => blurMap['toolbar'] = fn} overlay={menu}>
-			  <div className={css.icon}>
+			  <div className={css.icon} data-mybricks-tip="创建接口">
 				  {plus}
 			  </div>
 		  </Dropdown>

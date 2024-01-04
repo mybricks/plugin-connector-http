@@ -465,7 +465,7 @@ export default function Sidebar({
 									<span className={data?.config?.globalMock ? css.warning : ''}>全局 Mock:</span>
 									<Switch defaultChecked={data?.config?.globalMock} onChange={onChangeGlobalMock} />
 								</div>
-								<div className={css.icon} onClick={onGlobalConfigClick}>
+								<div className={css.icon} onClick={onGlobalConfigClick} data-mybricks-tip="全局设置，可定义接口全局处理逻辑">
 									{Icons.set}
 								</div>
 							</div>
