@@ -9,7 +9,9 @@ export interface ErrorFieldData {
 
 export const checkValidJsonSchema = (json: Record<string, any>) => {
 	const recurseJson = (json: Record<string, any>, path: string[], errorFields: ErrorFieldData[]) => {
-		if ('type' in json) {
+		let lastPathProperty = path?.length ? path[path.length-1] : ''
+		// 避免遍历到properties里面的type属性
+		if ('type' in json && lastPathProperty!== 'properties') {
 			if (json.type === 'object') {
 				if (json.properties === undefined) {
 					errorField.push({
@@ -72,3 +74,4 @@ export const checkValidJsonSchema = (json: Record<string, any>) => {
 
 	return [res, errorField];
 }
+

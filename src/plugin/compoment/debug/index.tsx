@@ -397,14 +397,14 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 					return
 				}
 				const jsonSchema = JSON.parse(responseCodeTextRef.current?.value);
-				const [result, errorFields = []] = checkValidJsonSchema(jsonSchema);
-				if(result === false) {
-					notice(`JSON 解析错误，${errorFields.length ? errorFields[0].msg + ',' : ''}此次变更被忽略`, { type: 'warning' });
-					// 关闭code
-					setShowResponseCode(!showResponseCode);
-					return
-				}
 				if (JSON.stringify(sidebarContext.formModel.resultSchema) !== JSON.stringify(jsonSchema)) {
+					const [result, errorFields = []] = checkValidJsonSchema(jsonSchema);
+					if(result === false) {
+						notice(`JSON 解析错误，${errorFields.length ? errorFields[0].msg + ',' : ''}此次变更被忽略`, { type: 'warning' });
+						// 关闭code
+						setShowResponseCode(!showResponseCode);
+						return
+					}
 					sidebarContext.formModel.resultSchema = jsonSchema;
 					sidebarContext.formModel.outputKeys = [];
 					sidebarContext.formModel.excludeKeys = [];
