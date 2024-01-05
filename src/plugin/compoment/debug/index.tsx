@@ -426,7 +426,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 					<FormItem label='请求参数'>
 						<textarea
 							ref={codeTextRef}
-							className={css.codeText}
+							className={`${css.codeText}  ${css.textEdt}`}
 							cols={30}
 							rows={10}
 							defaultValue={JSON.stringify(sidebarContext.formModel.inputSchema, null, 2)}
@@ -481,7 +481,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 							<>
 								<textarea
 									ref={responseCodeTextRef}
-									className={css.codeText}
+									className={`${css.codeText}  ${css.textEdt}`}
 									cols={30}
 									rows={10}
 									defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}

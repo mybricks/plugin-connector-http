@@ -230,7 +230,7 @@ export default function DefaultPanel({
 										minHeight={300}
 										language='javascript'
 										theme='light'
-										lineNumbers='off'
+										lineNumbers='on'
 										/** @ts-ignore */
 										scrollbar={{
 											horizontalScrollbarSize: 2,
@@ -282,7 +282,7 @@ export default function DefaultPanel({
 										minHeight={300}
 										language='javascript'
 										theme='light'
-										lineNumbers='off'
+										lineNumbers='on'
 										/** @ts-ignore */
 										scrollbar={{
 											horizontalScrollbarSize: 2,
