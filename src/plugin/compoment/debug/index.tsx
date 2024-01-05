@@ -11,6 +11,7 @@ import {
 	params2data,
 	paramsToSchema,
 } from '../../../utils';
+import { checkValidJsonSchema } from '../../../utils/validateJsonSchema';
 import JSONView from '@mybricks/code-editor';
 import ReturnShema from '../returnSchema';
 import ParamsEdit from '../paramsEdit';
@@ -349,10 +350,20 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 		event.stopPropagation();
 		if (showParamsCode) {
 			try {
+				if(!sidebarContext.formModel.inputSchema && !codeTextRef.current?.value) {
+					setShowParamsCode(!showParamsCode);
+					return
+				}
 				const jsonSchema = JSON.parse(codeTextRef.current?.value);
-
 				if (jsonSchema.type === 'object' && !!jsonSchema.properties) {
 					if (JSON.stringify(sidebarContext.formModel.inputSchema) !== JSON.stringify(jsonSchema)) {
+						const [result, errorFields] = checkValidJsonSchema(jsonSchema);
+						if(result === false) {
+							notice(`JSON 解析错误，${errorFields.length ? errorFields[0].msg + '，' : ''}此次变更被忽略`, { type: 'warning' });
+							// 关闭code
+							setShowParamsCode(!showParamsCode);
+							return
+						}
 						sidebarContext.formModel.inputSchema = jsonSchema;
 						const params = extractParamsBySchema(jsonSchema);
 						sidebarContext.formModel.params = params;
@@ -380,9 +391,20 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 		event.stopPropagation();
 		if (showResponseCode) {
 			try {
+				if(!sidebarContext.formModel.resultSchema  && !responseCodeTextRef.current?.value) {
+					// 关闭code
+					setShowResponseCode(!showResponseCode);
+					return
+				}
 				const jsonSchema = JSON.parse(responseCodeTextRef.current?.value);
-
 				if (JSON.stringify(sidebarContext.formModel.resultSchema) !== JSON.stringify(jsonSchema)) {
+					const [result, errorFields = []] = checkValidJsonSchema(jsonSchema);
+					if(result === false) {
+						notice(`JSON 解析错误，${errorFields.length ? errorFields[0].msg + ',' : ''}此次变更被忽略`, { type: 'warning' });
+						// 关闭code
+						setShowResponseCode(!showResponseCode);
+						return
+					}
 					sidebarContext.formModel.resultSchema = jsonSchema;
 					sidebarContext.formModel.outputKeys = [];
 					sidebarContext.formModel.excludeKeys = [];
@@ -404,7 +426,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 					<FormItem label='请求参数'>
 						<textarea
 							ref={codeTextRef}
-							className={css.codeText}
+							className={`${css.codeText}  ${css.textEdt}`}
 							cols={30}
 							rows={10}
 							defaultValue={JSON.stringify(sidebarContext.formModel.inputSchema, null, 2)}
@@ -459,7 +481,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 							<>
 								<textarea
 									ref={responseCodeTextRef}
-									className={css.codeText}
+									className={`${css.codeText}  ${css.textEdt}`}
 									cols={30}
 									rows={10}
 									defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}

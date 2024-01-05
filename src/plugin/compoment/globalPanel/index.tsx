@@ -40,7 +40,7 @@ export default function GlobalPanel({
 						  height={400}
 						  language='javascript'
 						  theme='light'
-						  lineNumbers='off'
+						  lineNumbers='on'
 						  CDN={CDN}
 						  /** @ts-ignore */
 						  scrollbar={{
@@ -69,7 +69,7 @@ export default function GlobalPanel({
 							  height={400}
 							  language='javascript'
 							  theme='light'
-							  lineNumbers='off'
+							  lineNumbers='on'
 							  CDN={CDN}
 							  /** @ts-ignore */
 							  scrollbar={{

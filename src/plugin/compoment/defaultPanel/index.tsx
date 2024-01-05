@@ -230,7 +230,7 @@ export default function DefaultPanel({
 										minHeight={300}
 										language='javascript'
 										theme='light'
-										lineNumbers='off'
+										lineNumbers='on'
 										/** @ts-ignore */
 										scrollbar={{
 											horizontalScrollbarSize: 2,
@@ -282,7 +282,7 @@ export default function DefaultPanel({
 										minHeight={300}
 										language='javascript'
 										theme='light'
-										lineNumbers='off'
+										lineNumbers='on'
 										/** @ts-ignore */
 										scrollbar={{
 											horizontalScrollbarSize: 2,
@@ -317,7 +317,7 @@ export default function DefaultPanel({
 							</div>
 						</>
 						<div className={css.ct}>
-							<Collapse key={Math.random()} header='接口调试' defaultFold={false}>
+							<Collapse header='接口调试' defaultFold={false}>
 								<DebugForm
 									sidebarContext={sidebarContext}
 									setRender={setRender}
