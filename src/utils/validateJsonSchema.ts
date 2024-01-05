@@ -7,14 +7,12 @@ export const checkValidJsonSchema = (json: Record<string, any>) => {
     if('type' in json) {
       if(json.type === 'object') {
         if(json.properties === undefined) {
-          debugger
           return false
         }
         return recurseJson(json.properties, [...path, 'properties'])
       }
       if(json.type === 'array') {
         if(!('items' in json)) {
-          debugger
           return false
         }
         else {
@@ -24,7 +22,6 @@ export const checkValidJsonSchema = (json: Record<string, any>) => {
       if(acceptedSimpleType.includes(json.type)) {
         return true
       } else {
-        debugger
         return false
       }
     }else {
