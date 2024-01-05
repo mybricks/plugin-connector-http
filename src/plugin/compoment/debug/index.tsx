@@ -357,10 +357,9 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 				const jsonSchema = JSON.parse(codeTextRef.current?.value);
 				if (jsonSchema.type === 'object' && !!jsonSchema.properties) {
 					if (JSON.stringify(sidebarContext.formModel.inputSchema) !== JSON.stringify(jsonSchema)) {
-						const [result, errorFields] = checkValidJsonSchema(jsonSchema)
-						console.log('errorFields', errorFields)
+						const [result, errorFields] = checkValidJsonSchema(jsonSchema);
 						if(result === false) {
-							notice(`JSON 解析错误，${errorFields.length ? errorFields[0].msg + ',' : ''}此次变更被忽略`, { type: 'warning' });
+							notice(`JSON 解析错误，${errorFields.length ? errorFields[0].msg + '，' : ''}此次变更被忽略`, { type: 'warning' });
 							// 关闭code
 							setShowParamsCode(!showParamsCode);
 							return
@@ -398,8 +397,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 					return
 				}
 				const jsonSchema = JSON.parse(responseCodeTextRef.current?.value);
-				const [result, errorFields = []] = checkValidJsonSchema(jsonSchema)
-				console.log('errorFields', errorFields)
+				const [result, errorFields = []] = checkValidJsonSchema(jsonSchema);
 				if(result === false) {
 					notice(`JSON 解析错误，${errorFields.length ? errorFields[0].msg + ',' : ''}此次变更被忽略`, { type: 'warning' });
 					// 关闭code
