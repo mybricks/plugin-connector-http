@@ -187,7 +187,8 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
       console.error(error);
       sidebarContext.formModel.outputSchema = void 0;
       sidebarContext.formModel.resultSchema = void 0;
-      setError(error?.message || error);
+	    const isError = error instanceof Error;
+	    setError(isError ? (error?.message || (error as any)) : `接口错误：${typeof error === 'string' ? error : `由全局响应错误拦截透出，值为 ${JSON.stringify(error)}`}`);
     }
   };
 
