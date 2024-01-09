@@ -169,12 +169,12 @@ function getScript(serviceItem) {
           })
           .then((response) => {
             if (hasGlobalResultFn) {
-              return __globalResultFn__({response, config: options}, { throwError: (data: any) => onError(data) });
+              return __globalResultFn__({response, config: options}, { throwError: onError });
             }
             return response;
           })
           .then((response) => {
-            return __output__(response, Object.assign({}, options), { throwError: (data) => onError(data) });
+            return __output__(response, Object.assign({}, options), { throwError: onError });
           })
           .then((response) => {
             if (isTestMode) {

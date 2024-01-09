@@ -6,7 +6,7 @@ export const exampleParamsFunc = `export default function ({ params, data, heade
  }
 `;
 
-export const exampleResultFunc = `export default function (result, { method, url, params, data, headers }) {
+export const exampleResultFunc = `export default function (result, { method, url, params, data, headers }, { throwError }) {
   // return {
   //  total: result.all,
   //  dataSource: result.list.map({id, name} => ({
