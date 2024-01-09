@@ -62,7 +62,10 @@ export function call(
                   config?.onResponseInterception?.(res);
                   return res.data;
                 })
-                .catch(error => reject(error.response.data?.message || error));
+                .catch(error => {
+                  error.response && config?.onResponseInterception?.(error.response);
+                  throw error;
+                });
             }
 
             return axios(opts || options)
@@ -70,7 +73,10 @@ export function call(
                 config?.onResponseInterception?.(res);
                 return res.data;
               })
-              .catch(error => reject(error.response?.data?.message || error));
+              .catch(error => {
+                error.response && config?.onResponseInterception?.(error.response);
+                throw error;
+              });
           },
         }
       );
@@ -230,63 +236,90 @@ const getFetch = (connector) => {
       showLog && console.log('【连接器调试日志】接口请求路径模板字符串处理(执行后配置)：', cloneDeep(options));
 
       options.method = options.method || method;
+      let hasCallThrowError = false;
       config
-          .ajax(options)
-          .then((response) => {
-            showLog && console.log('【连接器调试日志】全局出参拦截器(执行前数据)：', cloneDeep(response));
-
-            /** 全局响应值处理 */
-            const result = pluginRun(connector.globalResultFn)({ response, config: options }, { throwStatusCodeError: onError });
-
-            showLog && console.log('【连接器调试日志】全局出参拦截器(执行后数据)：', cloneDeep(result));
-            return result;
-          })
-          .then((response) => {
-            showLog && console.log('【连接器调试日志】接口自定义出参拦截器(执行前数据)：', cloneDeep(response));
-
-            /** 局部响应值处理 */
-            const result = pluginRun(connector.output)(response, Object.assign({}, options), { throwStatusCodeError: onError });
-
-            showLog && console.log('【连接器调试日志】接口自定义出参拦截器(执行后数据)：', cloneDeep(result));
-            return result;
-          })
-          .then((response) => {
-            if (connector.mode === 'test') {
-              then(response);
-              return;
-            }
-            excludeKeys?.forEach((key) => del(response, key.split('.')));
-
-            return response;
-          })
-          .then((response) => {
-            let outputData: any = Array.isArray(response) ? [] : {};
-            if (outputKeys === void 0 || outputKeys.length === 0) {
-              outputData = response;
-            } else {
-              outputKeys.forEach((key) => {
-                setData(response, key.split('.'), outputData);
-              });
-
-              /** 当标记单项时，自动返回单项对应的值 */
-              if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
-                try {
-                  let cascadeOutputKeys = outputKeys.map(key => key.split('.'));
-                  while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
-                    outputData = Object.values(outputData)[0];
-                    cascadeOutputKeys.forEach(keys => keys.shift());
-                  }
-                } catch(e) {
-                  console.log('connector format data error', e);
+        .ajax(options)
+        .catch(error => {
+          /** 拦截函数存在，且是接口请求错误 */
+          if (connector.globalErrorResultFn && !!error.response) {
+            const response = error.response || { data: {} };
+            !response.data && (response.data = {});
+            pluginRun(connector.globalErrorResultFn)(
+              { error, response, config: options },
+              {
+                throwError: (...args) => {
+                  hasCallThrowError = true;
+                  onError(...args);
                 }
               }
-            }
+            );
+          } else {
+           onError(error);
+          }
 
-            then(outputData);
-          })
-          .catch((error) => {
-            onError((error && error.message) || error);
-          });
+          throw Error('HTTP_FETCH_ERROR');
+        })
+        .then((response) => {
+          showLog && console.log('【连接器调试日志】全局出参拦截器(执行前数据)：', cloneDeep(response));
+
+          /** 全局响应值处理 */
+          const result = pluginRun(connector.globalResultFn)({ response, config: options }, { throwError: onError });
+
+          showLog && console.log('【连接器调试日志】全局出参拦截器(执行后数据)：', cloneDeep(result));
+          return result;
+        })
+        .then((response) => {
+          showLog && console.log('【连接器调试日志】接口自定义出参拦截器(执行前数据)：', cloneDeep(response));
+
+          /** 局部响应值处理 */
+          const result = pluginRun(connector.output)(response, Object.assign({}, options), { throwError: onError });
+
+          showLog && console.log('【连接器调试日志】接口自定义出参拦截器(执行后数据)：', cloneDeep(result));
+          return result;
+        })
+        .then((response) => {
+          if (connector.mode === 'test') {
+            then(response);
+            return;
+          }
+          excludeKeys?.forEach((key) => del(response, key.split('.')));
+
+          return response;
+        })
+        .then((response) => {
+          let outputData: any = Array.isArray(response) ? [] : {};
+          if (outputKeys === void 0 || outputKeys.length === 0) {
+            outputData = response;
+          } else {
+            outputKeys.forEach((key) => {
+              setData(response, key.split('.'), outputData);
+            });
+
+            /** 当标记单项时，自动返回单项对应的值 */
+            if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
+              try {
+                let cascadeOutputKeys = outputKeys.map(key => key.split('.'));
+                while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
+                  outputData = Object.values(outputData)[0];
+                  cascadeOutputKeys.forEach(keys => keys.shift());
+                }
+              } catch(e) {
+                console.log('connector format data error', e);
+              }
+            }
+          }
+
+          then(outputData);
+        })
+        .catch((error) => {
+          if (error?.message === 'HTTP_FETCH_ERROR') {
+            if (connector.globalErrorResultFn && !hasCallThrowError) {
+              onError('全局拦截响应错误函数中必须调用 throwError 方法，请前往修改');
+            }
+          } else {
+            onError(error?.message || error);
+          }
+        });
     } catch (error) {
       return onError(error);
     }

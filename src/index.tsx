@@ -1,7 +1,13 @@
 import Plugin from './plugin';
 import { icon } from './icon';
 import data from './data';
-import { exampleParamsFunc, PLUGIN_CONNECTOR_NAME, resetCDN, templateResultFunc } from './constant';
+import {
+  exampleParamsFunc,
+  PLUGIN_CONNECTOR_NAME,
+  resetCDN,
+  templateErrorResultFunc,
+  templateResultFunc
+} from './constant';
 import { call } from './runtime/callConnectorHttp';
 import { getScript, getDecodeString } from './script';
 import { mock } from './script/mock';
@@ -33,8 +39,10 @@ export default function pluginEntry(pluginConfig: any = {}) {
       this.data.config = this.data.config || {
         paramsFn: pluginConfig?.initialValue?.paramsFn || exampleParamsFunc,
         resultFn: pluginConfig?.initialValue?.resultFn || templateResultFunc,
+        errorResultFn: pluginConfig?.initialValue?.errorResultFn || templateErrorResultFunc,
       };
       this.data.config.resultFn = this.data.config.resultFn || pluginConfig?.initialValue?.resultFn || templateResultFunc;
+      this.data.config.errorResultFn = this.data.config.errorResultFn || pluginConfig?.initialValue?.errorResultFn || templateErrorResultFunc;
     },
     /** 调试时将调用插件的 callConnector 方法 */
     callConnector(connector, params, config) {
@@ -55,6 +63,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
             ...curConnector,
             globalParamsFn: pureConnectors.config.paramsFn,
             globalResultFn: pureConnectors.config.resultFn,
+            globalErrorResultFn: pureConnectors.config.errorResultFn,
             ...(findConnector.content || {}),
           };
         }
@@ -75,6 +84,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
         try {
           pureConnectors.config.paramsFn = getDecodeString(pureConnectors.config.paramsFn);
           pureConnectors.config.resultFn = getDecodeString(pureConnectors.config.resultFn);
+          pureConnectors.config.errorResultFn = getDecodeString(pureConnectors.config.errorResultFn);
           pureConnectors.connectors = pureConnectors.connectors.map(connector => {
             const { type, id, content: { input, output, method, path, excludeKeys, outputKeys } } = connector;
 
@@ -106,6 +116,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
             ...con.content,
             globalParamsFn: pureConnectors.config.paramsFn,
             globalResultFn: pureConnectors.config.resultFn,
+            globalErrorResultFn: pureConnectors.config.errorResultFn,
           }),
         };
       });
@@ -124,6 +135,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
             ...curConnector.content,
             globalParamsFn: this.data.config.paramsFn,
             globalResultFn: this.data.config.resultFn,
+            globalErrorResultFn: this.data.config.errorResultFn,
           }),
         };
       } catch (e) {

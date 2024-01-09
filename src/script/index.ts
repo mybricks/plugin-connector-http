@@ -72,6 +72,7 @@ function getScript(serviceItem) {
       const outputKeys = __outputKeys__;
       const excludeKeys = __excludeKeys__;
       const isTestMode = __isTestMode__;
+      const globalErrorResultFn = __globalErrorResultFn__;
 
       try {
         const url = path;
@@ -143,29 +144,37 @@ function getScript(serviceItem) {
           }
         }
         options.method = options.method || method;
+        let hasCallThrowError = false;
         config
           .ajax(options)
-          .then((response) => {
-            if (hasGlobalResultFn) {
-              const res = __globalResultFn__(
-                { response, config: options },
+          .catch(error => {
+            /** 拦截函数存在，且是接口请求错误 */
+            if (globalErrorResultFn && !!error.response) {
+              const response = error.response || { data: {} };
+              !response.data && (response.data = {});
+              globalErrorResultFn(
+                { error, response, config: options },
                 {
-                  throwStatusCodeError: (data: any) => {
-                    onError(data);
-                  },
+                  throwError: (...args) => {
+                    hasCallThrowError = true;
+                    onError(...args);
+                  }
                 }
               );
-              return res;
+            } else {
+              onError(error);
+            }
+
+            throw Error('HTTP_FETCH_ERROR');
+          })
+          .then((response) => {
+            if (hasGlobalResultFn) {
+              return __globalResultFn__({response, config: options}, { throwError: (data: any) => onError(data) });
             }
             return response;
           })
           .then((response) => {
-            const res = __output__(response, Object.assign({}, options), {
-              throwStatusCodeError: (data) => {
-                onError(data);
-              },
-            });
-            return res;
+            return __output__(response, Object.assign({}, options), { throwError: (data) => onError(data) });
           })
           .then((response) => {
             if (isTestMode) {
@@ -203,24 +212,18 @@ function getScript(serviceItem) {
 		            }
 	            }
             }
-						
-						/** 领域模型接口按需展示日志，需返回源数据 */
-						if (
-							options.method.toUpperCase() === 'POST'
-							&& options.url.endsWith('/domain/run')
-							&& options.data
-							&& options.data.fileId
-							&& options.data.serviceId
-							&& options.data.params
-							&& options.data.params.showToplLog
-						) {
-							then({ __ORIGIN_RESPONSE__: response, outputData });
-						} else {
-							then(outputData);
-						}
+
+            then(outputData);
           })
           .catch((error) => {
-            onError((error && error.message) || error);
+            console.log('error.message', error.message);
+            if (error && error.message === 'HTTP_FETCH_ERROR') {
+              if (globalErrorResultFn && !hasCallThrowError) {
+                onError('全局拦截响应错误函数中必须调用 throwError 方法，请前往修改');
+              }
+            } else {
+              onError((error && error.message) || error);
+            }
           });
       } catch (error) {
         return onError(error);
@@ -240,8 +243,14 @@ function getScript(serviceItem) {
           : void 0
       )
       .replace(
+        '__globalErrorResultFn__',
+        serviceItem.globalErrorResultFn
+          ? getDecodeString(serviceItem.globalErrorResultFn)
+          : void 0
+      )
+      .replace(
         '__hasGlobalResultFn__',
-        serviceItem.globalResultFn ? true : false
+        JSON.stringify(!!serviceItem.globalResultFn)
       )
       .replace('__method__', serviceItem.method)
       .replace('__isTestMode__', JSON.stringify(serviceItem.isTestMode || false))
