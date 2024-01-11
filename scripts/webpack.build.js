@@ -7,7 +7,8 @@ module.exports = merge(commonCfg, {
   mode: 'production',
   entry: {
     plugin: './src/index.tsx',
-    index: './src/runtime/callConnectorHttp.ts'
+    index: './src/runtime/callConnectorHttp.ts',
+    mock: './src/script/mock.ts'
   },
   output: {
     globalObject: 'this',
