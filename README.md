@@ -1,1 +1,1 @@
-# Mybricks插件-连接器-http
+# Mybricks插件-AI-Copilot
