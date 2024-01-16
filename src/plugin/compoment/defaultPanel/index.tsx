@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Editor from '@mybricks/code-editor';
 import DebugForm from '../debug';
 import { fullScreen, fullScreenExit } from '../../../icon';
-import RadioBtns from './RadioBtn';
+import RadioButtons from './RadioBtn';
 import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
 import FormItem from '../../../components/FormItem';
@@ -180,7 +180,7 @@ export default function DefaultPanel({
 											<i>*</i>请求方法
 										</label>
 										<div className={css.editor}>
-											<RadioBtns
+											<RadioButtons
 												binding={[sidebarContext.formModel, 'method']}
 												options={methodOpts}
 											/>

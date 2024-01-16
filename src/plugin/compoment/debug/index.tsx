@@ -500,12 +500,12 @@ export default function Debug({ sidebarContext, validate }: any) {
 					edit ? (
 				    <FormItem label='返回数据'>
 					    {sidebarContext.formModel.resultSchema ? (
-						    <Button
-							    style={{margin: 0, marginBottom: 6}}
-							    onClick={saveSchema}
-						    >
-							    保存
-						    </Button>
+						    <div className={css.buttonGroup}>
+							    <div></div>
+							    <Button style={{margin: 0, marginBottom: 6}} onClick={saveSchema}>
+								    保存
+							    </Button>
+						    </div>
 					    ) : null}
 					    <OutputSchemaMock
 						    schema={sidebarContext.formModel.resultSchema}
@@ -518,24 +518,24 @@ export default function Debug({ sidebarContext, validate }: any) {
 					    <FormItem label='返回数据'>
 						    {showResponseCode ? (
 							    <>
-									<textarea
-										ref={responseCodeTextRef}
-										className={`${css.codeText}  ${css.textEdt}`}
-										cols={30}
-										rows={10}
-										defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}
-									/>
+										<textarea
+											ref={responseCodeTextRef}
+											className={`${css.codeText}  ${css.textEdt}`}
+											cols={30}
+											rows={10}
+											defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}
+										/>
 								    <div>支持识别JSON Schema 描述协议</div>
 							    </>
 						    ) : (
 							    <>
 								    {sidebarContext.formModel.resultSchema ? (
-									    <Button
-										    style={{margin: 0, marginBottom: 6}}
-										    onClick={editSchema}
-									    >
-										    编辑
-									    </Button>
+									    <div className={css.buttonGroup}>
+										    <div></div>
+										    <Button style={{margin: 0, marginBottom: 6}} onClick={editSchema}>
+											    编辑
+										    </Button>
+									    </div>
 								    ) : null}
 								    <ReturnSchema
 									    outputKeys={sidebarContext.formModel.outputKeys}

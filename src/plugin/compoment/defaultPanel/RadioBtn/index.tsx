@@ -1,7 +1,7 @@
 import css from './index.less';
 import React, { useEffect, useState } from 'react';
 
-export default function RadioBtns({ options, binding }) {
+export default function RadioButtons({ options, binding }) {
   const [from, key] = binding;
   const [select, setSelect] = useState(from[key]);
   
