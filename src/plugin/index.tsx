@@ -23,7 +23,8 @@ export default function ({ command }) {
     setIntentCost(null);
     setGenerateCost(null);
     axios
-      .post("https://ai.mybricks.world/api/ai/intent-conjecture2", {
+      .post("http://127.0.0.1:13000/api/ai/intent-conjecture2", {
+        // .post("https://ai.mybricks.world/api/ai/intent-conjecture2", {
         demand: requirement,
       })
       .then(async (res) => {
@@ -126,15 +127,17 @@ export default function ({ command }) {
       </ul>
       <div style={{ fontSize: 12, color: "#777",marginTop:'10px',userSelect:'text' }}>
         示例问题：
-        <p>添加一个按钮 一个下拉框 一个文本框 一个日历</p>
-        <p>添加一个按钮，风格是危险，形状是圆角矩形，小尺寸，标题是添加活动</p>
-        <p>下拉菜单，触发方式为点击</p>
+        <p>添加一个按钮 一个文本框 一个日历</p>
+        <p>添加一个按钮，风格是主按钮，小尺寸，标题是添加活动</p>
+        <p>添加一个按钮，风格是危险，大尺寸，标题是删除</p>
         <p>添加一个三列表格，分别是姓名、年龄、学号</p>
-        <p>
-          添加一个文本框，label是姓名，最大支持输入四个字，显示尾部的清除图标
-        </p>
+        <p>下拉菜单，触发方式为点击</p>
+        <p>添加一个下拉菜单，弹出位置是右下方，提示内容设置为请选择，宽度设置为120px，并关闭子选项</p>
         <p>
           添加一个多选框组件，名称是兴趣爱好，选项有足球、篮球、羽毛球、排球，最大支持选三样
+        </p>
+        <p>
+          添加一个文本框，label是姓名，最大支持输入四个字，显示尾部的清除图标
         </p>
         <p>添加一个下拉框，包含了全部、已删除、已生效、未生效四种选项</p>
       </div>
