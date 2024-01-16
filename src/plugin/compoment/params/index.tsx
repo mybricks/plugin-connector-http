@@ -7,7 +7,7 @@ import Button from '../../../components/Button';
 
 import css from './index.less';
 
-export default function Params({ onDebugClick, params }: any) {
+export default function Params({ onDebugClick, params, showTip, onCloseTip, onConfirmTip }: any) {
   const processAry = useCallback(item => {
     return item.children.map((child: any) => {
       return processItem(child, item);
@@ -64,9 +64,27 @@ export default function Params({ onDebugClick, params }: any) {
             )
           : null}
       </div>
-      <Button onClick={onDebugClick} type='primary' style={{ marginTop: 12 }}>
-        连接测试
-      </Button>
+      <div className={css.connectionButton}>
+        <Button onClick={onDebugClick} type='primary' style={{ marginTop: 12 }}>
+          连接测试
+        </Button>
+
+        {showTip ? (
+          <div className={css.tipContainer}>
+            <div>
+              响应值类型跟当前类型存在冲突，确定要替换当前类型吗？
+            </div>
+            <div className={css.buttonGroup}>
+              <Button onClick={onCloseTip}>
+                取消
+              </Button>
+              <Button onClick={onConfirmTip} type='primary' style={{ marginLeft: 12 }}>
+                确认
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

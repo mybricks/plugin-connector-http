@@ -5,7 +5,6 @@ import {
 	formatSchema,
 	getDataByExcludeKeys,
 	getDataByOutputKeys,
-	getDecodeString,
 	hasFile,
 	jsonToSchema,
 	params2data,
@@ -56,7 +55,7 @@ const CodeIcon = (
 		<path d="M321.828571 226.742857c-14.628571-14.628571-36.571429-14.628571-51.2 0L7.314286 482.742857c-14.628571 14.628571-14.628571 36.571429 0 51.2l256 256c14.628571 14.628571 36.571429 14.628571 51.2 0 14.628571-14.628571 14.628571-36.571429 0-51.2L87.771429 512l234.057142-234.057143c7.314286-14.628571 7.314286-36.571429 0-51.2z m263.314286 0c-14.628571 0-36.571429 7.314286-43.885714 29.257143l-131.657143 497.371429c-7.314286 21.942857 7.314286 36.571429 29.257143 43.885714s36.571429-7.314286 43.885714-29.257143l131.657143-497.371429c7.314286-14.628571-7.314286-36.571429-29.257143-43.885714z m431.542857 256l-256-256c-14.628571-14.628571-36.571429-14.628571-51.2 0-14.628571 14.628571-14.628571 36.571429 0 51.2L936.228571 512l-234.057142 234.057143c-14.628571 14.628571-14.628571 36.571429 0 51.2 14.628571 14.628571 36.571429 14.628571 51.2 0l256-256c14.628571-14.628571 14.628571-43.885714 7.314285-58.514286z"></path>
 	</svg>
 );
-export default function Debug({ sidebarContext, validate, globalConfig }: any) {
+export default function Debug({ sidebarContext, validate }: any) {
   const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
 	const [showParamsCode, setShowParamsCode] = useState(false);
@@ -67,6 +66,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
   const [errorInfo, setError] = useState('');
   const [params, setParams] = useState(sidebarContext.formModel.params);
   const [edit, setEdit] = useState(false);
+  const [showTip, setShowTip] = useState(false);
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
     name: 'root',
@@ -76,6 +76,85 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
     setSchema(sidebarContext.formModel.resultSchema);
   }, [sidebarContext.formModel.resultSchema]);
 
+	const onConfirmTip = () => {
+		try {
+			let { outputKeys = [], excludeKeys = [] } = sidebarContext.formModel;
+			const resultSchema = jsonToSchema(allDataRef.current);
+			sidebarContext.formModel.resultSchema = resultSchema;
+
+			outputKeys = outputKeys
+				.filter(Boolean)
+				.map(key => key.split('.'))
+				.filter(keys => {
+					let schema = resultSchema.properties || resultSchema.items?.properties;
+
+					for (let idx = 0; idx < keys.length; idx++) {
+						const key = keys[idx];
+
+						if (schema && schema[key]) {
+							schema = schema[key].properties || schema[key].items?.properties;
+						} else {
+							return false;
+						}
+					}
+
+					return true;
+				})
+				.map(keys => keys.join('.'));
+			excludeKeys = excludeKeys
+				.filter(Boolean)
+				.map(key => key.split('.'))
+				.filter(keys => {
+					let schema = resultSchema.properties || resultSchema.items?.properties;
+
+					for (let idx = 0; idx < keys.length; idx++) {
+						const key = keys[idx];
+
+						if (schema && schema[key]) {
+							schema = schema[key].properties || schema[key].items?.properties;
+						} else {
+							return false;
+						}
+					}
+
+					return true;
+				})
+				.map(keys => keys.join('.'));
+
+			let outputData = getDataByExcludeKeys(getDataByOutputKeys(allDataRef.current, outputKeys), excludeKeys);
+			let outputSchema = jsonToSchema(outputData);
+			/** 当标记单项时，自动返回单项对应的值 */
+			if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
+				try {
+					let cascadeOutputKeys = [...outputKeys].map(key => key.split('.'));
+					while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
+						outputData = Object.values(outputData)[0];
+						outputSchema = Object.values(outputSchema.properties)[0];
+						cascadeOutputKeys.forEach(keys => keys.shift());
+					}
+				} catch {}
+			}
+
+			setData(outputData);
+
+			formatSchema(sidebarContext.formModel.resultSchema);
+			formatSchema(outputSchema);
+			const inputSchema = paramsToSchema(sidebarContext.formModel.params || {});
+			formatSchema(inputSchema);
+			sidebarContext.formModel.outputKeys = outputKeys;
+			sidebarContext.formModel.excludeKeys = excludeKeys;
+			sidebarContext.formModel.outputSchema = outputSchema;
+			sidebarContext.formModel.inputSchema = inputSchema;
+			setSchema({ ...sidebarContext.formModel.resultSchema });
+		} catch (error: any) {
+			console.error(error);
+			sidebarContext.formModel.outputSchema = void 0;
+			sidebarContext.formModel.resultSchema = void 0;
+			const isError = error instanceof Error;
+			setError(isError ? (error?.message || (error as any)) : `接口错误：${typeof error === 'string' ? error : `由全局响应错误拦截透出，值为 ${JSON.stringify(error)}`}`);
+		}
+		setShowTip(false);
+	};
   const onDebugClick = async () => {
     try {
       if (!validate()) return;
@@ -104,85 +183,23 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 	    }
       // setData([]);
       setError('');
-      const data = await sidebarContext.connector.test(
-        {
-          type: sidebarContext.formModel.type || 'http',
-          mode: 'test',
-          id: sidebarContext.formModel.id,
-					connectorName: PLUGIN_CONNECTOR_NAME,
-	        content: sidebarContext.formModel,
-        },
-        params
+	    allDataRef.current = await sidebarContext.connector.test(
+	      {
+		      type: sidebarContext.formModel.type || 'http',
+		      mode: 'test',
+		      id: sidebarContext.formModel.id,
+		      connectorName: PLUGIN_CONNECTOR_NAME,
+		      content: sidebarContext.formModel,
+	      },
+	      params
       );
-      allDataRef.current = data;
-      let { outputKeys = [], excludeKeys = [] } = sidebarContext.formModel;
-	    const resultSchema = jsonToSchema(data);
-	    sidebarContext.formModel.resultSchema = resultSchema;
-	
-	    outputKeys = outputKeys
-	      .filter(Boolean)
-				.map(key => key.split('.'))
-				.filter(keys => {
-					let schema = resultSchema.properties || resultSchema.items?.properties;
-					
-					for (let idx = 0; idx < keys.length; idx++) {
-						const key = keys[idx];
-						
-						if (schema && schema[key]) {
-							schema = schema[key].properties || schema[key].items?.properties;
-						} else {
-							return false;
-						}
-					}
-					
-					return true;
-				})
-				.map(keys => keys.join('.'));
-	    excludeKeys = excludeKeys
-	      .filter(Boolean)
-		    .map(key => key.split('.'))
-		    .filter(keys => {
-			    let schema = resultSchema.properties || resultSchema.items?.properties;
-			
-			    for (let idx = 0; idx < keys.length; idx++) {
-				    const key = keys[idx];
-				
-				    if (schema && schema[key]) {
-					    schema = schema[key].properties || schema[key].items?.properties;
-				    } else {
-					    return false;
-				    }
-			    }
-			
-			    return true;
-		    })
-		    .map(keys => keys.join('.'));
-	
-	    let outputData = getDataByExcludeKeys(getDataByOutputKeys(data, outputKeys), excludeKeys);
-	    let outputSchema = jsonToSchema(outputData);
-	    /** 当标记单项时，自动返回单项对应的值 */
-	    if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
-		    try {
-					let cascadeOutputKeys = [...outputKeys].map(key => key.split('.'));
-			    while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
-				    outputData = Object.values(outputData)[0];
-				    outputSchema = Object.values(outputSchema.properties)[0];
-				    cascadeOutputKeys.forEach(keys => keys.shift());
-			    }
-		    } catch {}
-	    }
-	
-      setData(outputData);
-	
-      formatSchema(sidebarContext.formModel.resultSchema);
-	    formatSchema(outputSchema);
-	    const inputSchema = paramsToSchema(originParams);
-	    formatSchema(inputSchema);
-	    sidebarContext.formModel.outputKeys = outputKeys;
-	    sidebarContext.formModel.excludeKeys = excludeKeys;
-	    sidebarContext.formModel.outputSchema = outputSchema;
-      sidebarContext.formModel.inputSchema = inputSchema;
-      setSchema({ ...sidebarContext.formModel.resultSchema });
+	    const resultSchema = jsonToSchema(allDataRef.current);
+
+			if (sidebarContext.formModel.resultSchema && JSON.stringify(sidebarContext.formModel.resultSchema) !== JSON.stringify(resultSchema)) {
+				setShowTip(true);
+			} else {
+				onConfirmTip();
+			}
     } catch (error: any) {
       console.error(error);
       sidebarContext.formModel.outputSchema = void 0;
@@ -191,6 +208,7 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 	    setError(isError ? (error?.message || (error as any)) : `接口错误：${typeof error === 'string' ? error : `由全局响应错误拦截透出，值为 ${JSON.stringify(error)}`}`);
     }
   };
+	const onCloseTip = useCallback(() => setShowTip(false), []);
 
   const onParamsChange = useCallback((params) => {
     if (params !== void 0) {
@@ -445,6 +463,9 @@ export default function Debug({ sidebarContext, validate, globalConfig }: any) {
 						</FormItem>
 						<FormItem>
 							<Params
+								showTip={showTip}
+								onCloseTip={onCloseTip}
+								onConfirmTip={onConfirmTip}
 								onDebugClick={onDebugClick}
 								ctx={sidebarContext}
 								params={params}
