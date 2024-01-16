@@ -7,7 +7,7 @@ import Button from '../../../components/Button';
 
 import css from './index.less';
 
-export default function Params({ onDebugClick, params, showTip, onCloseTip, onConfirmTip }: any) {
+export default function Params({ onDebugClick, params, showTip, onCloseTip, onConfirmTip, onToggleSchemaPreview, showPreviewSchema }: any) {
   const processAry = useCallback(item => {
     return item.children.map((child: any) => {
       return processItem(child, item);
@@ -72,7 +72,8 @@ export default function Params({ onDebugClick, params, showTip, onCloseTip, onCo
         {showTip ? (
           <div className={css.tipContainer}>
             <div>
-              响应值类型跟当前类型存在冲突，确定要替换当前类型吗？
+              响应值类型跟已有类型存在冲突，确定要替换为当前类型吗？
+              <span className={css.preview} onClick={onToggleSchemaPreview}>{showPreviewSchema ? '关闭类型预览' : '预览最新类型'}</span>
             </div>
             <div className={css.buttonGroup}>
               <Button onClick={onCloseTip}>

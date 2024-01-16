@@ -7,20 +7,21 @@ import css from './index.less';
 
 const emptyAry: any[] = [];
 
-export default function ReturnShema({
+export default function ReturnSchema({
   outputKeys,
   excludeKeys: excKeys,
   onOutputKeysChange,
   onExcludeKeysChange,
   schema,
   error,
+  noMark
 }: any) {
   const defaultPanelContext = useContext(DefaultPanelContext);
   const parentEleRef = useRef<HTMLDivElement>();
   const curKeyRef = useRef('');
   const excludeKeysRef = useRef([]);
   const [keys, setOutputKeys] = useState(outputKeys || emptyAry);
-  const [excludeKeys, setExcludekeys] = useState<string[]>(excKeys || []);
+  const [excludeKeys, setExcludeKeys] = useState<string[]>(excKeys || []);
   const [popMenuStyle, setStyle] = useState<any>();
   excludeKeysRef.current = excludeKeys;
   useEffect(() => {
@@ -32,7 +33,7 @@ export default function ReturnShema({
       if (excludeKeysRef.current.some((key) => key === curKeyRef.current)) {
         return keys;
       }
-      const outputkeys = [
+      const outputKeys = [
         ...keys.filter(
           (key: string) =>
             !(
@@ -41,10 +42,10 @@ export default function ReturnShema({
         ),
         curKeyRef.current,
       ].filter((key) => key !== '');
-      onOutputKeysChange([...outputkeys]);
-      return outputkeys;
+      onOutputKeysChange([...outputKeys]);
+      return outputKeys;
     });
-    setExcludekeys((keys: string[]) => {
+    setExcludeKeys((keys: string[]) => {
       const newKeys = keys.filter((key) => key !== curKeyRef.current);
       onExcludeKeysChange(newKeys);
       return newKeys;
@@ -61,9 +62,9 @@ export default function ReturnShema({
     return (
       <>
         {Object.keys(properties).map((key) => {
-          const nxpath =
+          const nXPath =
             xpath !== void 0 ? (xpath ? `${xpath}.${key}` : key) : void 0;
-          return proItem({ val: properties[key], xpath: nxpath, key });
+          return proItem({ val: properties[key], xpath: nXPath, key });
         })}
       </>
     );
@@ -95,12 +96,7 @@ export default function ReturnShema({
         !excludeKeys.some((key) => xpath.startsWith(key))));
 
     return (
-      <div
-        key={key}
-        className={`${css.item} ${root ? css.rootItem : ''} ${
-          markedAsReturn ? css.markAsReturn : ''
-        }`}
-      >
+      <div key={key} className={`${css.item} ${root ? css.rootItem : ''} ${markedAsReturn ? css.markAsReturn : ''}`}>
         {markedAsReturn ? <div className={css.marked}></div> : null}
         {excludeKeys.includes(xpath) && key ? (
           <div className={css.exclude}></div>
@@ -108,7 +104,7 @@ export default function ReturnShema({
         <div className={css.keyName}>
           {key}
           <span className={css.typeName}>({getTypeName(val.type)})</span>
-          {showMark && key ? (
+          {showMark && key && !noMark ? (
             <button
               onClick={(e) => {
                 popMark(e, xpath);
@@ -118,7 +114,7 @@ export default function ReturnShema({
               标记
             </button>
           ) : null}
-          {showCancel ? (
+          {showCancel && !noMark ? (
             <button
               onClick={(e) => {
                 cancelMark(e, xpath);
@@ -149,11 +145,11 @@ export default function ReturnShema({
 
   const cancelMark = useCallback((e, xpath) => {
     setOutputKeys((keys: any[]) => {
-      const outputkeys = [
+      const outputKeys = [
         ...keys.filter((key: string) => key !== xpath),
       ].filter((key) => key !== '');
       if (!keys.some((key) => key === xpath)) {
-        setExcludekeys((keys: string[]) => {
+        setExcludeKeys((keys: string[]) => {
           const excludeKeys = [
             ...keys.filter(
               (key) => !(key.includes(xpath) || xpath.includes(key))
@@ -164,8 +160,8 @@ export default function ReturnShema({
           return excludeKeys;
         });
       }
-      onOutputKeysChange(outputkeys);
-      return outputkeys;
+      onOutputKeysChange(outputKeys);
+      return outputKeys;
     });
   }, []);
 

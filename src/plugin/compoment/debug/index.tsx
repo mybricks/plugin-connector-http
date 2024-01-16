@@ -12,7 +12,7 @@ import {
 } from '../../../utils';
 import { checkValidJsonSchema } from '../../../utils/validateJsonSchema';
 import JSONView from '@mybricks/code-editor';
-import ReturnShema from '../returnSchema';
+import ReturnSchema from '../returnSchema';
 import ParamsEdit from '../paramsEdit';
 import Params from '../params';
 import OutputSchemaMock from '../outputSchemaMock';
@@ -61,12 +61,14 @@ export default function Debug({ sidebarContext, validate }: any) {
 	const [showParamsCode, setShowParamsCode] = useState(false);
 	const [showResponseCode, setShowResponseCode] = useState(false);
   const allDataRef = useRef<any>();
+  const willUpdateResultSchemaRef = useRef<any>();
   const codeTextRef = useRef<HTMLTextAreaElement>(null);
   const responseCodeTextRef = useRef<HTMLTextAreaElement>(null);
   const [errorInfo, setError] = useState('');
   const [params, setParams] = useState(sidebarContext.formModel.params);
   const [edit, setEdit] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const [showPreviewSchema, setShowPreviewSchema] = useState(false);
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
     name: 'root',
@@ -79,14 +81,13 @@ export default function Debug({ sidebarContext, validate }: any) {
 	const onConfirmTip = () => {
 		try {
 			let { outputKeys = [], excludeKeys = [] } = sidebarContext.formModel;
-			const resultSchema = jsonToSchema(allDataRef.current);
-			sidebarContext.formModel.resultSchema = resultSchema;
+			sidebarContext.formModel.resultSchema = willUpdateResultSchemaRef.current;
 
 			outputKeys = outputKeys
 				.filter(Boolean)
 				.map(key => key.split('.'))
 				.filter(keys => {
-					let schema = resultSchema.properties || resultSchema.items?.properties;
+					let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
 
 					for (let idx = 0; idx < keys.length; idx++) {
 						const key = keys[idx];
@@ -105,7 +106,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 				.filter(Boolean)
 				.map(key => key.split('.'))
 				.filter(keys => {
-					let schema = resultSchema.properties || resultSchema.items?.properties;
+					let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
 
 					for (let idx = 0; idx < keys.length; idx++) {
 						const key = keys[idx];
@@ -154,6 +155,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 			setError(isError ? (error?.message || (error as any)) : `接口错误：${typeof error === 'string' ? error : `由全局响应错误拦截透出，值为 ${JSON.stringify(error)}`}`);
 		}
 		setShowTip(false);
+		setShowPreviewSchema(false);
 	};
   const onDebugClick = async () => {
     try {
@@ -194,6 +196,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 	      params
       );
 	    const resultSchema = jsonToSchema(allDataRef.current);
+	    willUpdateResultSchemaRef.current = resultSchema || {};
 
 			if (sidebarContext.formModel.resultSchema && JSON.stringify(sidebarContext.formModel.resultSchema) !== JSON.stringify(resultSchema)) {
 				setShowTip(true);
@@ -207,8 +210,10 @@ export default function Debug({ sidebarContext, validate }: any) {
 	    const isError = error instanceof Error;
 	    setError(isError ? (error?.message || (error as any)) : `接口错误：${typeof error === 'string' ? error : `由全局响应错误拦截透出，值为 ${JSON.stringify(error)}`}`);
     }
+	  setShowPreviewSchema(false);
   };
 	const onCloseTip = useCallback(() => setShowTip(false), []);
+	const onToggleSchemaPreview = useCallback(() => setShowPreviewSchema(show => !show), []);
 
   const onParamsChange = useCallback((params) => {
     if (params !== void 0) {
@@ -465,6 +470,8 @@ export default function Debug({ sidebarContext, validate }: any) {
 							<Params
 								showTip={showTip}
 								onCloseTip={onCloseTip}
+								onToggleSchemaPreview={onToggleSchemaPreview}
+								showPreviewSchema={showPreviewSchema}
 								onConfirmTip={onConfirmTip}
 								onDebugClick={onDebugClick}
 								ctx={sidebarContext}
@@ -478,66 +485,77 @@ export default function Debug({ sidebarContext, validate }: any) {
 					{CodeIcon}
 				</div>
 			</div>
-			{edit ? (
-				<>
-					<FormItem label='返回数据'>
-						{sidebarContext.formModel.resultSchema ? (
-							<Button
-								style={{margin: 0, marginBottom: 6}}
-								onClick={saveSchema}
-							>
-								保存
-							</Button>
-						) : null}
-						<OutputSchemaMock
-							schema={sidebarContext.formModel.resultSchema}
-							ctx={sidebarContext}
-							onChange={onMockSchemaChange}
-						/>
-					</FormItem>
-				</>
-			) : (
-				<>
-					<FormItem label='返回数据'>
-						{showResponseCode ? (
-							<>
-								<textarea
-									ref={responseCodeTextRef}
-									className={`${css.codeText}  ${css.textEdt}`}
-									cols={30}
-									rows={10}
-									defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}
-								/>
-								<div>支持识别JSON Schema 描述协议</div>
-							</>
-						) : (
-							<>
-								{sidebarContext.formModel.resultSchema ? (
-									<Button
-										style={{margin: 0, marginBottom: 6}}
-										onClick={editSchema}
-									>
-										编辑
-									</Button>
-								) : null}
-								<ReturnShema
-									outputKeys={sidebarContext.formModel.outputKeys}
-									excludeKeys={sidebarContext.formModel.excludeKeys}
-									onOutputKeysChange={onOutputKeysChange}
-									onExcludeKeysChange={onExcludeKeysChange}
-									schema={schema}
-									error={errorInfo}
-								/>
-							</>
-						)}
+	    {showPreviewSchema
+		    ? (
+			    <FormItem label='预览最新类型'>
+				    <ReturnSchema
+					    outputKeys={[]}
+					    excludeKeys={[]}
+					    noMark
+					    schema={willUpdateResultSchemaRef.current}
+				    />
+			    </FormItem>
+		    )
+		    : (
+					edit ? (
+				    <FormItem label='返回数据'>
+					    {sidebarContext.formModel.resultSchema ? (
+						    <Button
+							    style={{margin: 0, marginBottom: 6}}
+							    onClick={saveSchema}
+						    >
+							    保存
+						    </Button>
+					    ) : null}
+					    <OutputSchemaMock
+						    schema={sidebarContext.formModel.resultSchema}
+						    ctx={sidebarContext}
+						    onChange={onMockSchemaChange}
+					    />
+				    </FormItem>
+			    ) : (
+				    <>
+					    <FormItem label='返回数据'>
+						    {showResponseCode ? (
+							    <>
+									<textarea
+										ref={responseCodeTextRef}
+										className={`${css.codeText}  ${css.textEdt}`}
+										cols={30}
+										rows={10}
+										defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}
+									/>
+								    <div>支持识别JSON Schema 描述协议</div>
+							    </>
+						    ) : (
+							    <>
+								    {sidebarContext.formModel.resultSchema ? (
+									    <Button
+										    style={{margin: 0, marginBottom: 6}}
+										    onClick={editSchema}
+									    >
+										    编辑
+									    </Button>
+								    ) : null}
+								    <ReturnSchema
+									    outputKeys={sidebarContext.formModel.outputKeys}
+									    excludeKeys={sidebarContext.formModel.excludeKeys}
+									    onOutputKeysChange={onOutputKeysChange}
+									    onExcludeKeysChange={onExcludeKeysChange}
+									    schema={schema}
+									    error={errorInfo}
+								    />
+							    </>
+						    )}
 
-						<div className={`${css.codeIcon} ${css.responseCodeIcon} ${showResponseCode ? css.focus : ''}`} onClick={toggleResponseCodeShow}>
-							{CodeIcon}
-						</div>
-					</FormItem>
-					<DataShow data={remoteData}/>
-				</>
-			)}
+						    <div className={`${css.codeIcon} ${css.responseCodeIcon} ${showResponseCode ? css.focus : ''}`} onClick={toggleResponseCodeShow}>
+							    {CodeIcon}
+						    </div>
+					    </FormItem>
+					    <DataShow data={remoteData}/>
+				    </>
+		      )
+		    )}
 		</>
   );
 }
