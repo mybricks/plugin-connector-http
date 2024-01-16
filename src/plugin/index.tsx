@@ -9,62 +9,95 @@ export default function ({ command }) {
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
   const [intentCost, setIntentCost] = useState(null);
-  const [generateCost, setGenerateCost] = useState(null)
+  const [generateCost, setGenerateCost] = useState(null);
 
   const handleRequirementChange = useCallback((e) => {
     setRequirement(e.target.value);
   }, []);
 
   const generate = useCallback(() => {
-    if (loading) return;
-    setLoading(true);
-    setSuccess(false);
-    setError(false);
-    axios
-      .post("http://127.0.0.1:13000/api/ai/intent-conjecture2", {
-        demand: requirement,
-      })
-      .then(async (res) => {
-        if (res.data.code === 1) {
-          console.log("---", res.data);
-          const schema = res.data.data.result;
-          const comArray = schema.map((item) => ({
-            type: item.namespace,
-            data: item.data,
-            // slots: item.slots ? ({
-            //   content: item.slots.map((slotsItem) => ({
-            //     type: slotsItem.namespace,
-            //     data: slotsItem.data,
-            //   })),
-            // }) : undefined,
-          }));
-          
-          const component = { data: comArray[0] };
-          console.log("AI res: ", component);
-          const execRes = await command.exec("ui.addComs", component);
-          console.log("exec res: ", execRes);
 
-          setIntentCost(res.data.data.intentCost);
-          let unitOperationTotalTokens = 0
-           res.data.data.logs.forEach(item=> {
-            unitOperationTotalTokens += item.cost.generate.usage.total_tokens
-          })
-          let unitOperationMaxTime = Math.max(res.data.data.logs.map(item=> item.cost.vec.time+item.cost.generate.time))
-          setGenerateCost({
-            unitOperationTotalTokens,
-            unitOperationMaxTime
-          })
-        }
-        setSuccess(true);
-        setRequirement("");
-      })
-      .catch((err) => {
-        console.log(err);
-        setError(true);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    command.exec("ui.addComs", {
+      "data": {
+          "type": "mybricks.normal-pc.custom-button",
+          "data": {
+              "asMapArea": false,
+              "text": "abc",
+              "dataType": "number",
+              "outVal": 0,
+              "inVal": "",
+              "useIcon": false,
+              "isCustom": false,
+              "icon": "HomeOutlined",
+              "size": "middle",
+              "type": "primary",
+              "shape": "default",
+              "src": "",
+              "showText": true,
+              "iconLocation": "front",
+              "iconDistance": 8,
+              "contentSize": [
+                  14,
+                  14
+              ]
+          }
+      }
+  });
+    // if (loading) return;
+    // setLoading(true);
+    // setSuccess(false);
+    // setError(false);
+    // setIntentCost(null);
+    // setGenerateCost(null);
+    // axios
+    //   .post("http://127.0.0.1:13000/api/ai/intent-conjecture2", {
+    //     demand: requirement,
+    //   })
+    //   .then(async (res) => {
+    //     if (res.data.code === 1) {
+    //       console.log("---", res.data);
+    //       const schema = res.data.data.result;
+    //       const comArray = schema.map((item) => ({
+    //         type: item.namespace,
+    //         data: item.data,
+    //         slots: item.slots ? ({
+    //           content: item.slots.map((slotsItem) => ({
+    //             type: slotsItem.namespace,
+    //             data: slotsItem.data,
+    //           })),
+    //         }) : undefined,
+    //       }));
+
+    //       const component = { data: comArray };
+    //       console.log("AI res: ", component);
+    //       const execRes = await command.exec("ui.addComs", component);
+    //       console.log("exec res: ", execRes);
+
+    //       setIntentCost(res.data.data.intentCost);
+    //       let unitOperationTotalTokens = 0;
+    //       res.data.data.logs.forEach((item) => {
+    //         unitOperationTotalTokens += item.cost.generate.usage.total_tokens;
+    //       });
+    //       let unitOperationMaxTime = Math.max(
+    //         res.data.data.logs.map(
+    //           (item) => item.cost.vec.time + item.cost.generate.time
+    //         )
+    //       );
+    //       setGenerateCost({
+    //         unitOperationTotalTokens,
+    //         unitOperationMaxTime,
+    //       });
+    //     }
+    //     setSuccess(true);
+    //     setRequirement("");
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //     setError(true);
+    //   })
+    //   .finally(() => {
+    //     setLoading(false);
+    //   });
   }, [loading, requirement]);
 
   return (
@@ -82,23 +115,38 @@ export default function ({ command }) {
         {success && <div className={css.success}>执行成功</div>}
       </div>
       <ul className={css.cost}>
-        { intentCost &&
+        {intentCost && (
           <li>
-          <span>任务拆解：</span>
-          <div className={css.time}>{intentCost.time}</div>
-          <div className={css.token}>{intentCost.usage.total_tokens}</div>
-        </li>
-        }
-        <li>
-          <span>向量检索+组件生成：</span>
-          <div className={css.time}>3</div>
-          <div className={css.token}>6</div>
-        </li>
-        <li>
-          <span>总和：</span>
-          <div className={css.time}>3</div>
-          <div className={css.token}>6</div>
-        </li>
+            <span>任务拆解：</span>
+            <div className={css.time}>{intentCost.time / 1000}s</div>
+            <div className={css.token}>
+              {intentCost.usage.total_tokens} tokens
+            </div>
+          </li>
+        )}
+        {generateCost && (
+          <li>
+            <span>组件生成：</span>
+            <div className={css.time}>
+              {generateCost.unitOperationMaxTime / 1000}s
+            </div>
+            <div className={css.token}>
+              {generateCost.unitOperationTotalTokens} tokens
+            </div>
+          </li>
+        )}
+        {generateCost && (
+          <li>
+            <span>总和：</span>
+            <div className={css.time}>
+              {(intentCost.time + generateCost.unitOperationMaxTime) / 1000}s
+            </div>
+            <div className={css.token}>
+              {intentCost.usage.total_tokens +
+                generateCost.unitOperationTotalTokens} tokens
+            </div>
+          </li>
+        )}
       </ul>
     </div>
   );
