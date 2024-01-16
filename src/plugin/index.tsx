@@ -16,88 +16,63 @@ export default function ({ command }) {
   }, []);
 
   const generate = useCallback(() => {
+    if (loading) return;
+    setLoading(true);
+    setSuccess(false);
+    setError(false);
+    setIntentCost(null);
+    setGenerateCost(null);
+    axios
+      .post("https://ai.mybricks.world/api/ai/intent-conjecture2", {
+        demand: requirement,
+      })
+      .then(async (res) => {
+        if (res.data.code === 1) {
+          console.log("---", res.data);
+          const schema = res.data.data.result;
+          const comArray = schema.map((item) => ({
+            type: item.namespace,
+            data: item.data,
+            slots: item.slots
+              ? {
+                  content: item.slots.map((slotsItem) => ({
+                    type: slotsItem.namespace,
+                    data: slotsItem.data,
+                  })),
+                }
+              : undefined,
+          }));
 
-    command.exec("ui.addComs", {
-      "data": {
-          "type": "mybricks.normal-pc.custom-button",
-          "data": {
-              "asMapArea": false,
-              "text": "abc",
-              "dataType": "number",
-              "outVal": 0,
-              "inVal": "",
-              "useIcon": false,
-              "isCustom": false,
-              "icon": "HomeOutlined",
-              "size": "middle",
-              "type": "primary",
-              "shape": "default",
-              "src": "",
-              "showText": true,
-              "iconLocation": "front",
-              "iconDistance": 8,
-              "contentSize": [
-                  14,
-                  14
-              ]
-          }
-      }
-  });
-    // if (loading) return;
-    // setLoading(true);
-    // setSuccess(false);
-    // setError(false);
-    // setIntentCost(null);
-    // setGenerateCost(null);
-    // axios
-    //   .post("http://127.0.0.1:13000/api/ai/intent-conjecture2", {
-    //     demand: requirement,
-    //   })
-    //   .then(async (res) => {
-    //     if (res.data.code === 1) {
-    //       console.log("---", res.data);
-    //       const schema = res.data.data.result;
-    //       const comArray = schema.map((item) => ({
-    //         type: item.namespace,
-    //         data: item.data,
-    //         slots: item.slots ? ({
-    //           content: item.slots.map((slotsItem) => ({
-    //             type: slotsItem.namespace,
-    //             data: slotsItem.data,
-    //           })),
-    //         }) : undefined,
-    //       }));
+          const component = { data: comArray };
+          console.log("AI res: ", component);
+          const execRes = await command.exec("ui.addComs", component);
+          console.log("exec res: ", execRes);
 
-    //       const component = { data: comArray };
-    //       console.log("AI res: ", component);
-    //       const execRes = await command.exec("ui.addComs", component);
-    //       console.log("exec res: ", execRes);
-
-    //       setIntentCost(res.data.data.intentCost);
-    //       let unitOperationTotalTokens = 0;
-    //       res.data.data.logs.forEach((item) => {
-    //         unitOperationTotalTokens += item.cost.generate.usage.total_tokens;
-    //       });
-    //       let unitOperationMaxTime = Math.max(
-    //         res.data.data.logs.map(
-    //           (item) => item.cost.vec.time + item.cost.generate.time
-    //         )
-    //       );
-    //       setGenerateCost({
-    //         unitOperationTotalTokens,
-    //         unitOperationMaxTime,
-    //       });
-    //     }
-    //     setSuccess(true);
-    //     setRequirement("");
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //     setError(true);
-    //   })
-    //   .finally(() => {
-    //     setLoading(false);
-    //   });
+          setIntentCost(res.data.data.intentCost);
+          let unitOperationTotalTokens = 0;
+          res.data.data.logs.forEach((item) => {
+            unitOperationTotalTokens += item.cost.generate.usage.total_tokens;
+          });
+          let unitOperationMaxTime = Math.max(
+            ...res.data.data.logs.map(
+              (item) => item.cost.vec.time + item.cost.generate.time
+            )
+          );
+          setGenerateCost({
+            unitOperationTotalTokens,
+            unitOperationMaxTime,
+          });
+        }
+        setSuccess(true);
+        setRequirement("");
+      })
+      .catch((err) => {
+        console.log(err);
+        setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [loading, requirement]);
 
   return (
@@ -143,11 +118,26 @@ export default function ({ command }) {
             </div>
             <div className={css.token}>
               {intentCost.usage.total_tokens +
-                generateCost.unitOperationTotalTokens} tokens
+                generateCost.unitOperationTotalTokens}{" "}
+              tokens
             </div>
           </li>
         )}
       </ul>
+      <div style={{ fontSize: 12, color: "#777",marginTop:'10px',userSelect:'text' }}>
+        示例问题：
+        <p>添加一个按钮 一个下拉框 一个文本框 一个日历</p>
+        <p>添加一个按钮，风格是危险，形状是圆角矩形，小尺寸，标题是添加活动</p>
+        <p>下拉菜单，触发方式为点击</p>
+        <p>添加一个三列表格，分别是姓名、年龄、学号</p>
+        <p>
+          添加一个文本框，label是姓名，最大支持输入四个字，显示尾部的清除图标
+        </p>
+        <p>
+          添加一个多选框组件，名称是兴趣爱好，选项有足球、篮球、羽毛球、排球，最大支持选三样
+        </p>
+        <p>添加一个下拉框，包含了全部、已删除、已生效、未生效四种选项</p>
+      </div>
     </div>
   );
 }
