@@ -3,6 +3,23 @@ import axios from "axios";
 import css from "./index.less";
 import { Select, Input, Button } from "antd";
 const { TextArea } = Input;
+
+window._AI_HISTORY_LIST_ = [
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
+]
+
 export default function ({ command, userId }) {
   const [requirement, setRequirement] = useState("");
   const [loading, setLoading] = useState(false);
@@ -12,6 +29,7 @@ export default function ({ command, userId }) {
   const [isTextAreaFocused, setIsTextAreaFocused] = useState(null);
   const [timeCost, setTimeCost] = useState(0);
   const [mode, setMode] = useState("simple");
+  const [historyList, setHistoryList] = useState(window._AI_HISTORY_LIST_)
 
   const generate = useCallback(() => {
     if (loading) return;
@@ -47,6 +65,7 @@ export default function ({ command, userId }) {
           setSuccess(true);
           setRequirement("");
           setTimeCost(data.data.cost.time);
+          setHistoryList([...historyList, requirement])
         } else {
           throw "";
         }
@@ -62,70 +81,18 @@ export default function ({ command, userId }) {
 
   return (
     <div className={css.container}>
-      <div className={`${css.input} ${isTextAreaFocused ? css.focused : ""}`}>
-        <TextArea
-          className={css.textarea}
-          value={requirement}
-          onChange={(e) => setRequirement(e.target.value)}
-          onFocus={() => {
-            setIsTextAreaFocused(true);
-          }}
-          style={{ boxShadow: "none", border: 'none' }}
-          // onEnter={generate}
-          onPressEnter={() => {
-            // console.log('111')
-            generate()
-          }}
-          onBlur={() => setIsTextAreaFocused(false)}
-        />
-        <div className={css.magicInputFooter}>
-          <Select
-            style={{ width: 140 }}
-            value={mode}
-            onChange={(e)=>{
-              setMode(e.target.value)
-            }}
-            options={[
-              { value: "simple", label: "简单模式" },
-              { value: "expert", label: "专家模式(内测中)", disabled: true },
-            ]}
-          />
-          <div className={css.magicInputFooterLimit}>
-            {requirement.length}/1000
-          </div>
-          <button
-            type="button"
-            className={`${css.magicInputSend} ${
-              requirement.length ? "" : css.isEmpty
-            }`}
-            onClick={generate}
-          >
-            {/* <span className={css.magicInputSend}></span> */}
-          </button>
-        </div>
-      </div>
-      <div className={css.statusBar}>
-        {error && <div className={css.error}>出错啦，再试一次吧</div>}
-        {success && <div className={css.success}>执行成功</div>}
-        {loading && <div style={{width: '80%'}}>
-          <img src='https://static.dingtalk.com/media/lAHPDetfeJOZ1pBgYA_96_96.gif' style={{width: 16, marginRight: 4}} alt="" />
-          AI生成中...
-        </div>}
-        {
-          success ? (<div className={css.time}>
-            <span>耗时 {(timeCost / 1000).toFixed(2)} s</span>
-          </div>) : null
-        }
-      </div>
+
       <div
         style={{
           fontSize: 12,
           color: "#777",
           marginTop: "10px",
           userSelect: "text",
+          maxHeight: '40%',
+          overflow: 'scroll',
         }}
-      >
-        示例：
+        >
+        <h2 style={{fontSize: 16}}>示例：</h2>
         <p>添加一个按钮，标题是添加活动</p>
         <p>添加一个危险按钮，风格是次按钮，小尺寸，标题是添加活动</p>
         <p>添加一个圆角虚线按钮，大尺寸，标题是删除</p>
@@ -141,6 +108,82 @@ export default function ({ command, userId }) {
           添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计
         </p>
         <p>添加一个用于选择体育项目的下拉框</p>
+      </div>
+      <div style={{
+        fontSize: 12,
+        color: "#777",
+        marginTop: 10,
+        width: '100%',
+        maxHeight: '40%',
+        overflow: 'scroll',
+        userSelect: "text",
+      }}>
+        <h2 style={{width: '100%', fontSize: 16}}>历史记录：</h2>
+        {historyList?.map((i, index) => {
+          return <p>{index + 1}、{i}</p>
+        })}
+      </div>
+      <div style={{
+        width: '96%',
+        position: 'absolute',
+        bottom: 10,
+        left: '2%'
+      }}>
+        <div className={`${css.input} ${isTextAreaFocused ? css.focused : ""}`}>
+          <TextArea
+            className={css.textarea}
+            value={requirement}
+            onChange={(e) => setRequirement(e.target.value)}
+            onFocus={() => {
+              setIsTextAreaFocused(true);
+            }}
+            style={{ boxShadow: "none", border: 'none' }}
+            // onEnter={generate}
+            onPressEnter={() => {
+              // console.log('111')
+              generate()
+            }}
+            onBlur={() => setIsTextAreaFocused(false)}
+          />
+          <div className={css.magicInputFooter}>
+            <Select
+              style={{ width: 140 }}
+              value={mode}
+              onChange={(e)=>{
+                setMode(e.target.value)
+              }}
+              options={[
+                { value: "simple", label: "简单模式" },
+                { value: "expert", label: "专家模式(内测中)", disabled: true },
+              ]}
+            />
+            <div className={css.magicInputFooterLimit}>
+              {requirement.length}/1000
+            </div>
+            <button
+              type="button"
+              className={`${css.magicInputSend} ${
+                requirement.length ? "" : css.isEmpty
+              }`}
+              onClick={generate}
+            >
+              {/* <span className={css.magicInputSend}></span> */}
+            </button>
+          </div>
+        </div>
+        <div className={css.statusBar}>
+          {error && <div className={css.error}>出错啦，再试一次吧</div>}
+          {success && <div className={css.success}>执行成功</div>}
+          {loading && <div style={{width: '80%'}}>
+            <img src='https://static.dingtalk.com/media/lAHPDetfeJOZ1pBgYA_96_96.gif' style={{width: 16, marginRight: 4}} alt="" />
+            AI生成中...
+          </div>}
+          {
+            success ? (<div className={css.time}>
+              <span>耗时 {(timeCost / 1000).toFixed(2)} s</span>
+            </div>) : null
+          }
+        </div>
       </div>
     </div>
   );
