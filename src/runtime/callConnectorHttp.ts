@@ -241,7 +241,7 @@ const getFetch = (connector) => {
         .ajax(options)
         .catch(error => {
           /** 拦截函数存在，且是接口请求错误 */
-          if (connector.globalErrorResultFn && !!error.response) {
+          if (connector.globalErrorResultFn && (!!error.response || error.name === 'AxiosError')) {
             const response = error.response || { data: {} };
             !response.data && (response.data = {});
             pluginRun(connector.globalErrorResultFn)(

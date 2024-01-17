@@ -69,3 +69,140 @@
   right: 0;
   top: 0;
 }
+
+.categoryContainer {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  flex-shrink: 0;
+
+  & > * {
+    flex-shrink: 0;
+  }
+
+  .buttons {
+    display: flex;
+    flex-direction: row;
+
+    .option {
+      position: relative;
+      padding: 3px 8px;
+      font-size: 12px;
+      background: #FFF;
+      cursor: pointer;
+      border: 1px solid #DDD;
+      display: flex;
+      align-items: center;
+
+      &:hover .optionCancelIcon {
+        display: flex;
+      }
+    }
+
+    .option:not(:last-child) {
+      border-right: 1px solid #DDD;
+    }
+
+    .option:not(:first-of-type) {
+      margin-left: -1px;
+    }
+
+    .option:first-of-type {
+      border-radius: 3px 0 0 3px;
+    }
+
+    .option:last-child {
+      border-radius: 0 3px 3px 0;
+    }
+
+    .option:first-of-type:last-child {
+      border-radius: 3px;
+    }
+
+    .selected {
+      background: #616C81;
+      color: #FFF;
+      font-weight: bold;
+      margin: -1px;
+    }
+
+    .optionCancelIcon {
+      z-index: 1;
+      display: none;
+      position: absolute;
+      right: -6px;
+      top: -6px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      font-size: 8px;
+      color: #FFFFFF;
+      background: @color-primary;
+    }
+  }
+}
+
+.iconRootClose,
+.iconRootAdder {
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: normal;
+  color: #555;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+
+  &:hover {
+    color: @color-primary;
+  }
+}
+
+.iconRootClose {
+  font-size: 12px;
+}
+
+.markAdder {
+  display: flex;
+
+  .markInput {
+    border: 1px solid #DDD;
+    box-sizing: border-box;
+    border-radius: 3px 0 0 3px;
+    padding: 5px;
+    background: #FFF;
+    width: 80px;
+    line-height: 1;
+    height: 24px;
+
+    &:focus {
+      border-color: @color-primary;
+    }
+  }
+
+  .button {
+    font-weight: 400;
+    text-align: center;
+    color: rgba(0, 0, 0, .85);
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    font-size: 12px;
+    box-sizing: border-box;
+    height: 24px;
+    line-height: 1;
+    border-radius: 0 3px 3px 0;
+    border-left: none;
+    padding: 0 10px;
+    outline: 0;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      opacity: .8;
+    }
+  }
+}

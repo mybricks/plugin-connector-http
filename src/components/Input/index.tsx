@@ -12,12 +12,7 @@ export default function Input({
 
   return (
     <div className={css.input}>
-      <div
-        className={`${css.editor} ${css.textEdt} ${
-          validateError ? css.error : ''
-        }`}
-        data-err={validateError}
-      >
+      <div className={`${css.editor} ${css.textEdt}`} data-err={validateError}>
         {type === 'input' ? (
           <input
             key={defaultValue}

@@ -149,7 +149,7 @@ function getScript(serviceItem) {
           .ajax(options)
           .catch(error => {
             /** 拦截函数存在，且是接口请求错误 */
-            if (globalErrorResultFn && !!error.response) {
+            if (globalErrorResultFn && (!!error.response || error.name === 'AxiosError')) {
               const response = error.response || { data: {} };
               !response.data && (response.data = {});
               globalErrorResultFn(
@@ -216,7 +216,6 @@ function getScript(serviceItem) {
             then(outputData);
           })
           .catch((error) => {
-            console.log('error.message', error.message);
             if (error && error.message === 'HTTP_FETCH_ERROR') {
               if (globalErrorResultFn && !hasCallThrowError) {
                 onError('全局拦截响应错误函数中必须调用 throwError 方法，请前往修改');
@@ -231,6 +230,7 @@ function getScript(serviceItem) {
     }
     return serviceAgent(params, config);
   }
+
   return encodeURIComponent(
     fetch
       .toString()

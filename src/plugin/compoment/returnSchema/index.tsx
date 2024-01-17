@@ -1,7 +1,7 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
-import {DefaultPanelContext} from '../defaultPanel/context';
+import { DefaultPanelContext } from '../defaultPanel/context';
 
 import css from './index.less';
 
