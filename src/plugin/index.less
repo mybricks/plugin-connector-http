@@ -151,6 +151,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
 
     .error {
       color: #fc494b;
@@ -169,27 +170,27 @@
       font-weight: 600;
       cursor: pointer;
     }
-  }
 
-  .cost {
-    align-self: flex-start;
-
-    li {
-      margin: 5px 0;
-
-      span {
-        display: inline-block;
-        width: 60px;
-        font-weight: 600;
-      }
-
-      .time,
-      .token {
-        display: inline-block;
-      }
-      .time {
-        width: 60px;
-      }
+    .time {
+      position: absolute;
+      right: 4px;
+      top: 2px;
     }
   }
+
+  // .cost {
+  //   align-self: flex-end;
+
+  //   li {
+  //     margin: 5px 0;
+
+  //     span {
+  //       display: inline-block;
+  //       width: 60px;
+  //       font-weight: 600;
+  //     }
+
+
+  //   }
+  // }
 }

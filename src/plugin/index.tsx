@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from "react";
 import axios from "axios";
 import css from "./index.less";
-import { Select } from "antd";
-export default function ({ command }) {
+import { Select, Input, Button } from "antd";
+const { TextArea } = Input;
+export default function ({ command, userId }) {
   const [requirement, setRequirement] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -10,6 +11,7 @@ export default function ({ command }) {
   const [isMultiMode, setIsMultiMode] = useState(false);
   const [isTextAreaFocused, setIsTextAreaFocused] = useState(null);
   const [timeCost, setTimeCost] = useState(0);
+  const [mode, setMode] = useState("simple");
 
   const generate = useCallback(() => {
     if (loading) return;
@@ -17,13 +19,14 @@ export default function ({ command }) {
     setSuccess(false);
     setError(false);
     axios
-      .post("https://ai.mybricks.world/api/ai/intent-conjecture2", {
-        demand: requirement,
+      .post("https://ai.mybricks.world/api/chat/generator", {
+        requirement: requirement,
+        mode: mode,
+        userId: userId,
       })
-      .then(async (res) => {
-        if (res.data.code === 1) {
-          console.log("---", res.data);
-          const schema = res.data.data.result;
+      .then(async ({ data }) => {
+        if (data.code === 1) {
+          const schema = data.data.schema;
           const comArray = schema.map((item) => ({
             type: item.namespace,
             data: item.data,
@@ -43,6 +46,7 @@ export default function ({ command }) {
           console.log("exec res: ", execRes);
           setSuccess(true);
           setRequirement("");
+          setTimeCost(data.data.cost.time);
         } else {
           throw "";
         }
@@ -59,23 +63,31 @@ export default function ({ command }) {
   return (
     <div className={css.container}>
       <div className={`${css.input} ${isTextAreaFocused ? css.focused : ""}`}>
-        <textarea
+        <TextArea
           className={css.textarea}
           value={requirement}
           onChange={(e) => setRequirement(e.target.value)}
           onFocus={() => {
             setIsTextAreaFocused(true);
           }}
+          style={{ boxShadow: "none", border: 'none' }}
+          // onEnter={generate}
+          onPressEnter={() => {
+            // console.log('111')
+            generate()
+          }}
           onBlur={() => setIsTextAreaFocused(false)}
         />
         <div className={css.magicInputFooter}>
           <Select
-            defaultValue="lucy"
             style={{ width: 140 }}
-            onChange={()=>{}}
+            value={mode}
+            onChange={(e)=>{
+              setMode(e.target.value)
+            }}
             options={[
-              { value: "jack", label: "简单模式" },
-              { value: "disabled", label: "专家模式(内测中)", disabled: true },
+              { value: "simple", label: "简单模式" },
+              { value: "expert", label: "专家模式(内测中)", disabled: true },
             ]}
           />
           <div className={css.magicInputFooterLimit}>
@@ -86,17 +98,24 @@ export default function ({ command }) {
             className={`${css.magicInputSend} ${
               requirement.length ? "" : css.isEmpty
             }`}
+            onClick={generate}
           >
             {/* <span className={css.magicInputSend}></span> */}
           </button>
         </div>
       </div>
       <div className={css.statusBar}>
-        {true && <div className={css.error}>出错啦，再试一次吧</div>}
+        {error && <div className={css.error}>出错啦，再试一次吧</div>}
         {success && <div className={css.success}>执行成功</div>}
-        <div className={css.time}>
-          <span>耗时 </span>5s
-        </div>
+        {loading && <div style={{width: '80%'}}>
+          <img src='https://static.dingtalk.com/media/lAHPDetfeJOZ1pBgYA_96_96.gif' style={{width: 16, marginRight: 4}} alt="" />
+          AI生成中...
+        </div>}
+        {
+          success ? (<div className={css.time}>
+            <span>耗时 {(timeCost / 1000).toFixed(2)} s</span>
+          </div>) : null
+        }
       </div>
       <div
         style={{
