@@ -5,6 +5,63 @@
   width: 320px;
   padding: 10px;
 
+  .mode {
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    color: #777;
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+    
+    /* 隐藏原始的checkbox */
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    /* 定义开关的外观 */
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    
+    /* 定义开关打开时的颜色 */
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    /* 开关打开时的样式 */
+    input:checked + .slider {
+      background-color: #fa6400;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(16px);
+    }
+  }
+
   .input {
     width: 100%;
     height: 100px;
