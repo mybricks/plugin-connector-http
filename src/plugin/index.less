@@ -18,14 +18,14 @@
       width: 36px;
       height: 20px;
     }
-    
+
     /* 隐藏原始的checkbox */
     .switch input {
       opacity: 0;
       width: 0;
       height: 0;
     }
-    
+
     /* 定义开关的外观 */
     .slider {
       position: absolute;
@@ -35,10 +35,10 @@
       right: 0;
       bottom: 0;
       background-color: #ccc;
-      transition: .4s;
+      transition: 0.4s;
       border-radius: 34px;
     }
-    
+
     /* 定义开关打开时的颜色 */
     .slider:before {
       position: absolute;
@@ -48,50 +48,118 @@
       left: 2px;
       bottom: 2px;
       background-color: white;
-      transition: .4s;
+      transition: 0.4s;
       border-radius: 50%;
     }
-    
+
     /* 开关打开时的样式 */
     input:checked + .slider {
       background-color: #fa6400;
     }
-    
+
     input:checked + .slider:before {
       transform: translateX(16px);
     }
   }
 
   .input {
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    height: 100px;
+    height: 130px;
     padding: 5px;
     background-color: #fff;
     border-radius: 6px;
-    border: 1px solid #e3e3e3;
+    border: 1px solid rgba(126, 134, 142, 0.16);
 
-    &:focus {
-      border: 1px solid #fa6400;
+    &.focused {
+      border: 1px solid transparent;
+      background-origin: padding-box, border-box;
+      background-clip: padding-box, border-box;
+      background-image: linear-gradient(90deg, #fff, #fff),
+        conic-gradient(
+          from 0deg,
+          #ffbaf6 0,
+          #b9adff 60deg,
+          #80bfff 120deg,
+          #adf7ff 180deg,
+          #e9ccff 240deg,
+          #ffc29c 300deg,
+          #ffbaf6 1turn
+        );
+    }
+
+    &:hover {
+      border: 1px solid transparent;
+      background-origin: padding-box, border-box;
+      background-clip: padding-box, border-box;
+      background-image: linear-gradient(90deg, #fff, #fff),
+        conic-gradient(
+          from 0deg,
+          #ffbaf6 0,
+          #b9adff 60deg,
+          #80bfff 120deg,
+          #adf7ff 180deg,
+          #e9ccff 240deg,
+          #ffc29c 300deg,
+          #ffbaf6 1turn
+        );
+    }
+    .textarea {
+      flex: 7;
+      width: 100%;
+      resize: none;
+    }
+
+    .magicInputFooter {
+      flex: 3;
+      display: flex;
+      align-items: center;
+      padding: 8px 8px 0 8px;
+
+      .magicInputFooterLimit {
+        flex: 1;
+        text-align: right;
+        font-size: 12px;
+        line-height: 28px;
+        color: #a2a3a5;
+        margin-right: 8px;
+      }
+
+      .magicInputSend {
+        width: 20px;
+        height: 20px;
+        background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IHgxPSIuMTk3IiB5MT0iLS42NDciIHgyPSIxIiB5Mj0iMS41OTYiIGlkPSJiIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjRTk4Q0RFIi8+PHN0b3Agb2Zmc2V0PSIyMy4zMTIlIiBzdG9wLWNvbG9yPSIjQjQ4NEY0Ii8+PHN0b3Agb2Zmc2V0PSI2MC4yNzElIiBzdG9wLWNvbG9yPSIjMzk5MUZGIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNjNEOEZGIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImEiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcng9IjAiLz48L2NsaXBQYXRoPjwvZGVmcz48ZyBjbGlwLXBhdGg9InVybCgjYSkiPjxwYXRoIGQ9Ik0uNDc4IDE3LjkzbDEuMjc0LTUuNTExYTIgMiAwIDAxMS43NzktMS41NDNsMTAuMDQ5LS44NTYtMTAuMDU1LS44OTJhMiAyIDAgMDEtMS43NzItMS41NDJMLjQ3OCAyLjA3QTEgMSAwIDAxMS45Ljk1bDE2LjMxIDguMTU3YTEgMSAwIDAxMCAxLjc4OEwxLjkgMTkuMDVhMSAxIDAgMDEtMS40MjItMS4xMnoiIGZpbGw9InVybCgjYikiLz48L2c+PC9zdmc+");
+        background-repeat: no-repeat;
+        background-position: 50%;
+        background-size: 20px 20px;
+        cursor: pointer;
+
+        &.isEmpty {
+          cursor: not-allowed;
+          pointer-events: none;
+          background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IHgxPSIuMTk3IiB5MT0iLS42NDciIHgyPSIxIiB5Mj0iMS41OTYiIGlkPSJiIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjRjdENkYzIi8+PHN0b3Agb2Zmc2V0PSIyMy4zMTIlIiBzdG9wLWNvbG9yPSIjRTVENEZCIi8+PHN0b3Agb2Zmc2V0PSI2MC4yNzElIiBzdG9wLWNvbG9yPSIjQjlEOUZGIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQzZFRUZGIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImEiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcng9IjAiLz48L2NsaXBQYXRoPjwvZGVmcz48ZyBjbGlwLXBhdGg9InVybCgjYSkiPjxwYXRoIGQ9Ik0uNDc4IDE3LjkzbDEuMjc0LTUuNTExYTIgMiAwIDAxMS43NzktMS41NDNsMTAuMDQ5LS44NTYtMTAuMDU1LS44OTJhMiAyIDAgMDEtMS43NzItMS41NDJMLjQ3OCAyLjA3QTEgMSAwIDAxMS45Ljk1bDE2LjMxIDguMTU3YTEgMSAwIDAxMCAxLjc4OEwxLjkgMTkuMDVhMSAxIDAgMDEtMS40MjItMS4xMnoiIGZpbGw9InVybCgjYikiLz48L2c+PC9zdmc+");
+        }
+      }
     }
   }
-  
-  .operation {
+
+  .statusBar {
     margin-top: 10px;
     margin-bottom: 10px;
     width: 100%;
     display: flex;
-    flex-direction: row-reverse;
     justify-content: space-between;
     align-items: center;
 
-    .error {      
+    .error {
       color: #fc494b;
     }
 
     .success {
       color: #49bb27;
     }
-  
+
     .exec {
       height: 30px;
       width: 50px;
