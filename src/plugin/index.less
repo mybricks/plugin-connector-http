@@ -117,6 +117,16 @@
       align-items: center;
       padding: 8px 8px 0 8px;
 
+      :global {
+        .ant-select-focused .ant-select-selector {
+          border: none !important;
+          box-shadow: none !important;
+        }
+        .ant-select:not(.ant-select-disabled) .ant-select-selector {
+          border: none;
+        }
+      }
+
       .magicInputFooterLimit {
         flex: 1;
         text-align: right;
@@ -189,7 +199,6 @@
   //       width: 60px;
   //       font-weight: 600;
   //     }
-
 
   //   }
   // }

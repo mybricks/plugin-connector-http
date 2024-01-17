@@ -80,10 +80,12 @@ export default function ({ command, userId }) {
         />
         <div className={css.magicInputFooter}>
           <Select
-            style={{ width: 140 }}
+            className={css.modeSelect}
+            style={{ width: 95,marginLeft:'-5px' }}
             value={mode}
-            onChange={(e)=>{
-              setMode(e.target.value)
+            size="small"
+            onChange={(e) => {
+              setMode(e.target.value);
             }}
             options={[
               { value: "simple", label: "简单模式" },
