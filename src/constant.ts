@@ -152,3 +152,16 @@ export let CDN = {
 export const resetCDN = () => {
   CDN = undefined;
 };
+
+export const MarkList = [
+  { key: 'predicate', title: '标记组生效标识', description: '标识标记组满足对应条件生效', needMarkValue: true },
+  { key: 'output', title: '返回内容', description: '当标记组生效时，返回此标记对应内容' }
+];
+export const MarkTypeLabel = {
+  predicate: '生效标识',
+  output: '返回内容',
+};
+export const MarkTypes = {
+  predicate: ['number', 'string', 'boolean'],
+  output: ['any']
+};

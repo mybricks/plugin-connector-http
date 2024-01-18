@@ -9,9 +9,10 @@ import Collapse from '../../../components/Collapse';
 import FormItem from '../../../components/FormItem';
 import Input, { TextArea } from '../../../components/Input';
 import { safeDecode } from '../../../utils';
-import { CDN } from '../../../constant';
+import {CDN, MarkTypeLabel} from '../../../constant';
 import { DefaultPanelContext } from './context';
 import { debounce } from '../../../utils/lodash';
+import { notice } from '../../../components/Message';
 
 import parentCss from '../../../style-cssModules.less';
 import css from './index.less';
@@ -68,13 +69,45 @@ export default function DefaultPanel({
 		setRender(sidebarContext);
 	};
 
-	const validate = () => {
+	const validatePath = () => {
 		if (sidebarContext.formModel.path) {
 			addressRef.current?.classList.remove(css.error);
 			return true;
 		}
 		addressRef.current?.classList.add(css.error);
 		return false;
+	};
+
+	const validate = () => {
+		let error = '';
+		if (sidebarContext.formModel.path) {
+			addressRef.current?.classList.remove(css.error);
+		} else {
+			addressRef.current?.classList.add(css.error);
+			error = '接口的请求路径不能为空';
+		}
+
+		if (!sidebarContext.formModel.markList?.length) {
+			error = '数据标记组必须存在';
+			notice(error);
+		} else {
+			const markList = sidebarContext.formModel.markList;
+			const defaultMark = markList.find(m => m.id === 'default');
+
+			if (!defaultMark) {
+				error = '数据标记组中【默认】组必须存在';
+				notice(error);
+			} else if (markList.length > 1) {
+				const errorMark = markList.find(m => !m.predicate || !m.predicate.key || (m.predicate.value === undefined || m.predicate.value === ''));
+
+				if (errorMark) {
+					error = `数据标记组中【${errorMark.title}】组的生效标识不存在或标识值为空`;
+					notice(error);
+				}
+			}
+		}
+
+		return !error;
 	};
 
 	const onSaveClick = () => {
@@ -321,7 +354,7 @@ export default function DefaultPanel({
 								<DebugForm
 									sidebarContext={sidebarContext}
 									setRender={setRender}
-									validate={validate}
+									validate={validatePath}
 									globalConfig={globalConfig}
 								/>
 							</Collapse>

@@ -73,7 +73,7 @@ export default function Debug({ sidebarContext, validate }: any) {
   const [showPreviewSchema, setShowPreviewSchema] = useState(false);
   const [showMarkAdder, setShowMarkAdder] = useState(false);
   const [markGroupId, setMarkGroupId] = useState('default');
-  const [markList, setMarkList] = useState([{ title: '默认', id: 'default', outputKeys: [], excludeKeys: [], outputSchema: {} }]);
+  const [markList, setMarkList] = useState(sidebarContext.formModel.markList || [{ title: '默认', id: 'default', predicate: {}, outputKeys: [], excludeKeys: [], outputSchema: {} }]);
 	const markAdderInputValue = useRef('');
 	const curMark = useMemo(() => markList.find(mark => mark.id === markGroupId), [markList, markGroupId]);
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
@@ -94,86 +94,97 @@ export default function Debug({ sidebarContext, validate }: any) {
 			onChangeMarkList([{
 				title: '默认',
 				id: 'default',
+				predicate: {},
 				outputKeys: sidebarContext.formModel.outputKeys || [],
 				excludeKeys: sidebarContext.formModel.excludeKeys || [],
 				outputSchema: sidebarContext.formModel.outputSchema || {},
 			}]);
+			delete sidebarContext.formModel.outputKeys;
+			delete sidebarContext.formModel.excludeKeys;
+			delete sidebarContext.formModel.outputSchema;
 		}
 	}, []);
 
 	const onConfirmTip = () => {
 		try {
-			let { outputKeys = [], excludeKeys = [] } = sidebarContext.formModel;
 			sidebarContext.formModel.resultSchema = willUpdateResultSchemaRef.current;
-
-			outputKeys = outputKeys
-				.filter(Boolean)
-				.map(key => key.split('.'))
-				.filter(keys => {
-					let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
-
-					for (let idx = 0; idx < keys.length; idx++) {
-						const key = keys[idx];
-
-						if (schema && schema[key]) {
-							schema = schema[key].properties || schema[key].items?.properties;
-						} else {
-							return false;
-						}
-					}
-
-					return true;
-				})
-				.map(keys => keys.join('.'));
-			excludeKeys = excludeKeys
-				.filter(Boolean)
-				.map(key => key.split('.'))
-				.filter(keys => {
-					let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
-
-					for (let idx = 0; idx < keys.length; idx++) {
-						const key = keys[idx];
-
-						if (schema && schema[key]) {
-							schema = schema[key].properties || schema[key].items?.properties;
-						} else {
-							return false;
-						}
-					}
-
-					return true;
-				})
-				.map(keys => keys.join('.'));
-
-			let outputData = getDataByExcludeKeys(getDataByOutputKeys(allDataRef.current, outputKeys), excludeKeys);
-			let outputSchema = jsonToSchema(outputData);
-			/** 当标记单项时，自动返回单项对应的值 */
-			if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
-				try {
-					let cascadeOutputKeys = [...outputKeys].map(key => key.split('.'));
-					while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
-						outputData = Object.values(outputData)[0];
-						outputSchema = Object.values(outputSchema.properties)[0];
-						cascadeOutputKeys.forEach(keys => keys.shift());
-					}
-				} catch {}
-			}
-
-			setData(outputData);
-
 			formatSchema(sidebarContext.formModel.resultSchema);
-			formatSchema(outputSchema);
 			const inputSchema = paramsToSchema(sidebarContext.formModel.params || {});
 			formatSchema(inputSchema);
-			sidebarContext.formModel.outputKeys = outputKeys;
-			sidebarContext.formModel.excludeKeys = excludeKeys;
-			sidebarContext.formModel.outputSchema = outputSchema;
 			sidebarContext.formModel.inputSchema = inputSchema;
 			setSchema({ ...sidebarContext.formModel.resultSchema });
+
+			const newMarkList = JSON.parse(JSON.stringify(markList));
+			newMarkList.forEach(mark => {
+				let { outputKeys = [], excludeKeys = [] } = mark;
+
+				outputKeys = outputKeys
+					.filter(Boolean)
+					.map(key => key.split('.'))
+					.filter(keys => {
+						let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
+
+						for (let idx = 0; idx < keys.length; idx++) {
+							const key = keys[idx];
+
+							if (schema && schema[key]) {
+								schema = schema[key].properties || schema[key].items?.properties;
+							} else {
+								return false;
+							}
+						}
+
+						return true;
+					})
+					.map(keys => keys.join('.'));
+				excludeKeys = excludeKeys
+					.filter(Boolean)
+					.map(key => key.split('.'))
+					.filter(keys => {
+						let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
+
+						for (let idx = 0; idx < keys.length; idx++) {
+							const key = keys[idx];
+
+							if (schema && schema[key]) {
+								schema = schema[key].properties || schema[key].items?.properties;
+							} else {
+								return false;
+							}
+						}
+
+						return true;
+					})
+					.map(keys => keys.join('.'));
+
+				let outputData = getDataByExcludeKeys(getDataByOutputKeys(allDataRef.current, outputKeys), excludeKeys);
+				let outputSchema = jsonToSchema(outputData);
+
+				/** 当标记单项时，自动返回单项对应的值 */
+				if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
+					try {
+						let cascadeOutputKeys = [...outputKeys].map(key => key.split('.'));
+						while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
+							outputData = Object.values(outputData)[0];
+							outputSchema = Object.values(outputSchema.properties)[0];
+							cascadeOutputKeys.forEach(keys => keys.shift());
+						}
+					} catch {}
+				}
+				formatSchema(outputSchema);
+
+				if (mark.id === markGroupId) {
+					setData(outputData);
+				}
+
+				mark.outputKeys = outputKeys;
+				mark.excludeKeys = excludeKeys;
+				mark.outputSchema = outputSchema;
+			});
+
+			onChangeMarkList(newMarkList);
 		} catch (error: any) {
 			console.error(error);
-			sidebarContext.formModel.outputSchema = void 0;
-			sidebarContext.formModel.resultSchema = void 0;
 			const isError = error instanceof Error;
 			setError(isError ? (error?.message || (error as any)) : `接口错误：${typeof error === 'string' ? error : `由全局响应错误拦截透出，值为 ${JSON.stringify(error)}`}`);
 		}
@@ -228,8 +239,6 @@ export default function Debug({ sidebarContext, validate }: any) {
 			}
     } catch (error: any) {
       console.error(error);
-      sidebarContext.formModel.outputSchema = void 0;
-      sidebarContext.formModel.resultSchema = void 0;
 	    const isError = error instanceof Error;
 	    setError(isError ? (error?.message || (error as any)) : `接口错误：${typeof error === 'string' ? error : `由全局响应错误拦截透出，值为 ${JSON.stringify(error)}`}`);
     }
@@ -248,7 +257,8 @@ export default function Debug({ sidebarContext, validate }: any) {
     }
   }, []);
 
-  const onKeysChange = useCallback((outputKeys = [], excludeKeys = []) => {
+  const onMarkChange = useCallback((mark) => {
+		let { outputKeys = [], excludeKeys = [] } = mark;
     const { resultSchema } = sidebarContext.formModel;
 		
 	  try {
@@ -358,29 +368,48 @@ export default function Debug({ sidebarContext, validate }: any) {
 			  if (outputData !== void 0) {
 				  setData(allDataRef.current ? outputData : undefined);
 			  }
-			
 		  } catch (error) {}
 
-		  const index = sidebarContext.formModel.markList.findIndex(m => m.id === curMark.id);
-		  curMark.outputKeys = outputKeys;
-		  curMark.excludeKeys = excludeKeys;
-		  curMark.outputSchema = newOutputSchema;
-		  sidebarContext.formModel.markList.splice(index, 1, { ...curMark });
+		  const index = sidebarContext.formModel.markList.findIndex(m => m.id === mark.id);
+		  mark.outputKeys = outputKeys;
+		  mark.excludeKeys = excludeKeys;
+		  mark.outputSchema = newOutputSchema;
+		  sidebarContext.formModel.markList.splice(index, 1, { ...mark });
 
 			onChangeMarkList([...sidebarContext.formModel.markList]);
 	  } catch (error) {
       console.log(error);
     }
-  }, [curMark, markList]);
+  }, [markList]);
 
-  const onOutputKeysChange = useCallback((outputKeys) => onKeysChange(outputKeys, curMark.excludeKeys), [sidebarContext, onKeysChange, curMark]);
-  const onExcludeKeysChange = useCallback((excludeKeys) => onKeysChange(curMark.outputKeys, excludeKeys), [sidebarContext, onKeysChange, curMark]);
   const onMockSchemaChange = useCallback((schema) => sidebarContext.formModel.resultSchema = schema, []);
   const editSchema = useCallback(() => setEdit(true), []);
   const saveSchema = useCallback(() => setEdit(false), []);
   const openMarkAdder = useCallback(() => setShowMarkAdder(true), []);
   const closeMarkAdder = useCallback(() => setShowMarkAdder(false), []);
 	const onChangeMarkInput = useCallback(e => markAdderInputValue.current = e.target.value, []);
+	const calcData = useCallback(mark => {
+		try {
+			const { excludeKeys = [], outputKeys = [] } = mark;
+			const cloneData = cloneDeep(allDataRef.current);
+			let outputData = getDataByOutputKeys(getDataByExcludeKeys(cloneData, excludeKeys), outputKeys);
+			let outputSchema = jsonToSchema(outputData);
+
+			try {
+				let cascadeOutputKeys = outputKeys.map(key => key.split('.'));
+				while (outputSchema.type === 'object' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputSchema.properties || {}).length === 1) {
+					outputData = allDataRef.current ? Object.values(outputData)[0] : outputData;
+					outputSchema = Object.values(outputSchema.properties)[0];
+					cascadeOutputKeys.forEach(keys => keys.shift());
+				}
+			} catch(e) {
+				console.log(e);
+			}
+			if (outputData !== void 0) {
+				setData(allDataRef.current ? outputData : undefined);
+			}
+		} catch (error) {}
+	}, []);
 	const addMark = useCallback(() => {
 		onChangeMarkList([
 			...markList,
@@ -389,7 +418,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 				id: uuid(),
 				outputKeys: [],
 				excludeKeys: [],
-				outputSchema: {},
+				outputSchema: sidebarContext.formModel.resultSchema,
 			}
 		]);
 		markAdderInputValue.current = '';
@@ -401,6 +430,10 @@ export default function Debug({ sidebarContext, validate }: any) {
 
 		onChangeMarkList([...markList]);
 		setMarkGroupId(markList[index - 1].id);
+	}, [markList]);
+	const onSelectMarkGroup = useCallback(id => {
+		setMarkGroupId(id);
+		calcData(markList.find(m => m.id === id));
 	}, [markList]);
 
 	const toggleParamsCodeShow = useCallback(event => {
@@ -571,7 +604,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 														    <div
 															    key={option.id}
 															    className={`${styles.option} ${option.id === markGroupId ? styles.selected : ''}`}
-															    onClick={() => setMarkGroupId(option.id)}
+															    onClick={() => onSelectMarkGroup(option.id)}
 														    >
 															    {option.title}
 															    {option.id !== 'default' ? (
@@ -617,10 +650,8 @@ export default function Debug({ sidebarContext, validate }: any) {
 								    {curMark ? (
 									    <ReturnSchema
 										    key={curMark.id}
-										    outputKeys={curMark.outputKeys}
-										    excludeKeys={curMark.excludeKeys}
-										    onOutputKeysChange={onOutputKeysChange}
-										    onExcludeKeysChange={onExcludeKeysChange}
+										    mark={curMark}
+										    onMarkChange={onMarkChange}
 										    schema={schema}
 										    error={errorInfo}
 									    />

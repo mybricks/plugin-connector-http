@@ -98,7 +98,7 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
       (depth === 0 &&
         parent.children?.[
           Math.min(
-            findLastIndex(parent.children, ({ type }) => type === 'string' || type === 'number'),
+            findLastIndex(parent.children, ({ type }) => type === 'string' || type === 'number' || type === 'boolean'),
             parent.children.length - 1
           )
         ]?.name === item.name) ||
@@ -127,6 +127,7 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
           >
             <option label={'字符'} value={'string'} />
             <option label={'数字'} value={'number'} />
+            <option label={'布尔'} value={'boolean'} />
             <option label={'对象'} value={'object'} />
             <option label={'列表'} value={'array'} />
           </select>
