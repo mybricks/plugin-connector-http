@@ -1,6 +1,6 @@
 {
   "name": "@mybricks/plugin-ai-copilot",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "zhanlin",
   "license": "",
   "main": "runtime/plugin.js",
