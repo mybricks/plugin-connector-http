@@ -20,6 +20,8 @@ window._AI_HISTORY_LIST_ = [
   // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
 ];
 
+window.AI_MODE = "simple";
+
 const SLOTS_KEY_MAP = {
   "mybricks.normal-pc.card": "body",
 };
@@ -32,7 +34,7 @@ export default function ({ command, userId }) {
   const [isMultiMode, setIsMultiMode] = useState(false);
   const [isTextAreaFocused, setIsTextAreaFocused] = useState(null);
   const [timeCost, setTimeCost] = useState(0);
-  const [mode, setMode] = useState("simple");
+  const [mode, setMode] = useState(window.AI_MODE);
   const [historyList, setHistoryList] = useState(window._AI_HISTORY_LIST_);
 
   const generate = useCallback(() => {
@@ -174,6 +176,7 @@ export default function ({ command, userId }) {
               size="small"
               onChange={(value) => {
                 setMode(value);
+                window.AI_MODE = value;
               }}
               options={[
                 { value: "simple", label: "简单模式" },
