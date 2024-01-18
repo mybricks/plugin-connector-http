@@ -118,6 +118,7 @@ export default function ({ command, userId }) {
       }}>
         <div className={`${css.input} ${isTextAreaFocused ? css.focused : ""}`}>
           <TextArea
+            placeholder="简单模式：速度快，回答问题相对简单；专家模式：能回答复杂问题，响应相对较慢。如果失败，可尝试切换专家模式重试"
             className={css.textarea}
             value={requirement}
             onChange={(e) => setRequirement(e.target.value)}
@@ -126,7 +127,8 @@ export default function ({ command, userId }) {
             }}
             style={{ boxShadow: "none", border: 'none' }}
             // onEnter={generate}
-            onPressEnter={() => {
+            onPressEnter={(e) => {
+              e.preventDefault();
               // console.log('111')
               generate()
             }}
@@ -161,17 +163,17 @@ export default function ({ command, userId }) {
           </div>
         </div>
         <div className={css.statusBar}>
-          {error && <div className={css.error}>出错啦，再试一次吧</div>}
-          {success && <div className={css.success}>执行成功</div>}
-          {loading && <div style={{width: '80%'}}>
-            <img src='https://static.dingtalk.com/media/lAHPDetfeJOZ1pBgYA_96_96.gif' style={{width: 16, marginRight: 4}} alt="" />
-            AI生成中...
-          </div>}
-          {
-            success ? (<div className={css.time}>
-              <span>耗时 {(timeCost / 1000).toFixed(2)} s</span>
-            </div>) : null
-          }
+            {error && <div className={css.error}>出错啦，再试一次吧</div>}
+            {success && <div className={css.success}>执行成功</div>}
+            {loading && <div style={{width: '80%'}}>
+              <img src='https://static.dingtalk.com/media/lAHPDetfeJOZ1pBgYA_96_96.gif' style={{width: 16, marginRight: 4}} alt="" />
+              AI生成中...
+            </div>}
+            {
+              success ? (<div className={css.time}>
+                <span>耗时 {(timeCost / 1000).toFixed(2)} s</span>
+              </div>) : null
+            }
         </div>
       </div>
     </div>
