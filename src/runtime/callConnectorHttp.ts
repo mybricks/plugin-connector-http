@@ -243,6 +243,7 @@ const getFetch = (connector) => {
       let hasCallThrowError = false;
       let curOutputKeys = [];
       let curExcludeKeys = [];
+      let curThrowExtraError = false;
       config
         .ajax(options)
         .catch(error => {
@@ -287,6 +288,7 @@ const getFetch = (connector) => {
             if (!predicate || !predicate.key || predicate.value === undefined) {
               curOutputKeys = outputKeys;
               curExcludeKeys = excludeKeys;
+              curThrowExtraError = predicate.type === 'failed';
               break;
             }
 
@@ -298,6 +300,7 @@ const getFetch = (connector) => {
             if (!keys.length && (predicate.operator === '=' ? curResult === predicate.value : curResult !== predicate.value)) {
               curOutputKeys = outputKeys;
               curExcludeKeys = excludeKeys;
+              curThrowExtraError = predicate.type === 'failed';
               break;
             }
           }
@@ -335,7 +338,7 @@ const getFetch = (connector) => {
             }
           }
 
-          then(outputData);
+          curThrowExtraError ? onError(outputData) : then(outputData);
         })
         .catch((error) => {
           if (error?.message === 'HTTP_FETCH_ERROR') {

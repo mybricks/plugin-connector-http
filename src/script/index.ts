@@ -151,6 +151,7 @@ function getScript(serviceItem) {
         let hasCallThrowError = false;
         let curOutputKeys = [];
         let curExcludeKeys = [];
+        let curThrowExtraError = false;
         config
           .ajax(options)
           .catch(error => {
@@ -187,6 +188,7 @@ function getScript(serviceItem) {
               if (!predicate || !predicate.key || predicate.value === undefined) {
                 curOutputKeys = outputKeys;
                 curExcludeKeys = excludeKeys;
+                curThrowExtraError = predicate.type === 'failed';
                 break;
               }
 
@@ -198,6 +200,7 @@ function getScript(serviceItem) {
               if (!keys.length && (predicate.operator === '=' ? curResult === predicate.value : curResult !== predicate.value)) {
                 curOutputKeys = outputKeys;
                 curExcludeKeys = excludeKeys;
+                curThrowExtraError = predicate.type === 'failed';
                 break;
               }
             }
@@ -237,7 +240,7 @@ function getScript(serviceItem) {
 	            }
             }
 
-            then(outputData);
+            curThrowExtraError ? onError(outputData) : then(outputData);
           })
           .catch((error) => {
             if (error && error.message === 'HTTP_FETCH_ERROR') {

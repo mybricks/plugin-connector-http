@@ -424,13 +424,19 @@ export default function Debug({ sidebarContext, validate }: any) {
 		markAdderInputValue.current = '';
 		setShowMarkAdder(false);
 	}, [markList]);
+	const onMarkInputPressEnter = useCallback(e => {
+		if(e.keyCode === 13 || e.key === 'Enter') {
+			addMark();
+		}
+	}, [addMark]);
 	const onCancelMark = useCallback((id: string) => {
 		const index = markList.findIndex(m => m.id === id);
+		const isFocus = markGroupId === markList[index]?.id;
 		markList.splice(index, 1);
 
 		onChangeMarkList([...markList]);
-		setMarkGroupId(markList[index - 1].id);
-	}, [markList]);
+		isFocus && setMarkGroupId(markList[index - 1].id);
+	}, [markList, markGroupId]);
 	const onSelectMarkGroup = useCallback(id => {
 		setMarkGroupId(id);
 		calcData(markList.find(m => m.id === id));
@@ -635,7 +641,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 											    </Tooltip>
 											    {showMarkAdder ? (
 														<div className={styles.markAdder}>
-															<input className={styles.markInput} onChange={onChangeMarkInput} />
+															<input className={styles.markInput} onKeyUp={onMarkInputPressEnter} onChange={onChangeMarkInput} />
 															<button className={styles.button} onClick={addMark}>确定</button>
 														</div>
 											    ) : null}
