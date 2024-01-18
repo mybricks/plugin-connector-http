@@ -411,11 +411,12 @@ export default function Debug({ sidebarContext, validate }: any) {
 		} catch (error) {}
 	}, []);
 	const addMark = useCallback(() => {
+		const id = uuid();
 		onChangeMarkList([
 			...markList,
 			{
 				title: markAdderInputValue.current,
-				id: uuid(),
+				id: id,
 				outputKeys: [],
 				excludeKeys: [],
 				outputSchema: sidebarContext.formModel.resultSchema,
@@ -423,6 +424,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 		]);
 		markAdderInputValue.current = '';
 		setShowMarkAdder(false);
+		setMarkGroupId(id);
 	}, [markList]);
 	const onMarkInputPressEnter = useCallback(e => {
 		if(e.keyCode === 13 || e.key === 'Enter') {
@@ -587,9 +589,15 @@ export default function Debug({ sidebarContext, validate }: any) {
 				    </FormItem>
 			    ) : (
 				    <>
-					    <FormItem label='返回数据'>
+					    <FormItem label='返回数据' className={styles.scrollFormItem}>
 						    {showResponseCode ? (
 							    <>
+								    <div className={styles.buttonGroup}>
+									    <div></div>
+									    <div className={`${styles.codeIcon} ${styles.responseCodeIcon} ${showResponseCode ? styles.focus : ''}`} onClick={toggleResponseCodeShow}>
+										    {CodeIcon}
+									    </div>
+								    </div>
 										<textarea
 											ref={responseCodeTextRef}
 											className={`${styles.codeText}  ${styles.textEdt}`}
@@ -646,11 +654,16 @@ export default function Debug({ sidebarContext, validate }: any) {
 														</div>
 											    ) : null}
 										    </div>
-										    <Tooltip content="编辑返回数据类型">
-											    <Button style={{ margin: 0, marginBottom: 6 }} onClick={editSchema}>
-												    编辑
-											    </Button>
-										    </Tooltip>
+										    <div className={styles.rightBox}>
+											    <Tooltip content="编辑返回数据类型">
+												    <Button style={{ boxSizing: 'border-box' }} onClick={editSchema}>
+													    编辑
+												    </Button>
+											    </Tooltip>
+											    <div className={`${styles.codeIcon} ${styles.responseCodeIcon} ${showResponseCode ? styles.focus : ''}`} onClick={toggleResponseCodeShow}>
+												    {CodeIcon}
+											    </div>
+										    </div>
 									    </div>
 								    ) : null}
 								    {curMark ? (
@@ -664,10 +677,6 @@ export default function Debug({ sidebarContext, validate }: any) {
 								    ) : null}
 							    </>
 						    )}
-
-						    <div className={`${styles.codeIcon} ${styles.responseCodeIcon} ${showResponseCode ? styles.focus : ''}`} onClick={toggleResponseCodeShow}>
-							    {CodeIcon}
-						    </div>
 					    </FormItem>
 					    <DataShow data={remoteData}/>
 				    </>
