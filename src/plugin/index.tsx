@@ -4,21 +4,7 @@ import css from "./index.less";
 import { Select, Input, Button } from "antd";
 const { TextArea } = Input;
 
-window._AI_HISTORY_LIST_ = [
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-  // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
-]
+window._AI_HISTORY_LIST_ = []
 
 export default function ({ command, userId }) {
   const [requirement, setRequirement] = useState("");
@@ -65,7 +51,9 @@ export default function ({ command, userId }) {
           setSuccess(true);
           setRequirement("");
           setTimeCost(data.data.cost.time);
-          setHistoryList([...historyList, requirement])
+          const newList = [...historyList, requirement]
+          window._AI_HISTORY_LIST_ = newList
+          setHistoryList(newList)
         } else {
           throw "";
         }
