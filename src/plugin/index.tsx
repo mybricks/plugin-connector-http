@@ -73,7 +73,9 @@ export default function ({ command, userId }) {
           setSuccess(true);
           setRequirement("");
           setTimeCost(data.data.cost.time);
-          setHistoryList([...historyList, requirement]);
+          const newList = [...historyList, requirement];
+          window._AI_HISTORY_LIST_ = newList;
+          setHistoryList(newList);
         } else {
           throw "";
         }
@@ -146,6 +148,7 @@ export default function ({ command, userId }) {
       >
         <div className={`${css.input} ${isTextAreaFocused ? css.focused : ""}`}>
           <TextArea
+            placeholder="简单模式：速度快，回答问题相对简单；专家模式：能回答复杂问题，响应相对较慢。如果失败，可尝试切换专家模式重试"
             className={css.textarea}
             value={requirement}
             onChange={(e) => setRequirement(e.target.value)}
@@ -154,7 +157,8 @@ export default function ({ command, userId }) {
             }}
             style={{ boxShadow: "none", border: "none" }}
             // onEnter={generate}
-            onPressEnter={() => {
+            onPressEnter={(e) => {
+              e.preventDefault();
               // console.log('111')
               generate();
             }}
