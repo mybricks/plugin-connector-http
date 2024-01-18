@@ -18,6 +18,7 @@ export default function ReturnSchema({
   const parentEleRef = useRef<HTMLDivElement>();
   const curKeyRef = useRef('');
   const [popMenuStyle, setStyle] = useState<any>();
+  const [curMarkList, setCurMarkList] = useState(MarkList);
 
   const markAsReturn = useCallback((type: string) => {
     const targetSchemaTypes = MarkTypes[type] || [];
@@ -191,13 +192,29 @@ export default function ReturnSchema({
     const parentPos = parentEleRef.current.getBoundingClientRect();
     const currentPos = btnEle.getBoundingClientRect();
     curKeyRef.current = xpath;
+    let newMarkList = MarkList;
+    let keys = curKeyRef.current?.split('.') || [];
+    let originSchema = schema;
+
+    while (keys.length && originSchema) {
+      const key = keys.shift();
+      originSchema = originSchema.properties?.[key] || originSchema.items?.properties?.[key];
+
+      /** 数组中的值或对象类型的值不允许标记为标记组的标识 */
+      if (originSchema?.type === 'array' || (!keys.length && originSchema?.type === 'object')) {
+        newMarkList = MarkList.filter(m => m.key !== 'predicate');
+        break;
+      }
+    }
+
     let top = currentPos.y - parentPos.y + btnEle.offsetHeight;
     /** 每一项高度为 28 */
-    const popMenuHeight = 28 * MarkList.length + 10;
+    const popMenuHeight = 28 * newMarkList.length + 10;
 
     if (top + popMenuHeight > parentPos.height || currentPos.top + popMenuHeight > document.body.clientHeight) {
       top -= popMenuHeight + btnEle.offsetHeight;
     }
+    setCurMarkList(newMarkList);
     setStyle({ display: 'block', left: currentPos.x - parentPos.x, top });
     defaultPanelContext.addBlurAry('return-schema', () => setStyle(void 0));
   }, []);
@@ -241,7 +258,7 @@ export default function ReturnSchema({
     >
       <div>{proItem({ val: schema, xpath: '', root: true })}</div>
       <div className={styles.popMenu} style={popMenuStyle}>
-        {MarkList.map(mark => {
+        {curMarkList.map(mark => {
           return (
             <div
               className={styles.menuItem}

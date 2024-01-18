@@ -73,6 +73,10 @@ function getScript(serviceItem) {
       const excludeKeys = __excludeKeys__;
       const isTestMode = __isTestMode__;
       const globalErrorResultFn = __globalErrorResultFn__;
+      const markList = __markList__;
+      if (!markList.length) {
+        markList.push({ title: '默认', id: 'default', predicate: {}, outputKeys, excludeKeys });
+      }
 
       try {
         const url = path;
@@ -145,6 +149,8 @@ function getScript(serviceItem) {
         }
         options.method = options.method || method;
         let hasCallThrowError = false;
+        let curOutputKeys = [];
+        let curExcludeKeys = [];
         config
           .ajax(options)
           .catch(error => {
@@ -174,35 +180,53 @@ function getScript(serviceItem) {
             return response;
           })
           .then((response) => {
-            return __output__(response, Object.assign({}, options), { throwError: onError });
+            const result = __output__(response, Object.assign({}, options), { throwError: onError });
+            for (let i = 0; i < markList.length; i++) {
+              const { predicate = { key: '', value: undefined }, excludeKeys, outputKeys } = markList[i];
+
+              if (!predicate || !predicate.key || predicate.value === undefined) {
+                curOutputKeys = outputKeys;
+                curExcludeKeys = excludeKeys;
+                break;
+              }
+
+              let curResult = result, keys = predicate.key.split('.');
+              while (curResult && keys.length) {
+                curResult = curResult[keys.shift()];
+              }
+
+              if (!keys.length && (predicate.operator === '=' ? curResult === predicate.value : curResult !== predicate.value)) {
+                curOutputKeys = outputKeys;
+                curExcludeKeys = excludeKeys;
+                break;
+              }
+            }
+            return result;
           })
           .then((response) => {
             if (isTestMode) {
               then(response);
               return;
             }
-            if (excludeKeys.length === 0) {
+            if (curExcludeKeys.length === 0) {
               return response;
             }
-            excludeKeys.forEach((key) => {
-              const keys = key.split('.');
-              del(response, keys);
-            });
+            curExcludeKeys.forEach(key => del(response, key.split('.')));
             return response;
           })
           .then((response) => {
 	          let outputData: any = Array.isArray(response) ? [] : {};
-            if (outputKeys === void 0 || outputKeys.length === 0) {
+            if (curOutputKeys === void 0 || curOutputKeys.length === 0) {
               outputData = response;
             } else {
-              outputKeys.forEach((key) => {
+              curOutputKeys.forEach((key) => {
                 setData(response, key.split('.'), outputData)
               });
 							
 	            /** 当标记单项时，自动返回单项对应的值 */
-	            if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
+	            if (Array.isArray(curOutputKeys) && curOutputKeys.length && (curOutputKeys.length > 1 || !(curOutputKeys.length === 1 && curOutputKeys[0] === ''))) {
 		            try {
-			            let cascadeOutputKeys = outputKeys.map(key => key.split('.'));
+			            let cascadeOutputKeys = curOutputKeys.map(key => key.split('.'));
 			            while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
 				            outputData = Object.values(outputData)[0];
 				            cascadeOutputKeys.forEach(keys => keys.shift());
@@ -248,6 +272,7 @@ function getScript(serviceItem) {
           ? getDecodeString(serviceItem.globalErrorResultFn)
           : void 0
       )
+      .replace('__markList__', JSON.stringify(serviceItem.markList || []))
       .replace(
         '__hasGlobalResultFn__',
         JSON.stringify(!!serviceItem.globalResultFn)
@@ -255,7 +280,7 @@ function getScript(serviceItem) {
       .replace('__method__', serviceItem.method)
       .replace('__isTestMode__', JSON.stringify(serviceItem.isTestMode || false))
       .replace('__path__', serviceItem.path.trim())
-      .replace('__outputKeys__', JSON.stringify(serviceItem.outputKeys))
+      .replace('__outputKeys__', JSON.stringify(serviceItem.outputKeys || []))
       .replace('__excludeKeys__', JSON.stringify(serviceItem.excludeKeys || []))
       .replace(
         '__globalParamsFn__',
