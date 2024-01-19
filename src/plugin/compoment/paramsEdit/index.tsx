@@ -79,7 +79,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
       (depth === 0 &&
         parent.children?.[
           Math.min(
-            findLastIndex(parent.children, ({ type }) => type === 'string' || type === 'number' || type === 'any'),
+            findLastIndex(parent.children, ({ type }) => type === 'string' || type === 'number' || type === 'any' || type === 'boolean' ),
             parent.children.length - 1
           )
         ]?.name === item.name) ||
