@@ -159,6 +159,9 @@ export function params2data(params: any) {
   if (params.type === 'number') {
     return +params.defaultValue;
   }
+  if(params.type === 'boolean') {
+    return Boolean(params.defaultValue)
+  }
 
   if (params.children) {
     if (params.type === 'array') {
