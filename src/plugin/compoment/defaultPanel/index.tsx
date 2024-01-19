@@ -12,16 +12,9 @@ import { safeDecode } from '../../../utils';
 import { CDN } from '../../../constant';
 import { DefaultPanelContext } from './context';
 import { debounce } from '../../../utils/lodash';
-
+import { NameInput, AddressInput, MethodRadio, DocInput, DespInput, EditorWithFullScreen } from '../../../components/PanelItems'
 import parentCss from '../../../style-cssModules.less';
 import css from './index.less';
-
-const methodOpts = [
-	{ title: 'GET', value: 'GET' },
-	{ title: 'POST', value: 'POST' },
-	{ title: 'PUT', value: 'PUT' },
-	{ title: 'DELETE', value: 'DELETE' },
-];
 
 export default function DefaultPanel({
 	sidebarContext,
@@ -31,13 +24,12 @@ export default function DefaultPanel({
 	globalConfig,
 }: any) {
 	const blurMapRef = useRef<any>({});
-	const paramRef = useRef<HTMLDivElement>(null);
-	const resultRef = useRef<HTMLDivElement>(null);
-	const addressRef = useRef<any>();
 	const [paramsFn, setParamsFn] = useState<string>(sidebarContext.formModel.input);
 	const [outputFn, setOutputFn] = useState<string>(sidebarContext.formModel.output);
 	const [, forceUpdate] = useState(0);
 
+	/** 错误字段 */
+	const [errorFields, setErrorFields] = useState([])
 	const onClosePanel = useCallback(() => {
 		sidebarContext.type = '';
 		sidebarContext.isDebug = false;
@@ -46,34 +38,13 @@ export default function DefaultPanel({
 		setRender(sidebarContext);
 	}, []);
 
-	const onParamsEditorFullscreen = () => {
-		paramRef.current?.classList.add(parentCss['sidebar-panel-code-full']);
-		sidebarContext.fullscreenParamsEditor = true;
-		setRender(sidebarContext);
-	};
-
-	const onParamsEditorFullscreenExit = () => {
-		paramRef.current?.classList.remove(parentCss['sidebar-panel-code-full']);
-		sidebarContext.fullscreenParamsEditor = false;
-		setRender(sidebarContext);
-	};
-	const onResultEditorFullscreen = () => {
-		sidebarContext.fullscrenResultEditor = true;
-		resultRef.current?.classList.add(parentCss['sidebar-panel-code-full']);
-		setRender(sidebarContext);
-	};
-	const onResultEditorFullscreenExit = () => {
-		sidebarContext.fullscrenResultEditor = false;
-		resultRef.current?.classList.remove(parentCss['sidebar-panel-code-full']);
-		setRender(sidebarContext);
-	};
-
 	const validate = () => {
 		if (sidebarContext.formModel.path) {
-			addressRef.current?.classList.remove(css.error);
+			setErrorFields([])
 			return true;
 		}
-		addressRef.current?.classList.add(css.error);
+		let arr = ['path']
+		setErrorFields(arr)
 		return false;
 	};
 
@@ -96,13 +67,17 @@ export default function DefaultPanel({
 
 	useEffect(() => {
 		if (sidebarContext.formModel.path) {
-			addressRef.current?.classList.remove(css.error);
+			setErrorFields([])
 		}
 	}, [sidebarContext.formModel.path]);
 	const contextValue = useMemo(() => {
-		return { addBlurAry: (key, blur) =>( blurMapRef.current = { ...blurMapRef.current, [key]: blur }) };
+		return { addBlurAry: (key, blur) => (blurMapRef.current = { ...blurMapRef.current, [key]: blur }) };
 	}, []);
-  
+
+	const addressError = useMemo(() => {
+		return errorFields.length && errorFields.includes('path') ? '请填写完整的地址': ''
+	}, [errorFields])
+
 	return ReactDOM.createPortal(
 		(
 			<div
@@ -118,11 +93,11 @@ export default function DefaultPanel({
 							<div className={parentCss['actions']}>
 								{!sidebarContext.isEidt && (
 									<Button type='primary' size='small' onClick={onSaveClick}>
-                    保 存
+										保 存
 									</Button>
 								)}
 								<Button size='small' onClick={() => onClosePanel()}>
-                  关 闭
+									关 闭
 								</Button>
 							</div>
 						</div>
@@ -131,188 +106,78 @@ export default function DefaultPanel({
 						<>
 							<div className={css.ct}>
 								<Collapse header="基本信息" defaultFold={false}>
-									<div className={css.item}>
-										<label>名称</label>
-										<div
-											className={`${css.editor} ${css.textEdt} ${sidebarContext.titleErr ? css.error : ''}`}
-											data-err={sidebarContext.titleErr}
-										>
-											<input
-												type="text"
-												placeholder="服务接口的标题"
-												defaultValue={sidebarContext.formModel.title}
-												key={sidebarContext.formModel.title}
-												/** 防止 Collapse 面板折叠后 UI 展示数据丢失 */
-												onBlur={() => forceUpdate(Math.random())}
-												onChange={(e) => {
-													sidebarContext.titleErr = void 0;
-													sidebarContext.formModel.title = e.target.value;
-												}}
-											/>
-										</div>
-									</div>
-									<div className={css.item}>
-										<label>
-											<i>*</i>地址
-										</label>
-										<div
-											ref={addressRef}
-											className={`${css.editor} ${css.textEdt}`}
-											data-err="请填写完整的地址"
-										>
-											<textarea
-												defaultValue={sidebarContext.formModel.path}
-												key={sidebarContext.formModel.path}
-												placeholder="接口的请求路径"
-												/** 防止 Collapse 面板折叠后 UI 展示数据丢失 */
-												onBlur={() => forceUpdate(Math.random())}
-												onChange={(e) => {
-													sidebarContext.formModel.path = e.target.value;
-													if (sidebarContext.formModel.path) {
-														addressRef.current?.classList.remove(css.error);
-													}
-												}}
-											/>
-										</div>
-									</div>
-									<div className={css.item}>
-										<label>
-											<i>*</i>请求方法
-										</label>
-										<div className={css.editor}>
-											<RadioButtons
-												binding={[sidebarContext.formModel, 'method']}
-												options={methodOpts}
-											/>
-										</div>
-									</div>
+									<NameInput
+										/** 防止 Collapse 面板折叠后 UI 展示数据丢失 */
+										onBlur={() => forceUpdate(Math.random())}
+										key={sidebarContext.formModel.title + 'name'}
+										defaultValue={sidebarContext.formModel.title}
+										onChange={(e) => {
+											sidebarContext.titleErr = void 0;
+											sidebarContext.formModel.title = e.target.value;
+										}}
+									/>
+									<AddressInput
+										defaultValue={sidebarContext.formModel.path}
+										key={sidebarContext.formModel.path + 'path'}
+										/** 防止 Collapse 面板折叠后 UI 展示数据丢失 */
+										onBlur={() => forceUpdate(Math.random())}
+										onChange={(e) => {
+											sidebarContext.formModel.path = e.target.value;
+										}}
+										validateError={addressError}
+									/>
+									<MethodRadio
+										defaultValue={sidebarContext.formModel.method}
+										onChange={(value) => {
+											sidebarContext.formModel.method = value;
+										}}
+									/>
 								</Collapse>
 							</div>
 							<div className={css.ct}>
 								<Collapse header='当开始请求'>
-									{sidebarContext.fullscreenParamsEditor ? (
-										<div
-											onClick={onParamsEditorFullscreenExit}
-											className={parentCss['sidebar-panel-code-icon-full']}
-										>
-											{fullScreenExit}
-										</div>
-									) : (
-										<div
-											onClick={onParamsEditorFullscreen}
-											className={parentCss['sidebar-panel-code-icon']}
-										>
-											{fullScreen}
-										</div>
-									)}
-									<Editor
-										onMounted={(editor, monaco, container: HTMLDivElement) => {
-											paramRef.current = container;
-											container.onclick = (e) => {
-												if (e.target === container) {
-													onParamsEditorFullscreenExit();
-												}
-											};
-										}}
+									<EditorWithFullScreen
 										key={sidebarContext.formModel.id}
-										env={{
-											isNode: false,
-											isElectronRenderer: false,
-										}}
 										CDN={CDN}
 										onChange={debounce((code: string) => {
 											sidebarContext.formModel.input = encodeURIComponent(code);
 											setParamsFn(code);
 										}, 200)}
 										value={safeDecode(paramsFn)}
-										width='100%'
-										height='100%'
-										minHeight={300}
-										language='javascript'
-										theme='light'
-										lineNumbers='on'
-										/** @ts-ignore */
-										scrollbar={{
-											horizontalScrollbarSize: 2,
-											verticalScrollbarSize: 2,
-										}}
-										minimap={{ enabled: false }}
 									/>
 								</Collapse>
 							</div>
 							<div className={css.ct}>
 								<Collapse header='当返回响应'>
-									{sidebarContext.fullscrenResultEditor ? (
-										<div
-											onClick={onResultEditorFullscreenExit}
-											className={parentCss['sidebar-panel-code-icon-full']}
-										>
-											{fullScreen}
-										</div>
-									) : (
-										<div
-											onClick={onResultEditorFullscreen}
-											className={parentCss['sidebar-panel-code-icon']}
-										>
-											{fullScreen}
-										</div>
-									)}
-									<Editor
-										onMounted={(editor, monaco, container: HTMLDivElement) => {
-											resultRef.current = container;
-											container.onclick = (e) => {
-												if (e.target === container) {
-													onResultEditorFullscreenExit();
-												}
-											};
-										}}
+									<EditorWithFullScreen
 										key={sidebarContext.formModel.id}
-										env={{
-											isNode: false,
-											isElectronRenderer: false,
-										}}
 										CDN={CDN}
 										onChange={debounce((code: string) => {
 											sidebarContext.formModel.output = encodeURIComponent(code);
 											setOutputFn(encodeURIComponent(code));
 										}, 200)}
 										value={safeDecode(outputFn)}
-										width='100%'
-										height='100%'
-										minHeight={300}
-										language='javascript'
-										theme='light'
-										lineNumbers='on'
-										/** @ts-ignore */
-										scrollbar={{
-											horizontalScrollbarSize: 2,
-											verticalScrollbarSize: 2,
-										}}
-										minimap={{ enabled: false }}
 									/>
 								</Collapse>
 							</div>
 							<div className={css.ct}>
 								<Collapse header='其他信息'>
-									<FormItem label='接口描述'>
-										<Input
-											defaultValue={sidebarContext.formModel.desc}
-											onBlur={(e) => {
-												sidebarContext.formModel.desc = e.target.value;
-												// setRender(sidebarContext);
-											}}
-										/>
-									</FormItem>
-									<FormItem label='文档链接'>
-										<TextArea
-											style={{ height: 80 }}
-											onBlur={(e) => {
-												sidebarContext.formModel.doc = e.target.value;
-												setRender(sidebarContext);
-											}}
-											defaultValue={sidebarContext.formModel.doc}
-										/>
-									</FormItem>
+									<DespInput
+										defaultValue={sidebarContext.formModel.desc}
+										onBlur={(e) => {
+											sidebarContext.formModel.desc = e.target.value;
+											// setRender(sidebarContext);
+										}}
+										key={sidebarContext.formModel.desc + 'desc'}
+									/>
+									<DocInput
+										onBlur={(e) => {
+											sidebarContext.formModel.doc = e.target.value;
+											setRender(sidebarContext);
+										}}
+										key={sidebarContext.formModel.doc + 'doc'}
+										defaultValue={sidebarContext.formModel.doc}
+									/>
 								</Collapse>
 							</div>
 						</>

@@ -41,4 +41,15 @@
       min-height: 50px;
     }
   }
+  .error {
+    border: 1px solid #FF0000 !important;
+    padding: 0;
+    margin-bottom: 4px;
+    &::after {
+      content: attr(data-err);
+      color: red;
+      position: absolute;
+      bottom: -17px;
+    }
+  }
 }

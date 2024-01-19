@@ -1,13 +1,12 @@
 import css from './index.less';
 import React, { useEffect, useState } from 'react';
 
-export default function RadioButtons({ options, binding }) {
-  const [from, key] = binding;
-  const [select, setSelect] = useState(from[key]);
+export default function RadioButtons({ options, defaultValue, onChange  }) {
+  const [select, setSelect] = useState(defaultValue);
   
   useEffect(() => {
-    setSelect(from[key]);
-  }, [from[key]]);
+    setSelect(defaultValue);
+  }, [defaultValue]);
 
   return (
     <div className={css.edt}>
@@ -17,7 +16,7 @@ export default function RadioButtons({ options, binding }) {
             key={opt.value}
             className={`${css.opt} ${opt.value === select ? css.selected : ''}`}
             onClick={() => {
-              from[key] = opt.value;
+              onChange?.(opt.value)
               setSelect(opt.value);
             }}
           >

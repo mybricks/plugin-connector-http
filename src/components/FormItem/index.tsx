@@ -1,11 +1,11 @@
 import React from 'react';
 import css from './index.less';
 
-export default function Input({
+export default function FormItem({
   label: title,
   require,
 	contentStyle,
-  children
+  children,
 }: any) {
   return (
     <div className={css.item}>

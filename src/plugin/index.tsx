@@ -17,6 +17,7 @@ import GlobalPanel from './compoment/globalPanel';
 import Switch from '../components/Switch';
 import {copyText} from '../utils/copy';
 
+
 interface Iprops {
   connector: Iconnector;
 	serviceListUrl?: string;
@@ -27,6 +28,7 @@ interface Iprops {
     config: { paramsFn: string; resultFn?: string; globalMock?: boolean };
   };
   initialValue: any;
+  // panelItemContribution
 }
 
 interface Iconnector {
