@@ -1,13 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import Editor from '@mybricks/code-editor';
 import DebugForm from '../debug';
-import { fullScreen, fullScreenExit } from '../../../icon';
-import RadioButtons from './RadioBtn';
 import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
-import FormItem from '../../../components/FormItem';
-import Input, { TextArea } from '../../../components/Input';
 import { safeDecode } from '../../../utils';
 import { CDN } from '../../../constant';
 import { DefaultPanelContext } from './context';
@@ -75,7 +70,7 @@ export default function DefaultPanel({
 	}, []);
 
 	const addressError = useMemo(() => {
-		return errorFields.length && errorFields.includes('path') ? '请填写完整的地址': ''
+		return errorFields.length && errorFields.includes('path') ? '请填写完整的地址' : ''
 	}, [errorFields])
 
 	return ReactDOM.createPortal(

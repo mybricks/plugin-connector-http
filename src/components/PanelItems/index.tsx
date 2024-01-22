@@ -37,7 +37,7 @@ export const NameInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange,
   return (
     <FormItem label='名称' require={require} >
       <Input
-        key={'interfaceName'}
+        key='interfaceName'
         defaultValue={defaultValue}
         onBlur={onBlur}
         onChange={onChange}
@@ -57,7 +57,7 @@ export const AddressInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChan
       <TextArea
         defaultValue={defaultValue}
         onBlur={onBlur}
-        key={'address'}
+        key='address'
         onChange={e => onChange(e)}
         validateError={validateError}
         placeholder='服务接口的地址'
@@ -159,7 +159,7 @@ export const EditorWithFullScreen = ({ CDN, value, key, onChange }) => {
 /**
  * 接口描述
  */
-export const DespInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, key, name, require = false, validateError  }) => {
+export const DespInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, key, name, require = false, validateError }) => {
   return (
     <FormItem label='接口描述' require={require}>
       <Input
