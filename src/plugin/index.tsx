@@ -21,7 +21,7 @@ window._AI_HISTORY_LIST_ = [
   // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
 ];
 
-window.AI_MODE = "simple";
+window.AI_MODE = "multi";
 
 export default function ({ command, userId }) {
   const [requirement, setRequirement] = useState("");
