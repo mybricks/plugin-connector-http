@@ -6,19 +6,20 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as Icons from '../../../icon';
 import { uuid } from '../../../utils';
 import { schema2params, params2schema } from './utils';
-import { findLastIndex } from '../../../utils/lodash';
+import { cloneDeep, findLastIndex } from '../../../utils/lodash';
 
-import css from './index.less';
+import styles from './index.less';
 
-export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
+const ROOT_PARAMS = { name: 'root', type: 'root', children: [] };
+export default function OutputSchemaEdit({ schema, value, onChange, ctx }: any) {
   const valueRef = useRef(value);
-  const [params, setParams] = useState({ children: [] });
+  const [params, setParams] = useState(cloneDeep(ROOT_PARAMS));
   valueRef.current = params;
   const updateValue = useCallback(() => {
     setParams({ ...valueRef.current });
     const schema = params2schema(valueRef.current);
     onChange(schema);
-  }, []);
+  }, [schema, onChange]);
 
   const resetValue = useCallback((item) => {
     ['minLength', 'maxLength', 'minimum', 'maximum'].forEach((key) => {
@@ -43,7 +44,7 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
   }, []);
 
   useEffect(() => {
-    setParams(schema ? schema2params(schema) : void 0);
+    setParams(schema ? schema2params(schema) : cloneDeep(ROOT_PARAMS));
   }, [schema]);
 
   const removeItem = (item, parent) => {
@@ -87,7 +88,7 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
     const { type } = item;
     let jsx;
     if (type === 'root') {
-      return <div className={css.list}>{processAry(item, depth + 1)}</div>;
+      return <div className={styles.list}>{processAry(item, depth + 1)}</div>;
     }
     if (item.children) {
       jsx = processAry(item, depth + 1);
@@ -109,8 +110,8 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
 
     const removeAble = !(isArray && item.name === 'items');
     return (
-      <div key={item.id} className={css.ct}>
-        <div className={css.item}>
+      <div key={item.id} className={styles.ct}>
+        <div className={styles.item}>
           <input
             style={{ width: 331 - depth * 20 }}
             type='text'
@@ -121,7 +122,7 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
             onChange={(e) => set(item, 'name', e.target.value)}
           />
           <select
-            className={css.type}
+            className={styles.type}
             value={item.type}
             onChange={(e) => set(item, 'type', e.target.value)}
           >
@@ -131,10 +132,10 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
             <option label={'对象'} value={'object'} />
             <option label={'列表'} value={'array'} />
           </select>
-          <div className={`${css.operate} ${css.flex}`}>
+          <div className={`${styles.operate} ${styles.flex}`}>
             {removeAble ? (
               <span
-                className={`${css.iconRemove}`}
+                className={`${styles.iconRemove}`}
                 onClick={() => removeItem(item, parent)}
               >
                 {Icons.remove}
@@ -142,7 +143,7 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
             ) : null}
             {addAble ? (
               <span
-                className={css.iconAdder}
+                className={styles.iconAdder}
                 onClick={() => addItem(item, parent)}
               >
                 +
@@ -153,40 +154,29 @@ export default function ParamsEdit({ schema, value, onChange, ctx }: any) {
         {jsx}
       </div>
     );
-  }, []);
+  }, [onChange]);
 
   return (
-    <>
-      {schema ? (
-        <div>
-          {params?.children?.length === 0 ? (
-            <div className={css.adder}>
-              <span
-                style={{ cursor: 'pointer' }}
-                onClick={() => addItem(valueRef.current, valueRef.current)}
-              >
-                +
-              </span>
-            </div>
-          ) : (
-            <>
-              <div className={css.header}>
-                <p className={css.fieldName}>字段名</p>
-                <p className={css.type}>类型</p>
-                {/* <p className={css.defaultValue}>默认值</p>
-              <p className={css.range}>自定义范围</p> */}
-                <p className={css.operate}>操作</p>
-              </div>
-              <div className={css.content}>
-                {processItem(valueRef.current, valueRef.current)}
-              </div>
-            </>
-          )}
+    <div>
+      {params?.children?.length === 0 ? (
+        <div className={styles.adder}>
+          <span onClick={() => addItem(valueRef.current, valueRef.current)}>
+            +
+          </span>
         </div>
       ) : (
-        <div className={css.empty}>类型无效</div>
+        <>
+          <div className={styles.header}>
+            <p className={styles.fieldName}>字段名</p>
+            <p className={styles.type}>类型</p>
+            <p className={styles.operate}>操作</p>
+          </div>
+          <div className={styles.content}>
+            {processItem(valueRef.current, valueRef.current)}
+          </div>
+        </>
       )}
-    </>
+    </div>
   );
 }
 

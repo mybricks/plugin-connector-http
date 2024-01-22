@@ -282,7 +282,7 @@ export default function ReturnSchema({
       </div>
     </div>
   ) : (
-    <div className={styles.empty}>类型无效</div>
+    <div className={styles.empty}>类型无效，请点击「连接测试」获取类型或手动编辑类型</div>
   );
 }
 

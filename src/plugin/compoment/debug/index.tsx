@@ -16,7 +16,7 @@ import JSONView from '@mybricks/code-editor';
 import ReturnSchema from '../returnSchema';
 import ParamsEdit from '../paramsEdit';
 import Params from '../params';
-import OutputSchemaMock from '../outputSchemaMock';
+import OutputSchemaEdit from '../outputSchemaEdit';
 import FormItem from '../../../components/FormItem';
 import { cloneDeep } from '../../../utils/lodash';
 import Button from '../../../components/Button';
@@ -387,7 +387,7 @@ export default function Debug({ sidebarContext, validate }: any) {
     }
   }, [markList]);
 
-  const onMockSchemaChange = useCallback((schema) => sidebarContext.formModel.resultSchema = schema, []);
+  const onMockSchemaChange = useCallback((schema) => sidebarContext.formModel.resultSchema = schema, [sidebarContext.formModel]);
   const editSchema = useCallback(() => setEdit(true), []);
   const saveSchema = useCallback(() => setEdit(false), []);
   const openMarkAdder = useCallback(() => setShowMarkAdder(true), []);
@@ -585,15 +585,14 @@ export default function Debug({ sidebarContext, validate }: any) {
 		    : (
 					edit ? (
 				    <FormItem label='返回数据'>
-					    {sidebarContext.formModel.resultSchema ? (
-						    <div className={styles.buttonGroup}>
-							    <div></div>
-							    <Button style={{margin: 0, marginBottom: 6}} onClick={saveSchema}>
-								    保存
-							    </Button>
-						    </div>
-					    ) : null}
-					    <OutputSchemaMock
+					    <div className={styles.buttonGroup}>
+						    <div></div>
+						    <Button style={{margin: 0, marginBottom: 6}} onClick={saveSchema}>
+							    保存
+						    </Button>
+					    </div>
+					    <OutputSchemaEdit
+						    key={sidebarContext.formModel.id}
 						    schema={sidebarContext.formModel.resultSchema}
 						    ctx={sidebarContext}
 						    onChange={onMockSchemaChange}
@@ -621,63 +620,61 @@ export default function Debug({ sidebarContext, validate }: any) {
 							    </>
 						    ) : (
 							    <>
-								    {sidebarContext.formModel.resultSchema ? (
-									    <div className={styles.buttonGroup}>
-										    <div className={styles.categoryContainer}>
-											    <div className={styles.buttons}>
-												    {markList.map((option) => {
-													    return (
-														    <div
-															    key={option.id}
-															    className={`${styles.option} ${option.id === markGroupId ? styles.selected : ''}`}
-															    onClick={() => onSelectMarkGroup(option.id)}
-														    >
-															    {option.title}
-															    {option.id !== 'default' ? (
-																    <div
-																	    className={styles.optionCancelIcon}
-																	    onClick={event => {
-																				event.stopPropagation();
-																	      onCancelMark(option.id);
-																      }}
-																    >
-																	    ✕
-																    </div>
-															    ) : null}
-														    </div>
-													    );
-												    })}
-											    </div>
-											    <Tooltip content="添加数据标记组">
-												    {showMarkAdder ? (
-													    <div className={styles.iconRootClose} onClick={closeMarkAdder}>
-														    ✕
+								    <div className={styles.buttonGroup}>
+									    <div className={styles.categoryContainer}>
+										    <div className={styles.buttons}>
+											    {markList.map((option) => {
+												    return (
+													    <div
+														    key={option.id}
+														    className={`${styles.option} ${option.id === markGroupId ? styles.selected : ''}`}
+														    onClick={() => onSelectMarkGroup(option.id)}
+													    >
+														    {option.title}
+														    {option.id !== 'default' ? (
+															    <div
+																    className={styles.optionCancelIcon}
+																    onClick={event => {
+																	    event.stopPropagation();
+																	    onCancelMark(option.id);
+																    }}
+															    >
+																    ✕
+															    </div>
+														    ) : null}
 													    </div>
-												    ) : (
-													    <div className={styles.iconRootAdder} onClick={openMarkAdder}>
-														    +
-													    </div>
-												    )}
-											    </Tooltip>
-											    {showMarkAdder ? (
-														<div className={styles.markAdder}>
-															<input className={styles.markInput} onKeyUp={onMarkInputPressEnter} onChange={onChangeMarkInput} />
-															<button className={styles.button} onClick={addMark}>确定</button>
-														</div>
-											    ) : null}
+												    );
+											    })}
 										    </div>
-										    <div className={styles.rightBox}>
-											    <Tooltip content="编辑返回数据类型">
-												    <Button style={{ boxSizing: 'border-box' }} onClick={editSchema}>
-													    编辑
-												    </Button>
-											    </Tooltip>
-											    <div className={`${styles.codeIcon} ${styles.responseCodeIcon} ${showResponseCode ? styles.focus : ''}`} onClick={toggleResponseCodeShow}>
-												    {CodeIcon}
+										    <Tooltip content="添加数据标记组">
+											    {showMarkAdder ? (
+												    <div className={styles.iconRootClose} onClick={closeMarkAdder}>
+													    ✕
+												    </div>
+											    ) : (
+												    <div className={styles.iconRootAdder} onClick={openMarkAdder}>
+													    +
+												    </div>
+											    )}
+										    </Tooltip>
+										    {showMarkAdder ? (
+											    <div className={styles.markAdder}>
+												    <input className={styles.markInput} onKeyUp={onMarkInputPressEnter} onChange={onChangeMarkInput} />
+												    <button className={styles.button} onClick={addMark}>确定</button>
 											    </div>
+										    ) : null}
+									    </div>
+									    <div className={styles.rightBox}>
+										    <Tooltip content="编辑返回数据类型">
+											    <Button style={{ boxSizing: 'border-box' }} onClick={editSchema}>
+												    编辑
+											    </Button>
+										    </Tooltip>
+										    <div className={`${styles.codeIcon} ${styles.responseCodeIcon} ${showResponseCode ? styles.focus : ''}`} onClick={toggleResponseCodeShow}>
+											    {CodeIcon}
 										    </div>
 									    </div>
-								    ) : null}
+								    </div>
 								    {curMark ? (
 									    <ReturnSchema
 										    key={curMark.id}
