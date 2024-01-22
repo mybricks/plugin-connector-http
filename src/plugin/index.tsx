@@ -21,6 +21,8 @@ window._AI_HISTORY_LIST_ = [
   // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
 ];
 
+window.AI_MODE = "simple";
+
 export default function ({ command, userId }) {
   const [requirement, setRequirement] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,7 +31,7 @@ export default function ({ command, userId }) {
   const [isMultiMode, setIsMultiMode] = useState(false);
   const [isTextAreaFocused, setIsTextAreaFocused] = useState(null);
   const [timeCost, setTimeCost] = useState(0);
-  const [mode, setMode] = useState("multi");
+  const [mode, setMode] = useState(window.AI_MODE);
   const [historyList, setHistoryList] = useState(window._AI_HISTORY_LIST_);
 
   const generate = useCallback(() => {
@@ -94,7 +96,8 @@ export default function ({ command, userId }) {
         <p>添加一个下拉菜单，弹出位置是右下方，提示内容设置为请选择，宽度设置为120px，并关闭子选项</p>
         <p>添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计</p>
         <h2 style={{fontSize: 16}}>专家模式回答的较好的问题示例</h2>
-        <p>添加三个按钮</p>
+        <p>添加三个按钮，分别是新增、编辑、删除，样式分别是主按钮风格、次按钮风格、危险警告</p>
+        <p>添加一个学生查询表单，包含学号文本框、姓名文本框、兴趣爱好下拉框、性别选择</p>
         <p>
           添加一个折叠面板，标题为学生信息，折叠面板里添加一个学生信息表格，表格展示姓名、年龄、入学年份等信息。
         </p>
@@ -157,6 +160,7 @@ export default function ({ command, userId }) {
               size="small"
               onChange={(value) => {
                 setMode(value);
+                window.AI_MODE = value;
               }}
               options={[
                 { value: "simple", label: "简单模式" },
