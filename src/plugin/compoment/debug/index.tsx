@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	extractParamsAndSchemaByJSON,
 	extractParamsBySchema,
@@ -89,20 +89,25 @@ export default function Debug({ sidebarContext, validate }: any) {
 		sidebarContext.formModel.markList = markList;
 		setMarkList(sidebarContext.formModel.markList);
 	}, []);
-	useEffect(() => {
-		if (!sidebarContext.formModel.markList?.length) {
+	const initMarkList = useCallback((context) => {
+		if (!context.formModel.markList?.length) {
 			onChangeMarkList([{
 				title: '默认',
 				id: 'default',
 				predicate: {},
-				outputKeys: sidebarContext.formModel.outputKeys || [],
-				excludeKeys: sidebarContext.formModel.excludeKeys || [],
-				outputSchema: sidebarContext.formModel.outputSchema || {},
+				outputKeys: context.formModel.outputKeys || [],
+				excludeKeys: context.formModel.excludeKeys || [],
+				outputSchema: context.formModel.outputSchema || {},
 			}]);
-			delete sidebarContext.formModel.outputKeys;
-			delete sidebarContext.formModel.excludeKeys;
-			delete sidebarContext.formModel.outputSchema;
+			delete context.formModel.outputKeys;
+			delete context.formModel.excludeKeys;
+			delete context.formModel.outputSchema;
+		} else {
+			setMarkList(context.formModel.markList || []);
 		}
+	}, []);
+	useEffect(() => {
+		initMarkList(sidebarContext);
 	}, []);
 
 	const onConfirmTip = () => {
@@ -255,7 +260,7 @@ export default function Debug({ sidebarContext, validate }: any) {
       sidebarContext.formModel.params = params;
       setParams(params);
     }
-  }, []);
+  }, [sidebarContext.formModel]);
 
   const onMarkChange = useCallback((mark) => {
 		let { outputKeys = [], excludeKeys = [] } = mark;
@@ -517,6 +522,13 @@ export default function Debug({ sidebarContext, validate }: any) {
 		setShowResponseCode(!showResponseCode);
 	}, [showResponseCode]);
 
+	/** 当切换接口，params 变化 */
+	useEffect(() => {
+		setParams(sidebarContext.formModel.params);
+		setError('');
+		initMarkList(sidebarContext);
+	}, [sidebarContext.formModel.id]);
+
 	return (
     <>
 			<div className={styles.paramEditContainer}>
@@ -532,7 +544,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 						<div>支持识别 JSON、JSON Schema 等描述协议</div>
 					</FormItem>
 				) : (
-					<>
+					<Fragment key={sidebarContext.formModel.id}>
 						<FormItem label='请求参数'>
 							<ParamsEdit
 								value={sidebarContext.formModel.params}
@@ -552,7 +564,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 								params={params}
 							/>
 						</FormItem>
-					</>
+					</Fragment>
 				)}
 
 				<div className={`${styles.codeIcon} ${showParamsCode ? styles.focus : ''}`} onClick={toggleParamsCodeShow}>
