@@ -58,12 +58,13 @@ const CodeIcon = (
 	</svg>
 );
 export default function Debug({ sidebarContext, validate }: any) {
-  const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
 	const [showParamsCode, setShowParamsCode] = useState(false);
 	const [showResponseCode, setShowResponseCode] = useState(false);
   const allDataRef = useRef<any>();
   const willUpdateResultSchemaRef = useRef<any>();
+	/** 编辑 schema 时 */
+  const willUpdateResultSchemaForEditRef = useRef<any>();
   const codeTextRef = useRef<HTMLTextAreaElement>(null);
   const responseCodeTextRef = useRef<HTMLTextAreaElement>(null);
   const [errorInfo, setError] = useState('');
@@ -81,9 +82,6 @@ export default function Debug({ sidebarContext, validate }: any) {
     name: 'root',
     children: [],
   };
-  useEffect(() => {
-    setSchema(sidebarContext.formModel.resultSchema);
-  }, [sidebarContext.formModel.resultSchema]);
 
 	const onChangeMarkList = useCallback((markList) => {
 		sidebarContext.formModel.markList = markList;
@@ -98,10 +96,12 @@ export default function Debug({ sidebarContext, validate }: any) {
 				outputKeys: context.formModel.outputKeys || [],
 				excludeKeys: context.formModel.excludeKeys || [],
 				outputSchema: context.formModel.outputSchema || {},
+				resultSchema: context.formModel.resultSchema,
 			}]);
 			delete context.formModel.outputKeys;
 			delete context.formModel.excludeKeys;
 			delete context.formModel.outputSchema;
+			delete context.formModel.resultSchema;
 		} else {
 			setMarkList(context.formModel.markList || []);
 		}
@@ -112,80 +112,80 @@ export default function Debug({ sidebarContext, validate }: any) {
 
 	const onConfirmTip = () => {
 		try {
-			sidebarContext.formModel.resultSchema = willUpdateResultSchemaRef.current;
-			formatSchema(sidebarContext.formModel.resultSchema);
+			formatSchema(willUpdateResultSchemaRef.current);
 			const inputSchema = paramsToSchema(sidebarContext.formModel.params || {});
 			formatSchema(inputSchema);
 			sidebarContext.formModel.inputSchema = inputSchema;
-			setSchema({ ...sidebarContext.formModel.resultSchema });
 
 			const newMarkList = JSON.parse(JSON.stringify(markList));
-			newMarkList.forEach(mark => {
-				let { outputKeys = [], excludeKeys = [] } = mark;
 
-				outputKeys = outputKeys
-					.filter(Boolean)
-					.map(key => key.split('.'))
-					.filter(keys => {
-						let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
+			const mark = newMarkList.find(m => m.id === markGroupId);
 
-						for (let idx = 0; idx < keys.length; idx++) {
-							const key = keys[idx];
+			if (!mark) {
+				throw Error('当前标记组不存在');
+			}
+			let { outputKeys = [], excludeKeys = [] } = mark;
 
-							if (schema && schema[key]) {
-								schema = schema[key].properties || schema[key].items?.properties;
-							} else {
-								return false;
-							}
+			outputKeys = outputKeys
+				.filter(Boolean)
+				.map(key => key.split('.'))
+				.filter(keys => {
+					let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
+
+					for (let idx = 0; idx < keys.length; idx++) {
+						const key = keys[idx];
+
+						if (schema && schema[key]) {
+							schema = schema[key].properties || schema[key].items?.properties;
+						} else {
+							return false;
 						}
+					}
 
-						return true;
-					})
-					.map(keys => keys.join('.'));
-				excludeKeys = excludeKeys
-					.filter(Boolean)
-					.map(key => key.split('.'))
-					.filter(keys => {
-						let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
+					return true;
+				})
+				.map(keys => keys.join('.'));
+			excludeKeys = excludeKeys
+				.filter(Boolean)
+				.map(key => key.split('.'))
+				.filter(keys => {
+					let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
 
-						for (let idx = 0; idx < keys.length; idx++) {
-							const key = keys[idx];
+					for (let idx = 0; idx < keys.length; idx++) {
+						const key = keys[idx];
 
-							if (schema && schema[key]) {
-								schema = schema[key].properties || schema[key].items?.properties;
-							} else {
-								return false;
-							}
+						if (schema && schema[key]) {
+							schema = schema[key].properties || schema[key].items?.properties;
+						} else {
+							return false;
 						}
+					}
 
-						return true;
-					})
-					.map(keys => keys.join('.'));
+					return true;
+				})
+				.map(keys => keys.join('.'));
 
-				let outputData = getDataByExcludeKeys(getDataByOutputKeys(allDataRef.current, outputKeys), excludeKeys);
-				let outputSchema = jsonToSchema(outputData);
+			let outputData = getDataByExcludeKeys(getDataByOutputKeys(allDataRef.current, outputKeys), excludeKeys);
+			let outputSchema = jsonToSchema(outputData);
 
-				/** 当标记单项时，自动返回单项对应的值 */
-				if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
-					try {
-						let cascadeOutputKeys = [...outputKeys].map(key => key.split('.'));
-						while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
-							outputData = Object.values(outputData)[0];
-							outputSchema = Object.values(outputSchema.properties)[0];
-							cascadeOutputKeys.forEach(keys => keys.shift());
-						}
-					} catch {}
-				}
-				formatSchema(outputSchema);
+			/** 当标记单项时，自动返回单项对应的值 */
+			if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
+				try {
+					let cascadeOutputKeys = [...outputKeys].map(key => key.split('.'));
+					while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
+						outputData = Object.values(outputData)[0];
+						outputSchema = Object.values(outputSchema.properties)[0];
+						cascadeOutputKeys.forEach(keys => keys.shift());
+					}
+				} catch {}
+			}
+			formatSchema(outputSchema);
+			setData(outputData);
 
-				if (mark.id === markGroupId) {
-					setData(outputData);
-				}
-
-				mark.outputKeys = outputKeys;
-				mark.excludeKeys = excludeKeys;
-				mark.outputSchema = outputSchema;
-			});
+			mark.outputKeys = outputKeys;
+			mark.excludeKeys = excludeKeys;
+			mark.outputSchema = outputSchema;
+			mark.resultSchema = willUpdateResultSchemaRef.current;
 
 			onChangeMarkList(newMarkList);
 		} catch (error: any) {
@@ -237,7 +237,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 	    const resultSchema = jsonToSchema(allDataRef.current);
 	    willUpdateResultSchemaRef.current = resultSchema || {};
 
-			if (sidebarContext.formModel.resultSchema && JSON.stringify(sidebarContext.formModel.resultSchema) !== JSON.stringify(resultSchema)) {
+			if (curMark.resultSchema && JSON.stringify(curMark.resultSchema) !== JSON.stringify(willUpdateResultSchemaRef.current)) {
 				setShowTip(true);
 			} else {
 				onConfirmTip();
@@ -263,16 +263,15 @@ export default function Debug({ sidebarContext, validate }: any) {
   }, [sidebarContext.formModel]);
 
   const onMarkChange = useCallback((mark) => {
-		let { outputKeys = [], excludeKeys = [] } = mark;
-    const { resultSchema } = sidebarContext.formModel;
-		
+		let { outputKeys = [], excludeKeys = [], resultSchema } = mark;
+
 	  try {
 		  /** 当标记单项时，自动返回单项对应的值 */
 		  let autoExtra = false;
 			
 		  let outputSchema: any = {};
 		  if (outputKeys.length === 0) {
-			  outputSchema = sidebarContext.formModel.resultSchema;
+			  outputSchema = resultSchema;
 		  } else if (outputKeys.length === 1 && outputKeys[0] === '') {
 			  outputSchema = { type: 'any' };
 		  } else {
@@ -387,36 +386,30 @@ export default function Debug({ sidebarContext, validate }: any) {
     }
   }, [markList]);
 
-  const onMockSchemaChange = useCallback((schema) => sidebarContext.formModel.resultSchema = schema, [sidebarContext.formModel]);
-  const editSchema = useCallback(() => setEdit(true), []);
-  const saveSchema = useCallback(() => setEdit(false), []);
+  const onMockSchemaChange = useCallback((schema) => willUpdateResultSchemaForEditRef.current = schema, []);
+  const editResultSchema = useCallback(() => {
+		willUpdateResultSchemaForEditRef.current = curMark.resultSchema;
+	  setEdit(true);
+  }, [curMark]);
+  const saveResultSchema = useCallback(() => {
+	  const mark = markList.find(m => m.id === markGroupId);
+
+	  if (mark) {
+		  mark.resultSchema = willUpdateResultSchemaForEditRef.current;
+		  onChangeMarkList(cloneDeep(markList));
+	  }
+	  setEdit(false);
+  }, [markGroupId, markList]);
+	const cancelEditResultSchema = useCallback(() => {
+		willUpdateResultSchemaForEditRef.current = undefined;
+		setEdit(false);
+	}, []);
   const openMarkAdder = useCallback(() => setShowMarkAdder(true), []);
   const closeMarkAdder = useCallback(() => setShowMarkAdder(false), []);
 	const onChangeMarkInput = useCallback(e => markAdderInputValue.current = e.target.value, []);
-	const calcData = useCallback(mark => {
-		try {
-			const { excludeKeys = [], outputKeys = [] } = mark;
-			const cloneData = cloneDeep(allDataRef.current);
-			let outputData = getDataByOutputKeys(getDataByExcludeKeys(cloneData, excludeKeys), outputKeys);
-			let outputSchema = jsonToSchema(outputData);
-
-			try {
-				let cascadeOutputKeys = outputKeys.map(key => key.split('.'));
-				while (outputSchema.type === 'object' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputSchema.properties || {}).length === 1) {
-					outputData = allDataRef.current ? Object.values(outputData)[0] : outputData;
-					outputSchema = Object.values(outputSchema.properties)[0];
-					cascadeOutputKeys.forEach(keys => keys.shift());
-				}
-			} catch(e) {
-				console.log(e);
-			}
-			if (outputData !== void 0) {
-				setData(allDataRef.current ? outputData : undefined);
-			}
-		} catch (error) {}
-	}, []);
 	const addMark = useCallback(() => {
 		const id = uuid();
+		const defaultMark = markList.find(m => m.id === 'default');
 		onChangeMarkList([
 			...markList,
 			{
@@ -424,7 +417,8 @@ export default function Debug({ sidebarContext, validate }: any) {
 				id: id,
 				outputKeys: [],
 				excludeKeys: [],
-				outputSchema: sidebarContext.formModel.resultSchema,
+				resultSchema: defaultMark?.resultSchema,
+				outputSchema: defaultMark?.resultSchema,
 			}
 		]);
 		markAdderInputValue.current = '';
@@ -446,7 +440,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 	}, [markList, markGroupId]);
 	const onSelectMarkGroup = useCallback(id => {
 		setMarkGroupId(id);
-		calcData(markList.find(m => m.id === id));
+		setData(undefined);
 	}, [markList]);
 
 	const toggleParamsCodeShow = useCallback(event => {
@@ -494,24 +488,34 @@ export default function Debug({ sidebarContext, validate }: any) {
 		event.stopPropagation();
 		if (showResponseCode) {
 			try {
-				if(!sidebarContext.formModel.resultSchema  && !responseCodeTextRef.current?.value) {
+				if(!curMark.resultSchema && !responseCodeTextRef.current?.value) {
 					// 关闭code
 					setShowResponseCode(!showResponseCode);
 					return
 				}
 				const jsonSchema = JSON.parse(responseCodeTextRef.current?.value);
-				if (JSON.stringify(sidebarContext.formModel.resultSchema) !== JSON.stringify(jsonSchema)) {
+				if (JSON.stringify(curMark.resultSchema) !== JSON.stringify(jsonSchema)) {
 					const [result, errorFields = []] = checkValidJsonSchema(jsonSchema);
 					if(result === false) {
 						notice(`JSON 解析错误，${errorFields.length ? errorFields[0].msg + ',' : ''}此次变更被忽略`, { type: 'warning' });
 						// 关闭code
 						setShowResponseCode(!showResponseCode);
-						return
+						return;
 					}
-					sidebarContext.formModel.resultSchema = jsonSchema;
-					sidebarContext.formModel.outputKeys = [];
-					sidebarContext.formModel.excludeKeys = [];
-					sidebarContext.formModel.outputSchema = jsonSchema;
+					const newMarkList = cloneDeep(markList);
+					const mark = newMarkList.find(m => m.id === curMark.id);
+
+					if (!mark) {
+						notice('当前标记组不存在，此次变更被忽略', { type: 'warning' });
+						// 关闭code
+						setShowResponseCode(!showResponseCode);
+						return;
+					}
+					mark.resultSchema = jsonSchema;
+					mark.outputKeys = [];
+					mark.excludeKeys = [];
+					mark.outputSchema = jsonSchema;
+					onChangeMarkList(newMarkList);
 				}
 			} catch (e) {
 				console.warn('JSON 解析错误', e);
@@ -520,7 +524,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 		}
 
 		setShowResponseCode(!showResponseCode);
-	}, [showResponseCode]);
+	}, [showResponseCode, curMark, markList]);
 
 	/** 当切换接口，params 变化 */
 	useEffect(() => {
@@ -587,13 +591,18 @@ export default function Debug({ sidebarContext, validate }: any) {
 				    <FormItem label='返回数据'>
 					    <div className={styles.buttonGroup}>
 						    <div></div>
-						    <Button style={{margin: 0, marginBottom: 6}} onClick={saveSchema}>
-							    保存
-						    </Button>
+						    <div>
+							    <Button onClick={cancelEditResultSchema}>
+								    取消
+							    </Button>
+							    <Button onClick={saveResultSchema}>
+								    保存
+							    </Button>
+						    </div>
 					    </div>
 					    <OutputSchemaEdit
 						    key={sidebarContext.formModel.id}
-						    schema={sidebarContext.formModel.resultSchema}
+						    schema={curMark.resultSchema}
 						    ctx={sidebarContext}
 						    onChange={onMockSchemaChange}
 					    />
@@ -614,7 +623,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 											className={`${styles.codeText}  ${styles.textEdt}`}
 											cols={30}
 											rows={10}
-											defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}
+											defaultValue={JSON.stringify(curMark.resultSchema, null, 2)}
 										/>
 								    <div>支持识别JSON Schema 描述协议</div>
 							    </>
@@ -666,7 +675,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 									    </div>
 									    <div className={styles.rightBox}>
 										    <Tooltip content="编辑返回数据类型">
-											    <Button style={{ boxSizing: 'border-box' }} onClick={editSchema}>
+											    <Button style={{ boxSizing: 'border-box' }} onClick={editResultSchema}>
 												    编辑
 											    </Button>
 										    </Tooltip>
@@ -680,7 +689,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 										    key={curMark.id}
 										    mark={curMark}
 										    onMarkChange={onMarkChange}
-										    schema={schema}
+										    schema={curMark.resultSchema}
 										    error={errorInfo}
 									    />
 								    ) : null}

@@ -157,7 +157,7 @@ export default function OutputSchemaEdit({ schema, value, onChange, ctx }: any) 
   }, [onChange]);
 
   return (
-    <div>
+    <div className={styles.editContainer}>
       {params?.children?.length === 0 ? (
         <div className={styles.adder}>
           <span onClick={() => addItem(valueRef.current, valueRef.current)}>

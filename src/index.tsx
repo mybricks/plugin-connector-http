@@ -44,10 +44,12 @@ export default function pluginEntry(pluginConfig: any = {}) {
             outputKeys: con.content.outputKeys || [],
             excludeKeys: con.content.excludeKeys || [],
             outputSchema: con.content.outputSchema || {},
+            resultSchema: con.content.resultSchema,
           }];
           delete con.content.outputKeys;
           delete con.content.excludeKeys;
           delete con.content.outputSchema;
+          delete con.content.resultSchema;
         }
       });
 
