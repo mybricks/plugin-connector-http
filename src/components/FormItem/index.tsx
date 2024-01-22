@@ -5,10 +5,11 @@ export default function FormItem({
   label: title,
   require,
 	contentStyle,
-  children,
+  className = '',
+  children
 }: any) {
   return (
-    <div className={css.item}>
+    <div className={`${css.item} ${className}`}>
       <label>
         {require ? <i>*</i> : null}
         {title}

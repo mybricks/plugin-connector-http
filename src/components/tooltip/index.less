@@ -1,0 +1,45 @@
+.tooltipContainer {
+  position: relative;
+
+  .tooltip {
+    display: none;
+  }
+
+  &:hover {
+    .tooltip {
+      display: block;
+      max-width: 250px;
+      overflow: hidden;
+      position: absolute;
+      top: calc(100% + 2px);
+      right: 0;
+      z-index: 1;
+      min-height: 24px;
+      height: auto;
+      padding: 3px 10px;
+      color: #fff;
+      text-align: left;
+      text-decoration: none;
+      white-space: nowrap;
+      background-color: #616C81;
+      border-radius: 4px;
+      font-size: 12px;
+      font-variant: tabular-nums;
+      line-height: 1.5715;
+      list-style: none;
+      font-feature-settings: 'tnum';
+    }
+
+    .arrow {
+      position: absolute;
+      top: calc(100% - 2px);
+      opacity: 1;
+      right: 50%;
+      transform: translate(5px);
+      content: '';
+      border-left: 3px solid transparent;
+      border-right: 3px solid transparent;
+      border-bottom: 5px solid #616C81;
+    }
+  }
+}

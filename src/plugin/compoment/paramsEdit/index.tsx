@@ -14,18 +14,18 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
   valueRef.current = value;
   const updateValue = useCallback(() => {
     onChange({ ...valueRef.current });
-  }, []);
+  }, [onChange]);
 
   const set = useCallback((item, key, val) => {
     if (item[key] === val) return;
     item[key] = val;
     if (key === 'type') {
-      item['defaultValue'] = '';
+      item['defaultValue'] = val === 'boolean' ? true : '';
       item.children = [];
     }
     ctx.editNowId = item.id;
     updateValue();
-  }, []);
+  }, [onChange]);
 
   const removeItem = (item, parent) => {
     parent.children = parent.children.filter(({ name }) => name !== item.name);
@@ -79,7 +79,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
       (depth === 0 &&
         parent.children?.[
           Math.min(
-            findLastIndex(parent.children, ({ type }) => type === 'string' || type === 'number' || type === 'any'),
+            findLastIndex(parent.children, ({ type }) => type === 'string' || type === 'number' || type === 'any' || type === 'boolean' ),
             parent.children.length - 1
           )
         ]?.name === item.name) ||
@@ -125,13 +125,26 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
               />
             )
           ) : (
-            <input
-              className={css.column3}
-              type={'text'}
-              disabled={item.type === 'object' || item.type === 'array'}
-              value={item.defaultValue}
-              onChange={(e) => set(item, 'defaultValue', e.target.value)}
-            />
+            item.type === 'boolean' ? (
+              <select
+                className={css.column3}
+                value={Number(item.defaultValue)}
+                style={{ color: '#8d7a34', cursor: 'pointer' }}
+                onChange={(e) => set(item, 'defaultValue', Boolean(Number(e.target.value)))}
+              >
+                <option label="true" value={1} />
+                <option label="false" value={0} />
+              </select>
+            ) : (
+              <input
+                className={css.column3}
+                type={'text'}
+                disabled={item.type === 'object' || item.type === 'array'}
+                value={item.defaultValue}
+                onChange={(e) => set(item, 'defaultValue', e.target.value)}
+              />
+            )
+
           )}
           <div className={`${css.column4} ${css.flex}`}>
             <span
@@ -162,7 +175,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
       name: `name${valueRef.current.children.length + 1}`
     });
     updateValue()
-  }, []);
+  }, [onChange]);
 
   return (
     <>

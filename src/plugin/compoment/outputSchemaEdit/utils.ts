@@ -69,7 +69,7 @@ export function params2schema(params: any) {
   let obj: any = {};
   const { type } = params;
 
-  if (type === 'string' || type === 'number') {
+  if (type === 'string' || type === 'number' || type === 'boolean') {
     const val: any = {};
     setValue(params, val);
     return val;

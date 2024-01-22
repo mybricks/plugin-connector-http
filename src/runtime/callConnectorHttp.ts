@@ -148,6 +148,10 @@ const getFetch = (connector) => {
     const outputKeys = connector.outputKeys || [];
     const excludeKeys = connector.excludeKeys || [];
     const showLog = connector.mode === 'test';
+    const markList = connector.markList || [];
+    if (!markList.length) {
+      markList.push({ title: '默认', id: 'default', predicate: {}, outputKeys, excludeKeys });
+    }
 
     try {
       showLog && console.log('【连接器调试日志】接口传入参数：', cloneDeep(params));
@@ -237,11 +241,14 @@ const getFetch = (connector) => {
 
       options.method = options.method || method;
       let hasCallThrowError = false;
+      let curOutputKeys = [];
+      let curExcludeKeys = [];
+      let curThrowExtraError = false;
       config
         .ajax(options)
         .catch(error => {
           /** 拦截函数存在，且是接口请求错误 */
-          if (connector.globalErrorResultFn && !!error.response) {
+          if (connector.globalErrorResultFn && (!!error.response || error.name === 'AxiosError')) {
             const response = error.response || { data: {} };
             !response.data && (response.data = {});
             pluginRun(connector.globalErrorResultFn)(
@@ -275,6 +282,28 @@ const getFetch = (connector) => {
           const result = pluginRun(connector.output)(response, Object.assign({}, options), { throwError: onError });
 
           showLog && console.log('【连接器调试日志】接口自定义出参拦截器(执行后数据)：', cloneDeep(result));
+          for (let i = 0; i < markList.length; i++) {
+            const { predicate = { key: '', value: undefined }, excludeKeys, outputKeys } = markList[i];
+
+            if (!predicate || !predicate.key || predicate.value === undefined) {
+              curOutputKeys = outputKeys;
+              curExcludeKeys = excludeKeys;
+              curThrowExtraError = predicate.type === 'failed';
+              break;
+            }
+
+            let curResult = result, keys = (predicate.key as string).split('.');
+            while (curResult && keys.length) {
+              curResult = curResult[keys.shift()];
+            }
+
+            if (!keys.length && (predicate.operator === '=' ? curResult === predicate.value : curResult !== predicate.value)) {
+              curOutputKeys = outputKeys;
+              curExcludeKeys = excludeKeys;
+              curThrowExtraError = predicate.type === 'failed';
+              break;
+            }
+          }
           return result;
         })
         .then((response) => {
@@ -282,23 +311,23 @@ const getFetch = (connector) => {
             then(response);
             return;
           }
-          excludeKeys?.forEach((key) => del(response, key.split('.')));
+          curExcludeKeys?.forEach((key) => del(response, key.split('.')));
 
           return response;
         })
         .then((response) => {
           let outputData: any = Array.isArray(response) ? [] : {};
-          if (outputKeys === void 0 || outputKeys.length === 0) {
+          if (curOutputKeys === void 0 || curOutputKeys.length === 0) {
             outputData = response;
           } else {
-            outputKeys.forEach((key) => {
+            curOutputKeys.forEach((key) => {
               setData(response, key.split('.'), outputData);
             });
 
             /** 当标记单项时，自动返回单项对应的值 */
-            if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
+            if (Array.isArray(curOutputKeys) && curOutputKeys.length && (curOutputKeys.length > 1 || !(curOutputKeys.length === 1 && curOutputKeys[0] === ''))) {
               try {
-                let cascadeOutputKeys = outputKeys.map(key => key.split('.'));
+                let cascadeOutputKeys = curOutputKeys.map(key => key.split('.'));
                 while (Object.prototype.toString.call(outputData) === '[object Object]' && cascadeOutputKeys.every(keys => !!keys.length) && Object.values(outputData).length === 1) {
                   outputData = Object.values(outputData)[0];
                   cascadeOutputKeys.forEach(keys => keys.shift());
@@ -309,7 +338,7 @@ const getFetch = (connector) => {
             }
           }
 
-          then(outputData);
+          curThrowExtraError ? onError(outputData) : then(outputData);
         })
         .catch((error) => {
           if (error?.message === 'HTTP_FETCH_ERROR') {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	extractParamsAndSchemaByJSON,
 	extractParamsBySchema,
@@ -9,20 +9,22 @@ import {
 	jsonToSchema,
 	params2data,
 	paramsToSchema,
+	uuid,
 } from '../../../utils';
 import { checkValidJsonSchema } from '../../../utils/validateJsonSchema';
 import JSONView from '@mybricks/code-editor';
 import ReturnSchema from '../returnSchema';
 import ParamsEdit from '../paramsEdit';
 import Params from '../params';
-import OutputSchemaMock from '../outputSchemaMock';
+import OutputSchemaEdit from '../outputSchemaEdit';
 import FormItem from '../../../components/FormItem';
 import { cloneDeep } from '../../../utils/lodash';
 import Button from '../../../components/Button';
 import { notice } from '../../../components/Message';
+import Tooltip from '../../../components/tooltip';
 import { CDN, PLUGIN_CONNECTOR_NAME } from '../../../constant';
 
-import css from './index.less';
+import styles from './index.less';
 
 function DataShow({ data }: any) {
   let valueStr = '';
@@ -34,7 +36,7 @@ function DataShow({ data }: any) {
 	
 	return !valueStr ? null : (
 		<div style={{marginLeft: 87}}>
-			<div className={css.title}>标记后的返回结果示例</div>
+			<div className={styles.title}>标记后的返回结果示例</div>
 			{/* @ts-ignore */}
 			<JSONView
 				CDN={CDN}
@@ -56,12 +58,13 @@ const CodeIcon = (
 	</svg>
 );
 export default function Debug({ sidebarContext, validate }: any) {
-  const [schema, setSchema] = useState(sidebarContext.formModel.resultSchema);
   const [remoteData, setData] = useState<any>();
 	const [showParamsCode, setShowParamsCode] = useState(false);
 	const [showResponseCode, setShowResponseCode] = useState(false);
   const allDataRef = useRef<any>();
   const willUpdateResultSchemaRef = useRef<any>();
+	/** 编辑 schema 时 */
+  const willUpdateResultSchemaForEditRef = useRef<any>();
   const codeTextRef = useRef<HTMLTextAreaElement>(null);
   const responseCodeTextRef = useRef<HTMLTextAreaElement>(null);
   const [errorInfo, setError] = useState('');
@@ -69,19 +72,59 @@ export default function Debug({ sidebarContext, validate }: any) {
   const [edit, setEdit] = useState(false);
   const [showTip, setShowTip] = useState(false);
   const [showPreviewSchema, setShowPreviewSchema] = useState(false);
+  const [showMarkAdder, setShowMarkAdder] = useState(false);
+  const [markGroupId, setMarkGroupId] = useState('default');
+  const [markList, setMarkList] = useState(sidebarContext.formModel.markList || [{ title: '默认', id: 'default', predicate: {}, outputKeys: [], excludeKeys: [], outputSchema: {} }]);
+	const markAdderInputValue = useRef('');
+	const curMark = useMemo(() => markList.find(mark => mark.id === markGroupId), [markList, markGroupId]);
   sidebarContext.formModel.params = sidebarContext.formModel.params || {
     type: 'root',
     name: 'root',
     children: [],
   };
-  useEffect(() => {
-    setSchema(sidebarContext.formModel.resultSchema);
-  }, [sidebarContext.formModel.resultSchema]);
+
+	const onChangeMarkList = useCallback((markList) => {
+		sidebarContext.formModel.markList = markList;
+		setMarkList(sidebarContext.formModel.markList);
+	}, []);
+	const initMarkList = useCallback((context) => {
+		if (!context.formModel.markList?.length) {
+			onChangeMarkList([{
+				title: '默认',
+				id: 'default',
+				predicate: {},
+				outputKeys: context.formModel.outputKeys || [],
+				excludeKeys: context.formModel.excludeKeys || [],
+				outputSchema: context.formModel.outputSchema || {},
+				resultSchema: context.formModel.resultSchema,
+			}]);
+			delete context.formModel.outputKeys;
+			delete context.formModel.excludeKeys;
+			delete context.formModel.outputSchema;
+			delete context.formModel.resultSchema;
+		} else {
+			setMarkList(context.formModel.markList || []);
+		}
+	}, []);
+	useEffect(() => {
+		initMarkList(sidebarContext);
+	}, []);
 
 	const onConfirmTip = () => {
 		try {
-			let { outputKeys = [], excludeKeys = [] } = sidebarContext.formModel;
-			sidebarContext.formModel.resultSchema = willUpdateResultSchemaRef.current;
+			formatSchema(willUpdateResultSchemaRef.current);
+			const inputSchema = paramsToSchema(sidebarContext.formModel.params || {});
+			formatSchema(inputSchema);
+			sidebarContext.formModel.inputSchema = inputSchema;
+
+			const newMarkList = JSON.parse(JSON.stringify(markList));
+
+			const mark = newMarkList.find(m => m.id === markGroupId);
+
+			if (!mark) {
+				throw Error('当前标记组不存在');
+			}
+			let { outputKeys = [], excludeKeys = [] } = mark;
 
 			outputKeys = outputKeys
 				.filter(Boolean)
@@ -124,6 +167,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 
 			let outputData = getDataByExcludeKeys(getDataByOutputKeys(allDataRef.current, outputKeys), excludeKeys);
 			let outputSchema = jsonToSchema(outputData);
+
 			/** 当标记单项时，自动返回单项对应的值 */
 			if (Array.isArray(outputKeys) && outputKeys.length && (outputKeys.length > 1 || !(outputKeys.length === 1 && outputKeys[0] === ''))) {
 				try {
@@ -135,22 +179,17 @@ export default function Debug({ sidebarContext, validate }: any) {
 					}
 				} catch {}
 			}
-
+			formatSchema(outputSchema);
 			setData(outputData);
 
-			formatSchema(sidebarContext.formModel.resultSchema);
-			formatSchema(outputSchema);
-			const inputSchema = paramsToSchema(sidebarContext.formModel.params || {});
-			formatSchema(inputSchema);
-			sidebarContext.formModel.outputKeys = outputKeys;
-			sidebarContext.formModel.excludeKeys = excludeKeys;
-			sidebarContext.formModel.outputSchema = outputSchema;
-			sidebarContext.formModel.inputSchema = inputSchema;
-			setSchema({ ...sidebarContext.formModel.resultSchema });
+			mark.outputKeys = outputKeys;
+			mark.excludeKeys = excludeKeys;
+			mark.outputSchema = outputSchema;
+			mark.resultSchema = willUpdateResultSchemaRef.current;
+
+			onChangeMarkList(newMarkList);
 		} catch (error: any) {
 			console.error(error);
-			sidebarContext.formModel.outputSchema = void 0;
-			sidebarContext.formModel.resultSchema = void 0;
 			const isError = error instanceof Error;
 			setError(isError ? (error?.message || (error as any)) : `接口错误：${typeof error === 'string' ? error : `由全局响应错误拦截透出，值为 ${JSON.stringify(error)}`}`);
 		}
@@ -198,15 +237,13 @@ export default function Debug({ sidebarContext, validate }: any) {
 	    const resultSchema = jsonToSchema(allDataRef.current);
 	    willUpdateResultSchemaRef.current = resultSchema || {};
 
-			if (sidebarContext.formModel.resultSchema && JSON.stringify(sidebarContext.formModel.resultSchema) !== JSON.stringify(resultSchema)) {
+			if (curMark.resultSchema && JSON.stringify(curMark.resultSchema) !== JSON.stringify(willUpdateResultSchemaRef.current)) {
 				setShowTip(true);
 			} else {
 				onConfirmTip();
 			}
     } catch (error: any) {
       console.error(error);
-      sidebarContext.formModel.outputSchema = void 0;
-      sidebarContext.formModel.resultSchema = void 0;
 	    const isError = error instanceof Error;
 	    setError(isError ? (error?.message || (error as any)) : `接口错误：${typeof error === 'string' ? error : `由全局响应错误拦截透出，值为 ${JSON.stringify(error)}`}`);
     }
@@ -223,18 +260,18 @@ export default function Debug({ sidebarContext, validate }: any) {
       sidebarContext.formModel.params = params;
       setParams(params);
     }
-  }, []);
+  }, [sidebarContext.formModel]);
 
-  const onKeysChange = useCallback((outputKeys = [], excludeKeys = []) => {
-    const { resultSchema } = sidebarContext.formModel;
-		
+  const onMarkChange = useCallback((mark) => {
+		let { outputKeys = [], excludeKeys = [], resultSchema } = mark;
+
 	  try {
 		  /** 当标记单项时，自动返回单项对应的值 */
 		  let autoExtra = false;
 			
 		  let outputSchema: any = {};
 		  if (outputKeys.length === 0) {
-			  outputSchema = sidebarContext.formModel.resultSchema;
+			  outputSchema = resultSchema;
 		  } else if (outputKeys.length === 1 && outputKeys[0] === '') {
 			  outputSchema = { type: 'any' };
 		  } else {
@@ -335,40 +372,76 @@ export default function Debug({ sidebarContext, validate }: any) {
 			  if (outputData !== void 0) {
 				  setData(allDataRef.current ? outputData : undefined);
 			  }
-			
 		  } catch (error) {}
-		
-		  sidebarContext.formModel.outputKeys = outputKeys;
-		  sidebarContext.formModel.excludeKeys = excludeKeys;
-		  sidebarContext.formModel.outputSchema = newOutputSchema;
-    } catch (error) {
+
+		  const index = sidebarContext.formModel.markList.findIndex(m => m.id === mark.id);
+		  mark.outputKeys = outputKeys;
+		  mark.excludeKeys = excludeKeys;
+		  mark.outputSchema = newOutputSchema;
+		  sidebarContext.formModel.markList.splice(index, 1, { ...mark });
+
+			onChangeMarkList([...sidebarContext.formModel.markList]);
+	  } catch (error) {
       console.log(error);
     }
-  }, []);
+  }, [markList]);
 
-  const onOutputKeysChange = useCallback(
-    (outputKeys) => {
-      onKeysChange(outputKeys, sidebarContext.formModel.excludeKeys);
-    },
-    [sidebarContext]
-  );
+  const onMockSchemaChange = useCallback((schema) => willUpdateResultSchemaForEditRef.current = schema, []);
+  const editResultSchema = useCallback(() => {
+		willUpdateResultSchemaForEditRef.current = curMark.resultSchema;
+	  setEdit(true);
+  }, [curMark]);
+  const saveResultSchema = useCallback(() => {
+	  const mark = markList.find(m => m.id === markGroupId);
 
-  const onExcludeKeysChange = useCallback(
-    (excludeKeys) => {
-      onKeysChange(sidebarContext.formModel.outputKeys, excludeKeys);
-    },
-    [sidebarContext]
-  );
+	  if (mark) {
+		  mark.resultSchema = willUpdateResultSchemaForEditRef.current;
+		  onChangeMarkList(cloneDeep(markList));
+	  }
+	  setEdit(false);
+  }, [markGroupId, markList]);
+	const cancelEditResultSchema = useCallback(() => {
+		willUpdateResultSchemaForEditRef.current = undefined;
+		setEdit(false);
+	}, []);
+  const openMarkAdder = useCallback(() => setShowMarkAdder(true), []);
+  const closeMarkAdder = useCallback(() => setShowMarkAdder(false), []);
+	const onChangeMarkInput = useCallback(e => markAdderInputValue.current = e.target.value, []);
+	const addMark = useCallback(() => {
+		const id = uuid();
+		const defaultMark = markList.find(m => m.id === 'default');
+		onChangeMarkList([
+			...markList,
+			{
+				title: markAdderInputValue.current,
+				id: id,
+				outputKeys: [],
+				excludeKeys: [],
+				resultSchema: defaultMark?.resultSchema,
+				outputSchema: defaultMark?.resultSchema,
+			}
+		]);
+		markAdderInputValue.current = '';
+		setShowMarkAdder(false);
+		setMarkGroupId(id);
+	}, [markList]);
+	const onMarkInputPressEnter = useCallback(e => {
+		if(e.keyCode === 13 || e.key === 'Enter') {
+			addMark();
+		}
+	}, [addMark]);
+	const onCancelMark = useCallback((id: string) => {
+		const index = markList.findIndex(m => m.id === id);
+		const isFocus = markGroupId === markList[index]?.id;
+		markList.splice(index, 1);
 
-  const onMockSchemaChange = useCallback((schema) => {
-    sidebarContext.formModel.resultSchema = schema;
-  }, []);
-  const editSchema = () => {
-    setEdit(true);
-  };
-  const saveSchema = () => {
-    setEdit(false);
-  };
+		onChangeMarkList([...markList]);
+		isFocus && setMarkGroupId(markList[index - 1].id);
+	}, [markList, markGroupId]);
+	const onSelectMarkGroup = useCallback(id => {
+		setMarkGroupId(id);
+		setData(undefined);
+	}, [markList]);
 
 	const toggleParamsCodeShow = useCallback(event => {
 		event.stopPropagation();
@@ -415,24 +488,34 @@ export default function Debug({ sidebarContext, validate }: any) {
 		event.stopPropagation();
 		if (showResponseCode) {
 			try {
-				if(!sidebarContext.formModel.resultSchema  && !responseCodeTextRef.current?.value) {
+				if(!curMark.resultSchema && !responseCodeTextRef.current?.value) {
 					// 关闭code
 					setShowResponseCode(!showResponseCode);
 					return
 				}
 				const jsonSchema = JSON.parse(responseCodeTextRef.current?.value);
-				if (JSON.stringify(sidebarContext.formModel.resultSchema) !== JSON.stringify(jsonSchema)) {
+				if (JSON.stringify(curMark.resultSchema) !== JSON.stringify(jsonSchema)) {
 					const [result, errorFields = []] = checkValidJsonSchema(jsonSchema);
 					if(result === false) {
 						notice(`JSON 解析错误，${errorFields.length ? errorFields[0].msg + ',' : ''}此次变更被忽略`, { type: 'warning' });
 						// 关闭code
 						setShowResponseCode(!showResponseCode);
-						return
+						return;
 					}
-					sidebarContext.formModel.resultSchema = jsonSchema;
-					sidebarContext.formModel.outputKeys = [];
-					sidebarContext.formModel.excludeKeys = [];
-					sidebarContext.formModel.outputSchema = jsonSchema;
+					const newMarkList = cloneDeep(markList);
+					const mark = newMarkList.find(m => m.id === curMark.id);
+
+					if (!mark) {
+						notice('当前标记组不存在，此次变更被忽略', { type: 'warning' });
+						// 关闭code
+						setShowResponseCode(!showResponseCode);
+						return;
+					}
+					mark.resultSchema = jsonSchema;
+					mark.outputKeys = [];
+					mark.excludeKeys = [];
+					mark.outputSchema = jsonSchema;
+					onChangeMarkList(newMarkList);
 				}
 			} catch (e) {
 				console.warn('JSON 解析错误', e);
@@ -441,16 +524,23 @@ export default function Debug({ sidebarContext, validate }: any) {
 		}
 
 		setShowResponseCode(!showResponseCode);
-	}, [showResponseCode]);
+	}, [showResponseCode, curMark, markList]);
+
+	/** 当切换接口，params 变化 */
+	useEffect(() => {
+		setParams(sidebarContext.formModel.params);
+		setError('');
+		initMarkList(sidebarContext);
+	}, [sidebarContext.formModel.id]);
 
 	return (
     <>
-			<div className={css.paramEditContainer}>
+			<div className={styles.paramEditContainer}>
 				{showParamsCode ? (
 					<FormItem label='请求参数'>
 						<textarea
 							ref={codeTextRef}
-							className={`${css.codeText}  ${css.textEdt}`}
+							className={`${styles.codeText}  ${styles.textEdt}`}
 							cols={30}
 							rows={10}
 							defaultValue={JSON.stringify(sidebarContext.formModel.inputSchema, null, 2)}
@@ -458,7 +548,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 						<div>支持识别 JSON、JSON Schema 等描述协议</div>
 					</FormItem>
 				) : (
-					<>
+					<Fragment key={sidebarContext.formModel.id}>
 						<FormItem label='请求参数'>
 							<ParamsEdit
 								value={sidebarContext.formModel.params}
@@ -478,10 +568,10 @@ export default function Debug({ sidebarContext, validate }: any) {
 								params={params}
 							/>
 						</FormItem>
-					</>
+					</Fragment>
 				)}
 
-				<div className={`${css.codeIcon} ${showParamsCode ? css.focus : ''}`} onClick={toggleParamsCodeShow}>
+				<div className={`${styles.codeIcon} ${showParamsCode ? styles.focus : ''}`} onClick={toggleParamsCodeShow}>
 					{CodeIcon}
 				</div>
 			</div>
@@ -499,58 +589,112 @@ export default function Debug({ sidebarContext, validate }: any) {
 		    : (
 					edit ? (
 				    <FormItem label='返回数据'>
-					    {sidebarContext.formModel.resultSchema ? (
-						    <div className={css.buttonGroup}>
-							    <div></div>
-							    <Button style={{margin: 0, marginBottom: 6}} onClick={saveSchema}>
+					    <div className={styles.buttonGroup}>
+						    <div></div>
+						    <div>
+							    <Button onClick={cancelEditResultSchema}>
+								    取消
+							    </Button>
+							    <Button onClick={saveResultSchema}>
 								    保存
 							    </Button>
 						    </div>
-					    ) : null}
-					    <OutputSchemaMock
-						    schema={sidebarContext.formModel.resultSchema}
+					    </div>
+					    <OutputSchemaEdit
+						    key={sidebarContext.formModel.id}
+						    schema={curMark.resultSchema}
 						    ctx={sidebarContext}
 						    onChange={onMockSchemaChange}
 					    />
 				    </FormItem>
 			    ) : (
 				    <>
-					    <FormItem label='返回数据'>
+					    <FormItem label='返回数据' className={styles.scrollFormItem}>
 						    {showResponseCode ? (
 							    <>
+								    <div className={styles.buttonGroup}>
+									    <div></div>
+									    <div className={`${styles.codeIcon} ${styles.responseCodeIcon} ${showResponseCode ? styles.focus : ''}`} onClick={toggleResponseCodeShow}>
+										    {CodeIcon}
+									    </div>
+								    </div>
 										<textarea
 											ref={responseCodeTextRef}
-											className={`${css.codeText}  ${css.textEdt}`}
+											className={`${styles.codeText}  ${styles.textEdt}`}
 											cols={30}
 											rows={10}
-											defaultValue={JSON.stringify(sidebarContext.formModel.resultSchema, null, 2)}
+											defaultValue={JSON.stringify(curMark.resultSchema, null, 2)}
 										/>
 								    <div>支持识别JSON Schema 描述协议</div>
 							    </>
 						    ) : (
 							    <>
-								    {sidebarContext.formModel.resultSchema ? (
-									    <div className={css.buttonGroup}>
-										    <div></div>
-										    <Button style={{margin: 0, marginBottom: 6}} onClick={editSchema}>
-											    编辑
-										    </Button>
+								    <div className={styles.buttonGroup}>
+									    <div className={styles.categoryContainer}>
+										    <div className={styles.buttons}>
+											    {markList.map((option) => {
+												    return (
+													    <div
+														    key={option.id}
+														    className={`${styles.option} ${option.id === markGroupId ? styles.selected : ''}`}
+														    onClick={() => onSelectMarkGroup(option.id)}
+													    >
+														    {option.title}
+														    {option.id !== 'default' ? (
+															    <div
+																    className={styles.optionCancelIcon}
+																    onClick={event => {
+																	    event.stopPropagation();
+																	    onCancelMark(option.id);
+																    }}
+															    >
+																    ✕
+															    </div>
+														    ) : null}
+													    </div>
+												    );
+											    })}
+										    </div>
+										    <Tooltip content="添加数据标记组">
+											    {showMarkAdder ? (
+												    <div className={styles.iconRootClose} onClick={closeMarkAdder}>
+													    ✕
+												    </div>
+											    ) : (
+												    <div className={styles.iconRootAdder} onClick={openMarkAdder}>
+													    +
+												    </div>
+											    )}
+										    </Tooltip>
+										    {showMarkAdder ? (
+											    <div className={styles.markAdder}>
+												    <input className={styles.markInput} onKeyUp={onMarkInputPressEnter} onChange={onChangeMarkInput} />
+												    <button className={styles.button} onClick={addMark}>确定</button>
+											    </div>
+										    ) : null}
 									    </div>
+									    <div className={styles.rightBox}>
+										    <Tooltip content="编辑返回数据类型">
+											    <Button style={{ boxSizing: 'border-box' }} onClick={editResultSchema}>
+												    编辑
+											    </Button>
+										    </Tooltip>
+										    <div className={`${styles.codeIcon} ${styles.responseCodeIcon} ${showResponseCode ? styles.focus : ''}`} onClick={toggleResponseCodeShow}>
+											    {CodeIcon}
+										    </div>
+									    </div>
+								    </div>
+								    {curMark ? (
+									    <ReturnSchema
+										    key={curMark.id}
+										    mark={curMark}
+										    onMarkChange={onMarkChange}
+										    schema={curMark.resultSchema}
+										    error={errorInfo}
+									    />
 								    ) : null}
-								    <ReturnSchema
-									    outputKeys={sidebarContext.formModel.outputKeys}
-									    excludeKeys={sidebarContext.formModel.excludeKeys}
-									    onOutputKeysChange={onOutputKeysChange}
-									    onExcludeKeysChange={onExcludeKeysChange}
-									    schema={schema}
-									    error={errorInfo}
-								    />
 							    </>
 						    )}
-
-						    <div className={`${css.codeIcon} ${css.responseCodeIcon} ${showResponseCode ? css.focus : ''}`} onClick={toggleResponseCodeShow}>
-							    {CodeIcon}
-						    </div>
 					    </FormItem>
 					    <DataShow data={remoteData}/>
 				    </>

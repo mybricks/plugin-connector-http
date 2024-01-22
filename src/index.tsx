@@ -35,6 +35,24 @@ export default function pluginEntry(pluginConfig: any = {}) {
         resetCDN();
       }
 
+      this.data.connectors?.forEach(con => {
+        if (!con.content?.markList?.length) {
+          con.content.markList = [{
+            title: '默认',
+            id: 'default',
+            predicate: {},
+            outputKeys: con.content.outputKeys || [],
+            excludeKeys: con.content.excludeKeys || [],
+            outputSchema: con.content.outputSchema || {},
+            resultSchema: con.content.resultSchema,
+          }];
+          delete con.content.outputKeys;
+          delete con.content.excludeKeys;
+          delete con.content.outputSchema;
+          delete con.content.resultSchema;
+        }
+      });
+
       /** 初始化全局配置 */
       this.data.config = this.data.config || {
         paramsFn: pluginConfig?.initialValue?.paramsFn || exampleParamsFunc,

@@ -1,17 +1,15 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
-import {DefaultPanelContext} from '../defaultPanel/context';
+import { DefaultPanelContext } from '../defaultPanel/context';
+import { MarkList, MarkTypeLabel, MarkTypes } from '../../../constant';
+import { notice } from '../../../components/Message';
 
-import css from './index.less';
-
-const emptyAry: any[] = [];
+import styles from './index.less';
 
 export default function ReturnSchema({
-  outputKeys,
-  excludeKeys: excKeys,
-  onOutputKeysChange,
-  onExcludeKeysChange,
+  mark,
+  onMarkChange,
   schema,
   error,
   noMark
@@ -19,38 +17,52 @@ export default function ReturnSchema({
   const defaultPanelContext = useContext(DefaultPanelContext);
   const parentEleRef = useRef<HTMLDivElement>();
   const curKeyRef = useRef('');
-  const excludeKeysRef = useRef([]);
-  const [keys, setOutputKeys] = useState(outputKeys || emptyAry);
-  const [excludeKeys, setExcludeKeys] = useState<string[]>(excKeys || []);
   const [popMenuStyle, setStyle] = useState<any>();
-  excludeKeysRef.current = excludeKeys;
-  useEffect(() => {
-    setOutputKeys(outputKeys || emptyAry);
-  }, [outputKeys]);
+  const [curMarkList, setCurMarkList] = useState(MarkList);
 
-  const markAsReturn = useCallback(() => {
-    setOutputKeys((keys: any[]) => {
-      if (excludeKeysRef.current.some((key) => key === curKeyRef.current)) {
-        return keys;
+  const markAsReturn = useCallback((type: string) => {
+    const targetSchemaTypes = MarkTypes[type] || [];
+    let keys = curKeyRef.current?.split('.') || [];
+    let originSchema = schema;
+    while (keys.length && originSchema) {
+      const key = keys.shift();
+      originSchema = originSchema.properties?.[key] || originSchema.items?.properties?.[key];
+    }
+
+    if (!originSchema || !originSchema.type || keys.length) {
+      notice(`【${MarkTypeLabel[type]}】所标识数据类型不存在`);
+      return;
+    }
+
+    if (!targetSchemaTypes.includes('any') && (!targetSchemaTypes.includes(originSchema.type) || keys.length)) {
+      notice(`【${MarkTypeLabel[type]}】所标识数据类型必须为 ${MarkTypes[type]?.map(key => getTypeName(key)).join('、')}`);
+      return;
+    }
+
+    if (type === 'predicate') {
+      const predicate: Record<string, unknown> = { key: curKeyRef.current, value: 1, operator: '=', type: 'success' };
+      /** 设置标识值的默认值 */
+      if (originSchema.type === 'boolean') {
+        predicate.value = true;
+      } else if (originSchema.type === 'string') {
+        predicate.value = 'success';
       }
-      const outputKeys = [
-        ...keys.filter(
-          (key: string) =>
-            !(
-              key.includes(curKeyRef.current) || curKeyRef.current.includes(key)
-            )
-        ),
-        curKeyRef.current,
-      ].filter((key) => key !== '');
-      onOutputKeysChange([...outputKeys]);
-      return outputKeys;
-    });
-    setExcludeKeys((keys: string[]) => {
-      const newKeys = keys.filter((key) => key !== curKeyRef.current);
-      onExcludeKeysChange(newKeys);
-      return newKeys;
-    });
-  }, []);
+
+      onMarkChange({ ...mark, predicate });
+    } else {
+      let outputKeys = mark.outputKeys || [];
+      let excludeKeys = mark.excludeKeys || [];
+
+      if (!excludeKeys.some(key => key === curKeyRef.current)) {
+        outputKeys = [
+          ...outputKeys.filter(key => !(key.includes(curKeyRef.current) || curKeyRef.current.includes(key))),
+          curKeyRef.current,
+        ].filter(key => key !== '');
+      }
+      excludeKeys = excludeKeys.filter(key => key !== curKeyRef.current)
+      onMarkChange({ ...mark, excludeKeys, outputKeys });
+    }
+  }, [mark, schema]);
 
   function proAry(items, xpath) {
     if (!items) return null;
@@ -80,30 +92,40 @@ export default function ReturnSchema({
       }
     }
 
-    const hasReturnSchema = !isEmpty(keys);
-    const markedAsReturn =
-      (!hasReturnSchema && root) ||
-      (key && hasReturnSchema && keys?.includes(xpath));
+    const hasReturnSchema = !isEmpty(mark?.outputKeys);
+    const markedAsReturn = (!hasReturnSchema && root) || (key && hasReturnSchema && mark?.outputKeys?.includes(xpath));
+    const markedAsPredicate = mark?.predicate?.key === xpath;
 
     const showMark =
       xpath !== void 0 &&
-      !excludeKeys.some((key) => xpath.startsWith(key) && key !== xpath);
+      !mark?.excludeKeys.some((key) => xpath.startsWith(key) && key !== xpath);
 
     const showCancel =
-	    key !== void 0 &&
-      ((markedAsReturn && !root) ||
-      ((keys.some((key: string) => xpath?.startsWith(key)) || !hasReturnSchema) &&
-        !excludeKeys.some((key) => xpath.startsWith(key))));
+      (
+        key !== void 0 &&
+        ((markedAsReturn && !root) ||
+          ((mark?.outputKeys.some((key: string) => xpath?.startsWith(key)) || !hasReturnSchema) &&
+            !mark?.excludeKeys.some((key) => xpath.startsWith(key))))
+      ) || markedAsPredicate;
+
+    const onChangeValue = value => onMarkChange({ ...mark, predicate: { ...mark.predicate, value } });
+    const onChangeOperator = e => onMarkChange({ ...mark, predicate: { ...mark.predicate, operator: e.target.value } });
+    const onChangeType = e => onMarkChange({ ...mark, predicate: { ...mark.predicate, type: e.target.value } });
 
     return (
-      <div key={key} className={`${css.item} ${root ? css.rootItem : ''} ${markedAsReturn ? css.markAsReturn : ''}`}>
-        {markedAsReturn ? <div className={css.marked}></div> : null}
-        {excludeKeys.includes(xpath) && key ? (
-          <div className={css.exclude}></div>
+      <div key={key} className={`${styles.item} ${root ? styles.rootItem : ''} ${(markedAsReturn || markedAsPredicate) ? styles.markAsReturn : ''}`}>
+        {(markedAsReturn || markedAsPredicate) ? (
+          <div
+            className={styles.marked}
+            data-content={markedAsPredicate ? (markedAsReturn ? '生效标识、返回内容' : '生效标识') : '返回内容'}
+          />
         ) : null}
-        <div className={css.keyName}>
+        {mark?.excludeKeys.includes(xpath) && key ? (
+          <div className={styles.exclude}></div>
+        ) : null}
+        <div className={styles.keyName}>
           {key}
-          <span className={css.typeName}>({getTypeName(val.type)})</span>
+          <span className={styles.typeName}>({getTypeName(val.type)})</span>
           {showMark && key && !noMark ? (
             <button
               onClick={(e) => {
@@ -113,6 +135,50 @@ export default function ReturnSchema({
             >
               标记
             </button>
+          ) : null}
+          {markedAsPredicate && !noMark ? (
+            <>
+              <span style={{ marginLeft: '10px' }}>当值</span>
+              <select value={mark?.predicate?.operator} className={styles.markValueSelect} onChange={onChangeOperator}>
+                <option value="=">等于</option>
+                <option value="!=">不等于</option>
+              </select>
+              {val.type === 'string' ? (
+                <input
+                  value={mark?.predicate?.value}
+                  className={styles.markValueInput}
+                  type="text"
+                  onChange={e => onChangeValue(e.target.value)}
+                />
+              ) : null}
+              {val.type === 'number' ? (
+                <input
+                  value={Number(mark?.predicate?.value)}
+                  className={styles.markValueInput}
+                  type="number"
+                  onChange={e => onChangeValue(Number(e.target.value))}
+                />
+              ) : null}
+              {val.type === 'boolean' ? (
+                <select
+                  value={Number(mark?.predicate?.value)}
+                  className={styles.markValueSelect}
+                  onChange={e => onChangeValue(Boolean(Number(e.target.value)))}
+                >
+                  <option value={1}>true</option>
+                  <option value={0}>false</option>
+                </select>
+              ) : null}
+              <span style={{ marginLeft: 0 }}>时，即</span>
+              <select
+                value={mark?.predicate?.type || 'success'}
+                className={styles.markValueSelect}
+                onChange={e => onChangeType(e)}
+              >
+                <option value="success">请求成功</option>
+                <option value="failed">请求失败</option>
+              </select>
+            </>
           ) : null}
           {showCancel && !noMark ? (
             <button
@@ -135,35 +201,47 @@ export default function ReturnSchema({
     const parentPos = parentEleRef.current.getBoundingClientRect();
     const currentPos = btnEle.getBoundingClientRect();
     curKeyRef.current = xpath;
-    setStyle({
-      display: 'block',
-      left: currentPos.x - parentPos.x,
-      top: currentPos.y - parentPos.y + btnEle.offsetHeight,
-    });
+    let newMarkList = MarkList;
+    let keys = curKeyRef.current?.split('.') || [];
+    let originSchema = schema;
+
+    while (keys.length && originSchema) {
+      const key = keys.shift();
+      originSchema = originSchema.properties?.[key] || originSchema.items?.properties?.[key];
+
+      /** 数组中的值或对象类型的值不允许标记为标记组的标识 */
+      if (originSchema?.type === 'array' || (!keys.length && originSchema?.type === 'object')) {
+        newMarkList = MarkList.filter(m => m.key !== 'predicate');
+        break;
+      }
+    }
+
+    let top = currentPos.y - parentPos.y + btnEle.offsetHeight;
+    /** 每一项高度为 28 */
+    const popMenuHeight = 28 * newMarkList.length + 10;
+
+    if (top + popMenuHeight > parentPos.height || currentPos.top + popMenuHeight > document.body.clientHeight) {
+      top -= popMenuHeight + btnEle.offsetHeight;
+    }
+    setCurMarkList(newMarkList);
+    setStyle({ display: 'block', left: currentPos.x - parentPos.x, top });
     defaultPanelContext.addBlurAry('return-schema', () => setStyle(void 0));
   }, []);
 
   const cancelMark = useCallback((e, xpath) => {
-    setOutputKeys((keys: any[]) => {
-      const outputKeys = [
-        ...keys.filter((key: string) => key !== xpath),
-      ].filter((key) => key !== '');
-      if (!keys.some((key) => key === xpath)) {
-        setExcludeKeys((keys: string[]) => {
-          const excludeKeys = [
-            ...keys.filter(
-              (key) => !(key.includes(xpath) || xpath.includes(key))
-            ),
-            xpath,
-          ];
-          onExcludeKeysChange(excludeKeys);
-          return excludeKeys;
-        });
-      }
-      onOutputKeysChange(outputKeys);
-      return outputKeys;
-    });
-  }, []);
+    /** 优先取消标记组标识 */
+    if (mark.predicate?.key === xpath) {
+      onMarkChange({ ...mark, predicate: {} });
+      return;
+    }
+    const outputKeys = mark.outputKeys.filter(key => key !== xpath).filter(key => key !== '');
+    let excludeKeys = mark.excludeKeys;
+    if (!mark.outputKeys.some(key => key === xpath)) {
+      excludeKeys = [...excludeKeys.filter(key => !(key.includes(xpath) || xpath.includes(key))), xpath];
+    }
+
+    onMarkChange({ ...mark, outputKeys, excludeKeys });
+  }, [mark]);
 
   const resetPopMenuStyle = useCallback((event) => {
     setStyle(void 0);
@@ -175,7 +253,7 @@ export default function ReturnSchema({
     const isErrorMessage = typeof error === 'string';
     const errorMessage = isErrorMessage ? error : (error?.message || '接口错误：无具体错误信息');
     return (
-      <div className={css.errorInfo}>
+      <div className={styles.errorInfo}>
         <span>{errorMessage}</span>
         <div>{getErrorTips(errorMessage)}</div>
       </div>
@@ -183,21 +261,28 @@ export default function ReturnSchema({
   }
   return schema ? (
     <div
-      className={css.returnParams}
+      className={styles.returnParams}
       ref={parentEleRef}
       onClick={resetPopMenuStyle}
     >
       <div>{proItem({ val: schema, xpath: '', root: true })}</div>
-      <div className={css.popMenu} style={popMenuStyle}>
-        <div className={css.menuItem} onClick={() => markAsReturn()}>
-          返回内容
-        </div>
-        {/*<div className={css.menuItem}>错误判断</div>*/}
-        {/*<div className={css.menuItem}>错误信息</div>*/}
+      <div className={styles.popMenu} style={popMenuStyle}>
+        {curMarkList.map(mark => {
+          return (
+            <div
+              className={styles.menuItem}
+              key={mark.key}
+              onClick={() => markAsReturn(mark.key)}
+              data-mybricks-tip={{ content: mark.description }}
+            >
+              {mark.title}
+            </div>
+          );
+        })}
       </div>
     </div>
   ) : (
-    <div className={css.empty}>类型无效</div>
+    <div className={styles.empty}>类型无效，请点击「连接测试」获取类型或手动编辑类型</div>
   );
 }
 
