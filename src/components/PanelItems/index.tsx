@@ -160,7 +160,7 @@ export const EditorWithFullScreen = ({ CDN, value, key, onChange }) => {
 /**
  * 接口描述
  */
-export const DespInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, key, name, require = false, validateError }) => {
+export const DescriptionInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, key, name, require = false, validateError }) => {
   return (
     <FormItem label='接口描述' require={require}>
       <Input

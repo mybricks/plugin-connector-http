@@ -7,7 +7,7 @@ import { safeDecode } from '../../../utils';
 import { CDN } from '../../../constant';
 import { DefaultPanelContext } from './context';
 import { debounce } from '../../../utils/lodash';
-import { NameInput, AddressInput, MethodRadio, DocInput, DespInput, EditorWithFullScreen } from '../../../components/PanelItems'
+import { NameInput, AddressInput, MethodRadio, DocInput, DescriptionInput, EditorWithFullScreen } from '../../../components/PanelItems'
 import { notice } from '../../../components/Message';
 
 import parentCss from '../../../style-cssModules.less';
@@ -193,7 +193,7 @@ export default function DefaultPanel({
 							</div>
 							<div className={css.ct}>
 								<Collapse header='其他信息'>
-									<DespInput
+									<DescriptionInput
 										defaultValue={sidebarContext.formModel.desc}
 										onBlur={(e) => {
 											sidebarContext.formModel.desc = e.target.value;
