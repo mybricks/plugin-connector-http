@@ -4,7 +4,7 @@ import DebugForm from '../debug';
 import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
 import { safeDecode } from '../../../utils';
-import {CDN, MarkTypeLabel} from '../../../constant';
+import { CDN } from '../../../constant';
 import { DefaultPanelContext } from './context';
 import { debounce } from '../../../utils/lodash';
 import { NameInput, AddressInput, MethodRadio, DocInput, DespInput, EditorWithFullScreen } from '../../../components/PanelItems'

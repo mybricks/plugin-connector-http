@@ -10,7 +10,6 @@ export default function Input({
   style= {},
   type = 'input',
 }: any) {
-
   const domRef = useRef(null);
   const [innerValue, setInnerValue] = useState(defaultValue)
   useEffect(() => {

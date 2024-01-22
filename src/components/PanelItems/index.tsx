@@ -3,8 +3,9 @@ import FormItem from '../FormItem';
 import Input, { TextArea } from '../Input';
 import RadioButtons from '../../plugin/compoment/defaultPanel/RadioBtn';
 import Editor from '@mybricks/code-editor';
-import parentCss from '../../style-cssModules.less';
 import { fullScreen, fullScreenExit } from '../../icon';
+
+import parentCss from '../../style-cssModules.less';
 
 
 export interface CommonItemProps {
@@ -12,8 +13,8 @@ export interface CommonItemProps {
   onBlur?: Function;
   onChange?: Function;
   require?: boolean
-  key: string;
-  name: string;
+  key?: string;
+  name?: string;
   style?: CSSProperties
   /** 校验出错信息 */
   validateError?: string
