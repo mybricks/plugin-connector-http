@@ -2,6 +2,7 @@ import React, { useCallback, useState } from "react";
 import axios from "axios";
 import css from "./index.less";
 import { Select, Input, Button } from "antd";
+import { traverseSchemaRecursively } from "../utils";
 const { TextArea } = Input;
 
 window._AI_HISTORY_LIST_ = [
@@ -20,10 +21,6 @@ window._AI_HISTORY_LIST_ = [
   // '添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计',
 ];
 
-const SLOTS_KEY_MAP = {
-  "mybricks.normal-pc.card": "body",
-};
-
 export default function ({ command, userId }) {
   const [requirement, setRequirement] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,7 +29,7 @@ export default function ({ command, userId }) {
   const [isMultiMode, setIsMultiMode] = useState(false);
   const [isTextAreaFocused, setIsTextAreaFocused] = useState(null);
   const [timeCost, setTimeCost] = useState(0);
-  const [mode, setMode] = useState("simple");
+  const [mode, setMode] = useState("multi");
   const [historyList, setHistoryList] = useState(window._AI_HISTORY_LIST_);
 
   const generate = useCallback(() => {
@@ -51,21 +48,7 @@ export default function ({ command, userId }) {
         if (data.code === 1) {
           const schema = data.data.schema;
 
-          const comArray = schema.map((item) => {
-            const slotKey = SLOTS_KEY_MAP?.[item.namespace] || "content";
-            return {
-              type: item.namespace,
-              data: item.data,
-              slots: item.slots
-                ? {
-                    [slotKey]: item.slots.map((slotsItem) => ({
-                      type: slotsItem.namespace,
-                      data: slotsItem.data,
-                    })),
-                  }
-                : undefined,
-            };
-          });
+          const comArray = traverseSchemaRecursively(schema)
 
           const component = { data: comArray };
           console.log("AI res: ", component);
@@ -150,7 +133,7 @@ export default function ({ command, userId }) {
       >
         <div className={`${css.input} ${isTextAreaFocused ? css.focused : ""}`}>
           <TextArea
-            placeholder="简单模式：速度快，回答问题相对简单；专家模式：能回答复杂问题，响应相对较慢。如果失败，可尝试切换专家模式重试"
+            placeholder="简单模式：速度快，回答问题相对简单；均衡模式：平衡性能和准确性；专家模式：能回答复杂问题，响应相对较慢。如果失败，可尝试切换专家模式重试"
             className={css.textarea}
             value={requirement}
             onChange={(e) => setRequirement(e.target.value)}
@@ -177,6 +160,7 @@ export default function ({ command, userId }) {
               }}
               options={[
                 { value: "simple", label: "简单模式" },
+                { value: "multi", label: "均衡模式" },
                 { value: "expert", label: "专家模式" },
               ]}
             />
