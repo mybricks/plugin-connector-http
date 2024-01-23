@@ -1,25 +1,19 @@
-import React, {useCallback, useMemo, useRef, useState} from 'react';
-import {uuid} from '../utils';
-import {
-	exampleParamsFunc,
-	exampleResultFunc,
-	GLOBAL_PANEL,
-	PLUGIN_CONNECTOR_NAME,
-	SERVICE_TYPE,
-} from '../constant';
-import css from '../style-cssModules.less';
-import {cloneDeep, get} from '../utils/lodash';
-import {formatDate} from '../utils/moment';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { uuid } from '../utils';
+import { exampleParamsFunc, exampleResultFunc, GLOBAL_PANEL, PLUGIN_CONNECTOR_NAME, SERVICE_TYPE } from '../constant';
+import { cloneDeep, get } from '../utils/lodash';
+import { formatDate } from '../utils/moment';
 import DefaultPanel from './compoment/defaultPanel';
 import Toolbar from './compoment/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './compoment/globalPanel';
 import Switch from '../components/Switch';
-import {copyText} from '../utils/copy';
+import { copyText } from '../utils/copy';
 
+import css from '../style-cssModules.less';
 
-interface Iprops {
-  connector: Iconnector;
+interface IProps {
+  connector: IConnector;
 	serviceListUrl?: string;
   callServiceUrl?: string;
   addActions?: any[];
@@ -28,10 +22,9 @@ interface Iprops {
     config: { paramsFn: string; resultFn?: string; globalMock?: boolean };
   };
   initialValue: any;
-  // panelItemContribution
 }
 
-interface Iconnector {
+interface IConnector {
   add: (params: any) => null;
   remove: (id: number | string) => null;
 	getAllByType: (id: string) => Array<any>;
@@ -48,30 +41,15 @@ const interfaceParams = [
   { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
 ];
 
-export default function Sidebar({
-  addActions,
-  connector,
-  data,
-	serviceListUrl,
-  initialValue = {},
-}: Iprops) {
+export default function Sidebar({ addActions, connector, data, serviceListUrl, initialValue = {} }: IProps) {
   const ref = useRef<HTMLDivElement>(null);
   const blurMap = useRef<Record<string, () => void>>({});
   const [searchValue, setSearchValue] = useState('');
   const [sidebarContext, setContext] = useState<any>({
-    eidtVisible: false,
     activeId: '',
-    kdev: {
-      departmentOptions: [],
-      interfaceOptions: [],
-      searchOptions: [],
-      interfaceMap: {},
-    },
-    tg: {},
     type: '',
     isEdit: false,
     formModel: { path: '', title: '', id: '', type: '', input: '', output: '' },
-    isDebug: false,
     addActions: addActions
       ? addActions.some(({ type }: any) => type === 'defalut')
         ? addActions
@@ -86,9 +64,7 @@ export default function Sidebar({
       },
       test: (...args: any) => connector.test(...args),
     },
-    search: (v: string) => {
-      setSearchValue(v);
-    },
+    search: setSearchValue,
   });
   const updateService = async (action?: string, item?: any) => {
 	  return new Promise((resolve) => {
@@ -187,15 +163,11 @@ export default function Sidebar({
 
   const onEditItem = useCallback((item) => {
 		if (sidebarContext.isEdit && item.id === sidebarContext.activeId) {
-			setRender({ type: '', isDebug: false, activeId: void 0, isEdit: false });
+			setRender({ type: '', activeId: void 0, isEdit: false });
 			return;
 		}
 
-    const obj: any = {
-      isEdit: true,
-      isDebug: true,
-      activeId: item.id,
-    };
+    const obj: any = { isEdit: true, activeId: item.id };
     if (item.type === SERVICE_TYPE.TG) {
       obj.type = SERVICE_TYPE.TG;
       obj.formModel = { id: item.id, type: item.type, ...item.content };
@@ -232,8 +204,9 @@ export default function Sidebar({
 	sidebarContext.addDefaultService = useCallback(async () => {
 		sidebarContext.type = SERVICE_TYPE.HTTP;
 	  sidebarContext.formModel = {
+			id: uuid(),
 		  title: '',
-		  type: SERVICE_TYPE.HTTP,
+		  type: sidebarContext.formModel?.type || SERVICE_TYPE.HTTP,
 		  path: '',
 		  desc: '',
 		  method: 'GET',
@@ -257,7 +230,6 @@ export default function Sidebar({
 
 	sidebarContext.onCancel = useCallback(() => {
 	  sidebarContext.type = '';
-	  sidebarContext.isDebug = false;
 	  sidebarContext.activeId = void 0;
 	  sidebarContext.isEdit = false;
 	  setRender(sidebarContext);
@@ -345,6 +317,7 @@ export default function Sidebar({
           onClose: closeTemplateForm,
           originConnectors: cloneDeep(data.connectors),
 					globalConfig: data.config,
+	        isEdit: sidebarContext.isEdit,
           initService: sidebarContext.isEdit ? sidebarContext.formModel : undefined,
           connectorService: {
             add(item: Record<string, any>) {
@@ -366,7 +339,7 @@ export default function Sidebar({
 					sidebarContext={sidebarContext}
 					setRender={setRender}
 					onSubmit={onFinish}
-					key={sidebarContext.type}
+					key={sidebarContext.type + sidebarContext.formModel?.id}
 					globalConfig={data.config}
 					style={{ top: ref.current?.getBoundingClientRect().top }}
 				/>
@@ -454,140 +427,132 @@ export default function Sidebar({
   }, []);
 
   return (
-    <>
-      <div
-        ref={ref}
-        className={`${css['sidebar-panel']} ${css['sidebar-panel-open']}`}
-        onClick={() => Object.values(blurMap.current).forEach(fn => fn())}
-      >
-        <div className={`${css['sidebar-panel-view']}`}>
-          <div className={css['sidebar-panel-header']}>
-            <div className={css['sidebar-panel-header__title']}>
-              <span onDoubleClick={onDoubleClick}>服务连接</span>
-							<div className={css.rightOperate}>
-								<div className={css.globalMock} data-mybricks-tip="开启全局Mock，页面调试时所有接口将默认使用Mock能力">
-									<span className={data?.config?.globalMock ? css.warning : ''}>全局 Mock:</span>
-									<Switch defaultChecked={data?.config?.globalMock} onChange={onChangeGlobalMock} />
-								</div>
-								<div className={css.icon} onClick={onGlobalConfigClick} data-mybricks-tip="全局设置，可定义接口全局处理逻辑">
-									{Icons.set}
-								</div>
-							</div>
-            </div>
-            <Toolbar
-	            blurMap={blurMap.current}
-              searchValue={searchValue}
-              ctx={sidebarContext}
-              setRender={setRender}
-            />
-          </div>
-          <div className={css['sidebar-panel-list']}>
-            {
-							data?.connectors
-								.filter((item) => item.content.type !== 'domain')
-		            .filter((item) => searchValue ? item.content.title.includes(searchValue) : true)
-		            .map((item) => {
-		              const expand = sidebarContext.expandId === item.id;
-		              item.updateTime = formatDate(item.updateTime || item.createTime);
-		              const { type } = item.content;
-                  const curAction = sidebarContext.addActions.find(action => action.type === type);
-									let typeLabel = '接口';
-			
-									if (sidebarContext.addActions.length > 1) {
-                    typeLabel = curAction?.title || typeLabel;
-									}
-                  const curTitle = curAction?.getTitle?.(item) || item.content.title;
+	  <div
+		  ref={ref}
+		  className={`${css['sidebar-panel']} ${css['sidebar-panel-open']}`}
+		  onClick={() => Object.values(blurMap.current).forEach(fn => fn())}
+	  >
+		  <div className={`${css['sidebar-panel-view']}`}>
+			  <div className={css['sidebar-panel-header']}>
+				  <div className={css['sidebar-panel-header__title']}>
+					  <span onDoubleClick={onDoubleClick}>服务连接</span>
+					  <div className={css.rightOperate}>
+						  <div className={css.globalMock} data-mybricks-tip="开启全局Mock，页面调试时所有接口将默认使用Mock能力">
+							  <span className={data?.config?.globalMock ? css.warning : ''}>全局 Mock:</span>
+							  <Switch defaultChecked={data?.config?.globalMock} onChange={onChangeGlobalMock} />
+						  </div>
+						  <div className={css.icon} onClick={onGlobalConfigClick} data-mybricks-tip="全局设置，可定义接口全局处理逻辑">
+							  {Icons.set}
+						  </div>
+					  </div>
+				  </div>
+				  <Toolbar
+					  blurMap={blurMap.current}
+					  searchValue={searchValue}
+					  ctx={sidebarContext}
+					  setRender={setRender}
+				  />
+			  </div>
+			  <div className={css['sidebar-panel-list']}>
+				  {
+					  data?.connectors
+						  .filter((item) => item.content.type !== 'domain')
+						  .filter((item) => searchValue ? item.content.title.includes(searchValue) : true)
+						  .map((item) => {
+							  const expand = sidebarContext.expandId === item.id;
+							  item.updateTime = formatDate(item.updateTime || item.createTime);
+							  const { type } = item.content;
+							  const curAction = sidebarContext.addActions.find(action => action.type === type);
+							  let typeLabel = '接口';
 
-                  return (
-		                <div key={item.id}>
-		                  <div
-		                    key={item.id}
-		                    className={`${css['sidebar-panel-list-item']} ${
-		                      sidebarContext.activeId === item.id ? css.active : ''
-		                    } ${
-		                      sidebarContext.isEdit
-		                        ? sidebarContext.activeId === item.id
-		                          ? css.chose
-		                          : css.disabled
-		                        : ''
-		                    }`}
-		                  >
-		                    <div>
-		                      <div
-		                        onClick={(e) => onItemClick(e, item)}
-		                        className={css['sidebar-panel-list-item__left']}
-		                      >
-		                        <div
-		                          className={`${css.icon} ${
-		                            expand ? css.iconExpand : ''
-		                          }`}
-		                        >
-		                          {Icons.arrowR}
-		                        </div>
-		                        <div className={css.tag}>
-		                          {typeLabel}
-		                        </div>
-		                        <div className={css.name}>
-		                          <span data-mybricks-tip={curTitle || undefined}>{curTitle}</span>
-		                        </div>
-		                      </div>
-		                      <div className={css['sidebar-panel-list-item__right']}>
-		                        <div
-			                        data-mybricks-tip="编辑"
-		                          ref={clickRef}
-		                          className={css.action}
-		                          onClick={() => onEditItem(item)}
-		                        >
-		                          {Icons.edit}
-		                        </div>
-		                        <div
-			                        data-mybricks-tip="复制"
-		                          className={css.action}
-		                          onClick={() => onCopyItem(item)}
-		                        >
-		                          {Icons.copy}
-		                        </div>
-		                        <div
-			                        data-mybricks-tip="删除"
-		                          className={css.action}
-		                          onClick={() => onRemoveItem(item)}
-		                        >
-		                          {Icons.remove}
-		                        </div>
-		                      </div>
-		                    </div>
-		                  </div>
-		                  {expand ? (
-		                    <div className={css['sidebar-panel-list-item__expand']}>
-		                      {getInterfaceParams(item).map((param: any) => {
-		                        return (
-		                          <div
-		                            className={css['sidebar-panel-list-item__param']}
-		                            key={param.key}
-		                          >
+							  if (sidebarContext.addActions.length > 1) {
+								  typeLabel = curAction?.title || typeLabel;
+							  }
+							  const curTitle = curAction?.getTitle?.(item) || item.content.title;
+
+							  return (
+								  <div key={item.id}>
+									  <div
+										  key={item.id}
+										  className={`${css['sidebar-panel-list-item']} ${sidebarContext.activeId === item.id ? css.active : ''} ${
+											  sidebarContext.isEdit
+												  ? sidebarContext.activeId === item.id
+													  ? css.chose
+													  : css.disabled
+												  : ''
+										  }`}
+									  >
+										  <div>
+											  <div
+												  onClick={(e) => onItemClick(e, item)}
+												  className={css['sidebar-panel-list-item__left']}
+											  >
+												  <div className={`${css.icon} ${expand ? css.iconExpand : ''}`}>
+													  {Icons.arrowR}
+												  </div>
+												  <div className={css.tag}>
+													  {typeLabel}
+												  </div>
+												  <div className={css.name}>
+													  <span data-mybricks-tip={curTitle || undefined}>{curTitle}</span>
+												  </div>
+											  </div>
+											  <div className={css['sidebar-panel-list-item__right']}>
+												  <div
+													  data-mybricks-tip="编辑"
+													  ref={clickRef}
+													  className={css.action}
+													  onClick={() => onEditItem(item)}
+												  >
+													  {Icons.edit}
+												  </div>
+												  <div
+													  data-mybricks-tip="复制"
+													  className={css.action}
+													  onClick={() => onCopyItem(item)}
+												  >
+													  {Icons.copy}
+												  </div>
+												  <div
+													  data-mybricks-tip="删除"
+													  className={css.action}
+													  onClick={() => onRemoveItem(item)}
+												  >
+													  {Icons.remove}
+												  </div>
+											  </div>
+										  </div>
+									  </div>
+									  {expand ? (
+										  <div className={css['sidebar-panel-list-item__expand']}>
+											  {getInterfaceParams(item).map((param: any) => {
+												  return (
+													  <div
+														  className={css['sidebar-panel-list-item__param']}
+														  key={param.key}
+													  >
 		                            <span
-		                              className={css['sidebar-panel-list-item__name']}
-		                              style={{ width: param.width }}
+			                            className={css['sidebar-panel-list-item__name']}
+			                            style={{ width: param.width }}
 		                            >
 		                              {param.name}:
 		                            </span>
-		                            <span className={css['sidebar-panel-list-item__content']}>
+														  <span className={css['sidebar-panel-list-item__content']}>
 		                              {renderParam(item, param)}
 		                            </span>
-		                          </div>
-		                        );
-		                      })}
-		                    </div>
-		                  ) : null}
-		                </div>
-		              );
-		            })
-						}
-          </div>
-        </div>
-        {renderAddActions()}
-        {renderGlobalPanel()}
-      </div>
-    </>
+													  </div>
+												  );
+											  })}
+										  </div>
+									  ) : null}
+								  </div>
+							  );
+						  })
+				  }
+			  </div>
+		  </div>
+		  {renderAddActions()}
+		  {renderGlobalPanel()}
+	  </div>
   );
 }

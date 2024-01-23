@@ -5,7 +5,7 @@ import RadioButtons from '../../plugin/compoment/defaultPanel/RadioBtn';
 import Editor from '@mybricks/code-editor';
 import { fullScreen, fullScreenExit } from '../../icon';
 
-import parentCss from '../../style-cssModules.less';
+import styles from './index.less';
 
 
 export interface CommonItemProps {
@@ -72,7 +72,7 @@ export const AddressInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChan
  */
 export const MethodRadio: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, key, name, require = true }) => {
   return (
-    <FormItem label='方法' require={require} >
+    <FormItem label='请求方法' require={require} >
       <RadioButtons
         options={methodOpts}
         defaultValue={defaultValue}
@@ -115,9 +115,9 @@ export const EditorWithFullScreen = ({ CDN, value, key, onChange }) => {
   const handleOpenOrClose = (value) => {
     setIsFullScreen(value)
     if (value) {
-      editorRef.current?.classList.add(parentCss['sidebar-panel-code-full']);
+      editorRef.current?.classList.add(styles.sidebarPanelCodeFull);
     } else {
-      editorRef.current?.classList.remove(parentCss['sidebar-panel-code-full']);
+      editorRef.current?.classList.remove(styles.sidebarPanelCodeFull);
     }
   }
   return (
@@ -125,14 +125,14 @@ export const EditorWithFullScreen = ({ CDN, value, key, onChange }) => {
       {isFullScreen ? (
         <div
           onClick={() => handleOpenOrClose(false)}
-          className={parentCss['sidebar-panel-code-icon-full']}
+          className={styles.sidebarPanelCodeIconFull}
         >
           {fullScreenExit}
         </div>
       ) : (
         <div
           onClick={() => handleOpenOrClose(true)}
-          className={parentCss['sidebar-panel-code-icon']}
+          className={styles.sidebarPanelCodeIcon}
         >
           {fullScreen}
         </div>

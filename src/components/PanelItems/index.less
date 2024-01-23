@@ -1,0 +1,32 @@
+.sidebarPanelCodeIcon {
+  position: absolute;
+  top: 36px;
+  right: 12px;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.sidebarPanelCodeIconFull {
+  position: fixed;
+  top: 48px;
+  right: 50px;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.sidebarPanelCodeFull {
+  position: fixed;
+  z-index: 9;
+  padding: 40px 42px 26px;
+  background-color: rgba(0, 0, 0, 0.45);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+
+  :global {
+    .monaco-editor {
+      padding-top: 16px;
+    }
+  }
+}

@@ -6,10 +6,11 @@ export default function FormItem({
   require,
 	contentStyle,
   className = '',
-  children
+  children,
+  labelTop = false
 }: any) {
   return (
-    <div className={`${css.item} ${className}`}>
+    <div className={`${css.item} ${labelTop ? css.labelTop : ''} ${className}`}>
       <label>
         {require ? <i>*</i> : null}
         {title}

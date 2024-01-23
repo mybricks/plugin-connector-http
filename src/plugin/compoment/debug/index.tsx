@@ -57,7 +57,7 @@ const CodeIcon = (
 		<path d="M321.828571 226.742857c-14.628571-14.628571-36.571429-14.628571-51.2 0L7.314286 482.742857c-14.628571 14.628571-14.628571 36.571429 0 51.2l256 256c14.628571 14.628571 36.571429 14.628571 51.2 0 14.628571-14.628571 14.628571-36.571429 0-51.2L87.771429 512l234.057142-234.057143c7.314286-14.628571 7.314286-36.571429 0-51.2z m263.314286 0c-14.628571 0-36.571429 7.314286-43.885714 29.257143l-131.657143 497.371429c-7.314286 21.942857 7.314286 36.571429 29.257143 43.885714s36.571429-7.314286 43.885714-29.257143l131.657143-497.371429c7.314286-14.628571-7.314286-36.571429-29.257143-43.885714z m431.542857 256l-256-256c-14.628571-14.628571-36.571429-14.628571-51.2 0-14.628571 14.628571-14.628571 36.571429 0 51.2L936.228571 512l-234.057142 234.057143c-14.628571 14.628571-14.628571 36.571429 0 51.2 14.628571 14.628571 36.571429 14.628571 51.2 0l256-256c14.628571-14.628571 14.628571-43.885714 7.314285-58.514286z"></path>
 	</svg>
 );
-export default function Debug({ sidebarContext, validate }: any) {
+export default function Debug({ model, onChangeModel, connect, registerBlur }: any) {
   const [remoteData, setData] = useState<any>();
 	const [showParamsCode, setShowParamsCode] = useState(false);
 	const [showResponseCode, setShowResponseCode] = useState(false);
@@ -68,103 +68,101 @@ export default function Debug({ sidebarContext, validate }: any) {
   const codeTextRef = useRef<HTMLTextAreaElement>(null);
   const responseCodeTextRef = useRef<HTMLTextAreaElement>(null);
   const [errorInfo, setError] = useState('');
-  const [params, setParams] = useState(sidebarContext.formModel.params);
   const [edit, setEdit] = useState(false);
   const [showTip, setShowTip] = useState(false);
   const [showPreviewSchema, setShowPreviewSchema] = useState(false);
   const [showMarkAdder, setShowMarkAdder] = useState(false);
   const [markGroupId, setMarkGroupId] = useState('default');
-  const [markList, setMarkList] = useState(sidebarContext.formModel.markList || [{ title: '默认', id: 'default', predicate: {}, outputKeys: [], excludeKeys: [], outputSchema: {} }]);
 	const markAdderInputValue = useRef('');
-	const curMark = useMemo(() => markList.find(mark => mark.id === markGroupId), [markList, markGroupId]);
-  sidebarContext.formModel.params = sidebarContext.formModel.params || {
-    type: 'root',
-    name: 'root',
-    children: [],
-  };
+	const curMark = useMemo(() => model.markList?.find(mark => mark.id === markGroupId), [model, markGroupId]);
 
-	const onChangeMarkList = useCallback((markList) => {
-		sidebarContext.formModel.markList = markList;
-		setMarkList(sidebarContext.formModel.markList);
-	}, []);
-	const initMarkList = useCallback((context) => {
-		if (!context.formModel.markList?.length) {
-			onChangeMarkList([{
-				title: '默认',
-				id: 'default',
-				predicate: {},
-				outputKeys: context.formModel.outputKeys || [],
-				excludeKeys: context.formModel.excludeKeys || [],
-				outputSchema: context.formModel.outputSchema || {},
-				resultSchema: context.formModel.resultSchema,
-			}]);
-			delete context.formModel.outputKeys;
-			delete context.formModel.excludeKeys;
-			delete context.formModel.outputSchema;
-			delete context.formModel.resultSchema;
-		} else {
-			setMarkList(context.formModel.markList || []);
+	const initModel = useCallback((model) => {
+		let newModel = model;
+		if (!model.markList?.length) {
+			newModel = {
+				...model,
+				outputKeys: undefined,
+				excludeKeys: undefined,
+				outputSchema: undefined,
+				resultSchema: undefined,
+				markList: [{
+					title: '默认',
+					id: 'default',
+					predicate: {},
+					outputKeys: model.outputKeys || [],
+					excludeKeys: model.excludeKeys || [],
+					outputSchema: model.outputSchema || {},
+					resultSchema: model.resultSchema,
+				}]
+			};
 		}
-	}, []);
-	useEffect(() => {
-		initMarkList(sidebarContext);
+
+		if (!model.params) {
+			newModel = { ...newModel, params: { type: 'root', name: 'root', children: [] } };
+		}
+		onChangeModel(newModel);
+	}, [onChangeModel]);
+	const extractKeysByResultSchema = useCallback((outputKeys = [], excludeKeys = [], originSchema) => {
+		let newOutputKeys = [...outputKeys], newExcludeKeys = [...excludeKeys];
+		if (!originSchema) {
+			return { outputKeys: [], excludeKeys: [] };
+		}
+
+		newOutputKeys = outputKeys
+			.filter(Boolean)
+			.map(key => key.split('.'))
+			.filter(keys => {
+				let schema = originSchema.properties || originSchema.items?.properties;
+
+				for (let idx = 0; idx < keys.length; idx++) {
+					const key = keys[idx];
+
+					if (schema && schema[key]) {
+						schema = schema[key].properties || schema[key].items?.properties;
+					} else {
+						return false;
+					}
+				}
+
+				return true;
+			})
+			.map(keys => keys.join('.'));
+		newExcludeKeys = excludeKeys
+			.filter(Boolean)
+			.map(key => key.split('.'))
+			.filter(keys => {
+				let schema = originSchema.properties || originSchema.items?.properties;
+
+				for (let idx = 0; idx < keys.length; idx++) {
+					const key = keys[idx];
+
+					if (schema && schema[key]) {
+						schema = schema[key].properties || schema[key].items?.properties;
+					} else {
+						return false;
+					}
+				}
+
+				return true;
+			})
+			.map(keys => keys.join('.'));
+
+		return { outputKeys: newOutputKeys, excludeKeys: newExcludeKeys };
 	}, []);
 
 	const onConfirmTip = () => {
 		try {
 			formatSchema(willUpdateResultSchemaRef.current);
-			const inputSchema = paramsToSchema(sidebarContext.formModel.params || {});
+			const inputSchema = paramsToSchema(model.params || {});
 			formatSchema(inputSchema);
-			sidebarContext.formModel.inputSchema = inputSchema;
-
-			const newMarkList = JSON.parse(JSON.stringify(markList));
-
+			model.inputSchema = inputSchema;
+			const newMarkList = JSON.parse(JSON.stringify(model.markList));
 			const mark = newMarkList.find(m => m.id === markGroupId);
 
 			if (!mark) {
 				throw Error('当前标记组不存在');
 			}
-			let { outputKeys = [], excludeKeys = [] } = mark;
-
-			outputKeys = outputKeys
-				.filter(Boolean)
-				.map(key => key.split('.'))
-				.filter(keys => {
-					let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
-
-					for (let idx = 0; idx < keys.length; idx++) {
-						const key = keys[idx];
-
-						if (schema && schema[key]) {
-							schema = schema[key].properties || schema[key].items?.properties;
-						} else {
-							return false;
-						}
-					}
-
-					return true;
-				})
-				.map(keys => keys.join('.'));
-			excludeKeys = excludeKeys
-				.filter(Boolean)
-				.map(key => key.split('.'))
-				.filter(keys => {
-					let schema = willUpdateResultSchemaRef.current.properties || willUpdateResultSchemaRef.current.items?.properties;
-
-					for (let idx = 0; idx < keys.length; idx++) {
-						const key = keys[idx];
-
-						if (schema && schema[key]) {
-							schema = schema[key].properties || schema[key].items?.properties;
-						} else {
-							return false;
-						}
-					}
-
-					return true;
-				})
-				.map(keys => keys.join('.'));
-
+			let { outputKeys = [], excludeKeys = [] } = extractKeysByResultSchema(mark.outputKeys, mark.excludeKeys, willUpdateResultSchemaRef.current);
 			let outputData = getDataByExcludeKeys(getDataByOutputKeys(allDataRef.current, outputKeys), excludeKeys);
 			let outputSchema = jsonToSchema(outputData);
 
@@ -187,7 +185,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 			mark.outputSchema = outputSchema;
 			mark.resultSchema = willUpdateResultSchemaRef.current;
 
-			onChangeMarkList(newMarkList);
+			onChangeModel({ ...model, markList: newMarkList });
 		} catch (error: any) {
 			console.error(error);
 			const isError = error instanceof Error;
@@ -198,12 +196,15 @@ export default function Debug({ sidebarContext, validate }: any) {
 	};
   const onDebugClick = async () => {
     try {
-      if (!validate()) return;
-      const originParams = sidebarContext.formModel.params || {};
+      if (!model.path) {
+	      notice('接口的请求路径不能为空', { type: 'warning' });
+				return;
+      }
+      const originParams = model.params || {};
       let params = params2data(originParams);
 
 			/** 存在文件调试时，转为 formDta */
-	    if (['POST', 'PUT'].includes(sidebarContext.formModel.method) && hasFile(originParams)) {
+	    if (['POST', 'PUT'].includes(model.method) && hasFile(originParams)) {
 				const formData = new FormData();
 
 				Object.keys(params).forEach(key => {
@@ -222,16 +223,9 @@ export default function Debug({ sidebarContext, validate }: any) {
 				});
 		    params = formData;
 	    }
-      // setData([]);
       setError('');
-	    allDataRef.current = await sidebarContext.connector.test(
-	      {
-		      type: sidebarContext.formModel.type || 'http',
-		      mode: 'test',
-		      id: sidebarContext.formModel.id,
-		      connectorName: PLUGIN_CONNECTOR_NAME,
-		      content: sidebarContext.formModel,
-	      },
+	    allDataRef.current = await connect(
+	      { type: model.type || 'http', mode: 'test', id: model.id, connectorName: PLUGIN_CONNECTOR_NAME, content: model },
 	      params
       );
 	    const resultSchema = jsonToSchema(allDataRef.current);
@@ -251,17 +245,13 @@ export default function Debug({ sidebarContext, validate }: any) {
   };
 	const onCloseTip = useCallback(() => setShowTip(false), []);
 	const onToggleSchemaPreview = useCallback(() => setShowPreviewSchema(show => !show), []);
-
   const onParamsChange = useCallback((params) => {
     if (params !== void 0) {
       const inputSchema = paramsToSchema(params);
       formatSchema(inputSchema);
-      sidebarContext.formModel.inputSchema = inputSchema;
-      sidebarContext.formModel.params = params;
-      setParams(params);
+			onChangeModel({ ...model, inputSchema, params });
     }
-  }, [sidebarContext.formModel]);
-
+  }, [model, onChangeModel]);
   const onMarkChange = useCallback((mark) => {
 		let { outputKeys = [], excludeKeys = [], resultSchema } = mark;
 
@@ -374,32 +364,32 @@ export default function Debug({ sidebarContext, validate }: any) {
 			  }
 		  } catch (error) {}
 
-		  const index = sidebarContext.formModel.markList.findIndex(m => m.id === mark.id);
+		  const index = model.markList.findIndex(m => m.id === mark.id);
 		  mark.outputKeys = outputKeys;
 		  mark.excludeKeys = excludeKeys;
 		  mark.outputSchema = newOutputSchema;
-		  sidebarContext.formModel.markList.splice(index, 1, { ...mark });
+		  model.markList.splice(index, 1, { ...mark });
 
-			onChangeMarkList([...sidebarContext.formModel.markList]);
+			onChangeModel({ ...model, markList: [...model.markList] });
 	  } catch (error) {
       console.log(error);
     }
-  }, [markList]);
-
+  }, [model]);
   const onMockSchemaChange = useCallback((schema) => willUpdateResultSchemaForEditRef.current = schema, []);
   const editResultSchema = useCallback(() => {
 		willUpdateResultSchemaForEditRef.current = curMark.resultSchema;
 	  setEdit(true);
   }, [curMark]);
   const saveResultSchema = useCallback(() => {
-	  const mark = markList.find(m => m.id === markGroupId);
+	  const mark = model.markList.find(m => m.id === markGroupId);
 
 	  if (mark) {
 		  mark.resultSchema = willUpdateResultSchemaForEditRef.current;
-		  onChangeMarkList(cloneDeep(markList));
+		  const { outputKeys, excludeKeys } = extractKeysByResultSchema(mark.outputKeys, mark.excludeKeys, mark.resultSchema);
+			onMarkChange({ ...mark, outputKeys, excludeKeys });
 	  }
 	  setEdit(false);
-  }, [markGroupId, markList]);
+  }, [markGroupId, model, onMarkChange]);
 	const cancelEditResultSchema = useCallback(() => {
 		willUpdateResultSchemaForEditRef.current = undefined;
 		setEdit(false);
@@ -409,51 +399,54 @@ export default function Debug({ sidebarContext, validate }: any) {
 	const onChangeMarkInput = useCallback(e => markAdderInputValue.current = e.target.value, []);
 	const addMark = useCallback(() => {
 		const id = uuid();
-		const defaultMark = markList.find(m => m.id === 'default');
-		onChangeMarkList([
-			...markList,
-			{
-				title: markAdderInputValue.current,
-				id: id,
-				outputKeys: [],
-				excludeKeys: [],
-				resultSchema: defaultMark?.resultSchema,
-				outputSchema: defaultMark?.resultSchema,
-			}
-		]);
+		const defaultMark = model.markList.find(m => m.id === 'default');
+		onChangeModel({
+			...model,
+			markList: [
+				...model.markList,
+				{
+					title: markAdderInputValue.current,
+					id: id,
+					outputKeys: [],
+					excludeKeys: [],
+					resultSchema: defaultMark?.resultSchema,
+					outputSchema: defaultMark?.resultSchema,
+				}
+			]
+		});
 		markAdderInputValue.current = '';
 		setShowMarkAdder(false);
 		setMarkGroupId(id);
-	}, [markList]);
+	}, [model]);
 	const onMarkInputPressEnter = useCallback(e => {
 		if(e.keyCode === 13 || e.key === 'Enter') {
 			addMark();
 		}
 	}, [addMark]);
 	const onCancelMark = useCallback((id: string) => {
-		const index = markList.findIndex(m => m.id === id);
-		const isFocus = markGroupId === markList[index]?.id;
-		markList.splice(index, 1);
+		const index = model.markList.findIndex(m => m.id === id);
+		const isFocus = markGroupId === model.markList[index]?.id;
+		model.markList.splice(index, 1);
 
-		onChangeMarkList([...markList]);
-		isFocus && setMarkGroupId(markList[index - 1].id);
-	}, [markList, markGroupId]);
+		onChangeModel({ ...model, markList: [...model.markList] });
+		isFocus && setMarkGroupId(model.markList[index - 1].id);
+	}, [model, markGroupId]);
 	const onSelectMarkGroup = useCallback(id => {
 		setMarkGroupId(id);
 		setData(undefined);
-	}, [markList]);
+	}, []);
 
 	const toggleParamsCodeShow = useCallback(event => {
 		event.stopPropagation();
 		if (showParamsCode) {
 			try {
-				if(!sidebarContext.formModel.inputSchema && !codeTextRef.current?.value) {
+				if(!model.inputSchema && !codeTextRef.current?.value) {
 					setShowParamsCode(!showParamsCode);
 					return
 				}
 				const jsonSchema = JSON.parse(codeTextRef.current?.value);
 				if (jsonSchema.type === 'object' && !!jsonSchema.properties) {
-					if (JSON.stringify(sidebarContext.formModel.inputSchema) !== JSON.stringify(jsonSchema)) {
+					if (JSON.stringify(model.inputSchema) !== JSON.stringify(jsonSchema)) {
 						const [result, errorFields] = checkValidJsonSchema(jsonSchema);
 						if(result === false) {
 							notice(`JSON 解析错误，${errorFields.length ? errorFields[0].msg + '，' : ''}此次变更被忽略`, { type: 'warning' });
@@ -461,17 +454,12 @@ export default function Debug({ sidebarContext, validate }: any) {
 							setShowParamsCode(!showParamsCode);
 							return
 						}
-						sidebarContext.formModel.inputSchema = jsonSchema;
-						const params = extractParamsBySchema(jsonSchema);
-						sidebarContext.formModel.params = params;
-						setParams(params);
+						onChangeModel({ ...model, inputSchema: jsonSchema, params: extractParamsBySchema(jsonSchema) });
 					}
 				} else if (Object.prototype.toString.call(jsonSchema) === '[object Object]') {
 					const { params, originSchema } = extractParamsAndSchemaByJSON(jsonSchema);
 
-					sidebarContext.formModel.inputSchema = originSchema;
-					sidebarContext.formModel.params = params;
-					setParams(params);
+					onChangeModel({ ...model, inputSchema: originSchema, params: params });
 				} else {
 					notice('JSON 描述不合法，此次变更被忽略', { type: 'warning' });
 				}
@@ -484,6 +472,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 		setShowParamsCode(!showParamsCode);
 	}, [showParamsCode]);
 
+	// TODO: outputKey 重置
 	const toggleResponseCodeShow = useCallback(event => {
 		event.stopPropagation();
 		if (showResponseCode) {
@@ -502,7 +491,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 						setShowResponseCode(!showResponseCode);
 						return;
 					}
-					const newMarkList = cloneDeep(markList);
+					const newMarkList = cloneDeep(model.markList);
 					const mark = newMarkList.find(m => m.id === curMark.id);
 
 					if (!mark) {
@@ -511,11 +500,9 @@ export default function Debug({ sidebarContext, validate }: any) {
 						setShowResponseCode(!showResponseCode);
 						return;
 					}
-					mark.resultSchema = jsonSchema;
-					mark.outputKeys = [];
-					mark.excludeKeys = [];
-					mark.outputSchema = jsonSchema;
-					onChangeMarkList(newMarkList);
+
+					const { outputKeys, excludeKeys } = extractKeysByResultSchema(mark.outputKeys, mark.excludeKeys, jsonSchema);
+					onMarkChange({ ...mark, outputKeys, excludeKeys, resultSchema: jsonSchema });
 				}
 			} catch (e) {
 				console.warn('JSON 解析错误', e);
@@ -524,37 +511,32 @@ export default function Debug({ sidebarContext, validate }: any) {
 		}
 
 		setShowResponseCode(!showResponseCode);
-	}, [showResponseCode, curMark, markList]);
+	}, [showResponseCode, curMark, model, onMarkChange]);
 
 	/** 当切换接口，params 变化 */
 	useEffect(() => {
-		setParams(sidebarContext.formModel.params);
 		setError('');
-		initMarkList(sidebarContext);
-	}, [sidebarContext.formModel.id]);
+		initModel(model);
+	}, [model.id]);
 
 	return (
     <>
 			<div className={styles.paramEditContainer}>
 				{showParamsCode ? (
-					<FormItem label='请求参数'>
+					<FormItem label='请求参数' labelTop>
 						<textarea
 							ref={codeTextRef}
 							className={`${styles.codeText}  ${styles.textEdt}`}
 							cols={30}
 							rows={10}
-							defaultValue={JSON.stringify(sidebarContext.formModel.inputSchema, null, 2)}
+							defaultValue={JSON.stringify(model.inputSchema, null, 2)}
 						/>
 						<div>支持识别 JSON、JSON Schema 等描述协议</div>
 					</FormItem>
 				) : (
-					<Fragment key={sidebarContext.formModel.id}>
-						<FormItem label='请求参数'>
-							<ParamsEdit
-								value={sidebarContext.formModel.params}
-								ctx={sidebarContext}
-								onChange={onParamsChange}
-							/>
+					<Fragment key={model.id}>
+						<FormItem label='请求参数' labelTop>
+							<ParamsEdit value={model.params} onChange={onParamsChange} />
 						</FormItem>
 						<FormItem>
 							<Params
@@ -564,8 +546,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 								showPreviewSchema={showPreviewSchema}
 								onConfirmTip={onConfirmTip}
 								onDebugClick={onDebugClick}
-								ctx={sidebarContext}
-								params={params}
+								params={model.params}
 							/>
 						</FormItem>
 					</Fragment>
@@ -577,7 +558,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 			</div>
 	    {showPreviewSchema
 		    ? (
-			    <FormItem label='预览最新类型'>
+			    <FormItem label='预览最新类型' labelTop>
 				    <ReturnSchema
 					    outputKeys={[]}
 					    excludeKeys={[]}
@@ -588,7 +569,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 		    )
 		    : (
 					edit ? (
-				    <FormItem label='返回数据'>
+				    <FormItem label='返回数据' labelTop>
 					    <div className={styles.buttonGroup}>
 						    <div></div>
 						    <div>
@@ -601,15 +582,14 @@ export default function Debug({ sidebarContext, validate }: any) {
 						    </div>
 					    </div>
 					    <OutputSchemaEdit
-						    key={sidebarContext.formModel.id}
+						    key={model.id}
 						    schema={curMark.resultSchema}
-						    ctx={sidebarContext}
 						    onChange={onMockSchemaChange}
 					    />
 				    </FormItem>
 			    ) : (
 				    <>
-					    <FormItem label='返回数据' className={styles.scrollFormItem}>
+					    <FormItem label='返回数据' className={styles.scrollFormItem} labelTop>
 						    {showResponseCode ? (
 							    <>
 								    <div className={styles.buttonGroup}>
@@ -632,7 +612,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 								    <div className={styles.buttonGroup}>
 									    <div className={styles.categoryContainer}>
 										    <div className={styles.buttons}>
-											    {markList.map((option) => {
+											    {model.markList?.map((option) => {
 												    return (
 													    <div
 														    key={option.id}
@@ -691,6 +671,7 @@ export default function Debug({ sidebarContext, validate }: any) {
 										    onMarkChange={onMarkChange}
 										    schema={curMark.resultSchema}
 										    error={errorInfo}
+										    registerBlur={registerBlur}
 									    />
 								    ) : null}
 							    </>

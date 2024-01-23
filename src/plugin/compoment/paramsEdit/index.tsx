@@ -1,31 +1,27 @@
 /**
  * 使用树形选择器完成字段映射
  */
-
-import React, { useCallback, useRef } from 'react';
+import React, { useRef } from 'react';
 import * as Icons from '../../../icon';
 import { uuid } from '../../../utils';
 import { findLastIndex } from '../../../utils/lodash';
 
 import css from './index.less';
 
-export default function ParamsEdit({ value, onChange, ctx }: any) {
+export default function ParamsEdit({ value, onChange }: any) {
   const valueRef = useRef(value);
   valueRef.current = value;
-  const updateValue = useCallback(() => {
-    onChange({ ...valueRef.current });
-  }, [onChange]);
+  const updateValue = () => onChange({ ...valueRef.current });
 
-  const set = useCallback((item, key, val) => {
+  const set = (item, key, val) => {
     if (item[key] === val) return;
     item[key] = val;
     if (key === 'type') {
       item['defaultValue'] = val === 'boolean' ? true : '';
       item.children = [];
     }
-    ctx.editNowId = item.id;
     updateValue();
-  }, [onChange]);
+  };
 
   const removeItem = (item, parent) => {
     parent.children = parent.children.filter(({ name }) => name !== item.name);
@@ -35,7 +31,6 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
         child.defaultValue = parent.children[index].defaultValue;
       });
     }
-    ctx.editNowId = void 0;
     updateValue();
   };
 
@@ -53,17 +48,16 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
       const name = `name${parent.children.length + 1}`;
       parent.children.push({ id, type: 'string', name });
     }
-    ctx.editNowId = void 0;
     updateValue();
   };
 
-  const processAry = useCallback((item, depth) => {
+  const processAry = (item, depth) => {
     return item.children.map((child: any) => {
       return processItem(child, item, depth);
     });
-  }, []);
+  };
 
-  const processItem = useCallback((item, parent, depth = -1) => {
+  const processItem = (item, parent, depth = -1) => {
     if (!item) return null;
     let jsx;
     if (item.type === 'root') {
@@ -82,7 +76,7 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
             findLastIndex(parent.children, ({ type }) => type === 'string' || type === 'number' || type === 'any' || type === 'boolean' ),
             parent.children.length - 1
           )
-        ]?.name === item.name) ||
+          ]?.name === item.name) ||
       item.type === 'object' ||
       item.type === 'array';
 
@@ -166,16 +160,16 @@ export default function ParamsEdit({ value, onChange, ctx }: any) {
         {jsx}
       </div>
     );
-  }, []);
+  };
 
-  const pushItemToRoot = useCallback(() => {
+  const pushItemToRoot = () => {
     valueRef.current.children.push({
       type: 'string',
       id: uuid(),
       name: `name${valueRef.current.children.length + 1}`
     });
     updateValue()
-  }, [onChange]);
+  };
 
   return (
     <>

@@ -147,7 +147,7 @@ export function paramsToSchema(node) {
 }
 
 export function params2data(params: any) {
-  if (!params) return;
+  if (!params) return {};
   let obj: any = {};
 
   if (params.type === 'string') {

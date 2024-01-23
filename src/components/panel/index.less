@@ -1,0 +1,34 @@
+.pluginPanelContainer {
+  display: flex;
+  flex-direction: column;
+  box-shadow: 5px 0 10px -5px #ddd;
+  overflow: hidden;
+  width: 560px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 26px;
+  left: 361px;
+  background-color: #f7f7f7;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+}
+
+.pluginPanelTitle {
+  font-size: 12px;
+  font-weight: bold;
+  padding: 0 10px;
+  line-height: 50px;
+  height: 50px;
+  background-color: #f7f7f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: text;
+}
+
+.pluginPanelContent {
+  padding: 0 12px 12px;
+  overflow-y: auto;
+  height: calc(100% - 32px);
+  font-size: 12px;
+}

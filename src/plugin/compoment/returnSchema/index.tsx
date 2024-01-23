@@ -1,20 +1,12 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
-import { DefaultPanelContext } from '../defaultPanel/context';
 import { MarkList, MarkTypeLabel, MarkTypes } from '../../../constant';
 import { notice } from '../../../components/Message';
 
 import styles from './index.less';
 
-export default function ReturnSchema({
-  mark,
-  onMarkChange,
-  schema,
-  error,
-  noMark
-}: any) {
-  const defaultPanelContext = useContext(DefaultPanelContext);
+export default function ReturnSchema({ mark, onMarkChange, schema, error, noMark, registerBlur }: any) {
   const parentEleRef = useRef<HTMLDivElement>();
   const curKeyRef = useRef('');
   const [popMenuStyle, setStyle] = useState<any>();
@@ -225,8 +217,8 @@ export default function ReturnSchema({
     }
     setCurMarkList(newMarkList);
     setStyle({ display: 'block', left: currentPos.x - parentPos.x, top });
-    defaultPanelContext.addBlurAry('return-schema', () => setStyle(void 0));
-  }, []);
+    registerBlur?.('return-schema', () => setStyle(void 0));
+  }, [registerBlur]);
 
   const cancelMark = useCallback((e, xpath) => {
     /** 优先取消标记组标识 */
@@ -245,9 +237,9 @@ export default function ReturnSchema({
 
   const resetPopMenuStyle = useCallback((event) => {
     setStyle(void 0);
-    defaultPanelContext.addBlurAry('return-schema', () => {});
+    registerBlur('return-schema', () => {});
     event.stopPropagation();
-  }, []);
+  }, [registerBlur]);
 
   if (error) {
     const isErrorMessage = typeof error === 'string';
@@ -262,6 +254,7 @@ export default function ReturnSchema({
   return schema ? (
     <div
       className={styles.returnParams}
+      style={noMark ? { marginTop: 0 } : undefined}
       ref={parentEleRef}
       onClick={resetPopMenuStyle}
     >

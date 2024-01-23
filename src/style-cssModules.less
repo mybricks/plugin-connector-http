@@ -101,65 +101,6 @@
         line-height: 22px;
       }
     }
-
-    &__sub-title {
-      font-size: 14px;
-      font-weight: 666;
-      color: #333;
-      height: 100%;
-      line-height: 200%;
-      min-width: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-right: 1px solid #ddd;
-      border-bottom: 1px solid #f7f7f7;
-      padding: 0 10px;
-      margin-bottom: -2px;
-    }
-
-    &__toolbar {
-      padding: 0 10px 0 6px;
-      height: 26px;
-      display: flex;
-      justify-content: space-between;
-      background-color: #fafafa;
-      align-items: center;
-    }
-  }
-}
-
-.sidebar-panel-content {
-  padding: 0 12px 12px ;
-  overflow-y: auto;
-  height: calc(100% - 32px);
-  font-size: 12px;
-
-  &-title {
-    height: 32px;
-    line-height: 32px;
-    background-color: #f7f7f7;
-    margin: 0 -12px;
-    padding: 0 12px;
-    margin-bottom: 12px;
-  }
-
-  .param-item {
-    display: flex;
-    width: 100%;
-    align-items: baseline;
-
-    &-actions {
-      margin-left: 12px;
-
-      :global {
-        .anticon {
-          &:hover {
-            color: @color;
-          }
-        }
-      }
-    }
   }
 }
 
@@ -305,54 +246,6 @@
       }
     }
   }
-}
-
-.sidebar-panel-code {
-  position: relative;
-  font-size: 12px;
-
-  &-icon {
-    position: absolute;
-    top: 36px;
-    right: 6px;
-    z-index: 1;
-    cursor: pointer;
-
-    &-full {
-      position: fixed;
-      top: 48px;
-      right: 50px;
-      z-index: 10;
-      cursor: pointer;
-    }
-  }
-
-  &-full {
-    position: fixed;
-    z-index: 9;
-    padding: 40px 42px 26px;
-    background-color: rgba(0, 0, 0, 0.45);
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
-
-    :global {
-      .monaco-editor {
-        padding-top: 16px;
-      }
-    }
-  }
-}
-
-.sidebar-mask {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 346px;
-  z-index: 1000;
-  height: 100%;
 }
 
 .doc-link {

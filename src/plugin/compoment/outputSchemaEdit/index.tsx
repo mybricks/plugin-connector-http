@@ -11,7 +11,7 @@ import { cloneDeep, findLastIndex } from '../../../utils/lodash';
 import styles from './index.less';
 
 const ROOT_PARAMS = { name: 'root', type: 'root', children: [] };
-export default function OutputSchemaEdit({ schema, value, onChange, ctx }: any) {
+export default function OutputSchemaEdit({ schema, value, onChange }: any) {
   const valueRef = useRef(value);
   const [params, setParams] = useState(cloneDeep(ROOT_PARAMS));
   valueRef.current = params;
@@ -39,7 +39,6 @@ export default function OutputSchemaEdit({ schema, value, onChange, ctx }: any) 
       }
     }
     formatValue(item, key, val);
-    ctx.editNowId = item.id;
     updateValue();
   }, []);
 
@@ -55,7 +54,6 @@ export default function OutputSchemaEdit({ schema, value, onChange, ctx }: any) 
         child.defaultValue = parent.children[index].defaultValue;
       });
     }
-    ctx.editNowId = void 0;
     updateValue();
   };
 
@@ -73,7 +71,6 @@ export default function OutputSchemaEdit({ schema, value, onChange, ctx }: any) 
       const name = `name${parent.children.length + 1}`;
       parent.children.push({ id, type: 'string', name });
     }
-    ctx.editNowId = void 0;
     updateValue();
   };
 
