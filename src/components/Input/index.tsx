@@ -1,35 +1,40 @@
-import React, { useState, useEffect, useRef } from 'react';
-import css from './index.less';
+import React, { useState, useEffect, useRef, CSSProperties, FC, FocusEventHandler } from 'react';
 
-export default function Input({
-  defaultValue,
-  onChange,
-  onBlur,
-  validateError = '',
-  placeholder,
-  style= {},
-  type = 'input',
-}: any) {
+import styles from './index.less';
+
+export interface InputProps {
+  defaultValue?: string;
+  onChange?(value: string): void;
+  onBlur?: FocusEventHandler<HTMLTextAreaElement | HTMLInputElement>;
+  validateError?: string;
+  placeholder?: string;
+  style?: CSSProperties;
+  type?: 'input' | 'textarea';
+}
+
+const Input: FC<InputProps> = props => {
+  const { defaultValue, onChange, onBlur, validateError = '', placeholder, style= {}, type = 'input' } = props;
   const domRef = useRef(null);
-  const [innerValue, setInnerValue] = useState(defaultValue)
+  const [innerValue, setInnerValue] = useState(defaultValue);
   useEffect(() => {
     if(validateError && !innerValue) {
-      domRef.current?.classList.add(css.error);
+      domRef.current?.classList.add(styles.error);
     }
-  }, [validateError])
+  }, [validateError]);
 
   const innerChange = (e) => {
     if(validateError) {
-      domRef.current?.classList.remove(css.error);
+      domRef.current?.classList.remove(styles.error);
     }
-    setInnerValue(e.target.value)
-    onChange?.(e)
-  }
+    setInnerValue(e.target.value);
+    onChange?.(e);
+  };
+
   return (
-    <div className={css.input}>
+    <div className={styles.input}>
       <div
         ref={domRef}
-        className={`${css.editor} ${css.textEdt}`}
+        className={`${styles.editor} ${styles.textEdt}`}
         data-err={validateError}
       >
         {type === 'input' ? (
@@ -53,8 +58,8 @@ export default function Input({
       </div>
     </div>
   );
-}
+};
 
-export function TextArea(props: any) {
-  return Input({ ...props, type: 'textarea' });
-}
+export const TextArea: FC<Omit<InputProps, 'type'>> = props => Input({...props, type: 'textarea'});
+
+export default Input;

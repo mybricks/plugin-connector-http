@@ -1,5 +1,5 @@
-import { isObject } from "./isObject";
-import { now } from "./now";
+import { isObject } from './isObject';
+import { now } from './now';
 
 var FUNC_ERROR_TEXT = "Expected a function";
 

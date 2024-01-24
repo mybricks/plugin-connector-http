@@ -1,9 +1,5 @@
 import { uuid } from '../../../utils';
 
-export function getLast(list: any[]) {
-  return list ? list[list.length - 1] : {};
-}
-
 export function schema2params(schema: any) {
   function proItem(schema, key, obj) {
     let cur = obj;

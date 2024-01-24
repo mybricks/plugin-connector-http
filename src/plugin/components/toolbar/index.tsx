@@ -1,5 +1,5 @@
-import { plus } from '../../../icon'
 import React from 'react';
+import { plus } from '../../../icon'
 import Dropdown from '../../../components/Dropdown';
 
 import css from './index.less';

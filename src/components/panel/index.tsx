@@ -11,6 +11,7 @@ export interface PanelWrapProps {
 	title?: string;
 	extra?: ReactNode;
 	onClose?(): void;
+	children?: ReactNode;
 }
 
 const PanelWrap: FC<PanelWrapProps> = props => {

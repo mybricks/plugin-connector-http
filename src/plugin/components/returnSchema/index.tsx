@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useCallback } from 'react';
 import { isEmpty } from '../../../utils/lodash';
 import { MarkList, MarkTypeLabel, MarkTypes } from '../../../constant';
-import { notice } from '../../../components/Message';
+import { notice } from '../../../components';
 
 import styles from './index.less';
 

@@ -1,10 +1,11 @@
-import React, { ButtonHTMLAttributes, DetailedHTMLProps, FC } from 'react';
+import React, { ButtonHTMLAttributes, DetailedHTMLProps, FC, ReactNode } from 'react';
 
 import styles from './index.less';
 
 export type ButtonProps = Omit<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>, 'type'> & {
   type?: string;
   size?: string;
+  children?: ReactNode;
 }
 
 const Button: FC<ButtonProps> = props => {

@@ -1,4 +1,4 @@
-import React, { FC, CSSProperties, useState, useRef } from 'react';
+import React, { FC, CSSProperties, useState, useRef, FocusEventHandler, ReactNode } from 'react';
 import FormItem from '../FormItem';
 import Input, { TextArea } from '../Input';
 import RadioButtons from '../RadioButtons';
@@ -10,14 +10,15 @@ import styles from './index.less';
 
 export interface CommonItemProps {
   defaultValue: string;
-  onBlur?: Function;
-  onChange?: Function;
+  onBlur?: FocusEventHandler<any>;
+  onChange?(value: any): void;
   require?: boolean
   key?: string;
   name?: string;
-  style?: CSSProperties
+  style?: CSSProperties;
   /** 校验出错信息 */
-  validateError?: string
+  validateError?: string;
+  children?: ReactNode;
 }
 
 /**
@@ -34,7 +35,7 @@ const methodOpts = [
 /**
  * 接口名称
  */
-export const NameInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, key, name, require = false, }) => {
+export const NameInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, require = false, }) => {
   return (
     <FormItem label='名称' require={require} >
       <Input
@@ -52,7 +53,7 @@ export const NameInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange,
  * 
  * 接口地址
  */
-export const AddressInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, key, name, require = true, validateError }) => {
+export const AddressInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, require = true, validateError }) => {
   return (
     <FormItem label='地址' require={require} >
       <TextArea
@@ -70,7 +71,7 @@ export const AddressInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChan
 /**
  * 请求方法
  */
-export const MethodRadio: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, key, name, require = true }) => {
+export const MethodRadio: FC<CommonItemProps> = ({ defaultValue, onChange, require = true }) => {
   return (
     <FormItem label='请求方法' require={require} >
       <RadioButtons
@@ -160,7 +161,7 @@ export const EditorWithFullScreen = ({ CDN, value, key, onChange }) => {
 /**
  * 接口描述
  */
-export const DescriptionInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, key, name, require = false, validateError }) => {
+export const DescriptionInput: FC<CommonItemProps> = ({ defaultValue, onBlur, require = false, validateError }) => {
   return (
     <FormItem label='接口描述' require={require}>
       <Input
@@ -180,7 +181,7 @@ export const DescriptionInput: FC<CommonItemProps> = ({ defaultValue, onBlur, on
 /**
  * 接口文档
  */
-export const DocInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, key, name, require = false, validateError }) => {
+export const DocInput: FC<CommonItemProps> = ({ defaultValue, onBlur, onChange, require = false, validateError }) => {
   return (
     <FormItem label='文档链接' require={require}>
       <TextArea

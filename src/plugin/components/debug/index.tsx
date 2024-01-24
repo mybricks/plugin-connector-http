@@ -20,7 +20,7 @@ import OutputSchemaEdit from '../outputSchemaEdit';
 import FormItem from '../../../components/FormItem';
 import { cloneDeep } from '../../../utils/lodash';
 import Button from '../../../components/Button';
-import { notice } from '../../../components/Message';
+import { notice } from '../../../components';
 import Tooltip from '../../../components/tooltip';
 import { CDN, PLUGIN_CONNECTOR_NAME } from '../../../constant';
 

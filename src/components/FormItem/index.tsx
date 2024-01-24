@@ -1,4 +1,4 @@
-import React, { CSSProperties, FC } from 'react';
+import React, { CSSProperties, FC, ReactNode } from 'react';
 
 import css from './index.less';
 
@@ -8,7 +8,8 @@ export interface FormItemProps {
   /** label 是否显示在顶部 */
   labelTop?: boolean;
   className?: string;
-  contentStyle?: CSSProperties
+  contentStyle?: CSSProperties;
+  children?: ReactNode;
 }
 
 const FormItem: FC<FormItemProps> = props => {

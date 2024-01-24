@@ -5,8 +5,8 @@ import Collapse from '../../../components/Collapse';
 import {safeDecode, uuid} from '../../../utils';
 import { CDN } from '../../../constant';
 import { debounce } from '../../../utils/lodash';
-import { NameInput, AddressInput, MethodRadio, DocInput, DescriptionInput, EditorWithFullScreen } from '../../../components/PanelItems'
-import { notice } from '../../../components/Message';
+import { NameInput, AddressInput, MethodRadio, DocInput, DescriptionInput, EditorWithFullScreen } from '../../../components'
+import { notice } from '../../../components';
 import PanelWrap from '../../../components/panel';
 
 /** type 由各自类型指定 */
@@ -74,7 +74,7 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 
 	const addressError = useMemo(() => {
 		return errorFields.length && errorFields.includes('path') ? '请填写完整的地址' : ''
-	}, [errorFields])
+	}, [errorFields]);
 
 	return (
 		<PanelWrap

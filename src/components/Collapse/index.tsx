@@ -12,6 +12,7 @@ export interface CollapseProps {
 	headerStyle?: CSSProperties;
 	/** 内容容器样式 */
 	contentStyle?: CSSProperties;
+	children?: ReactNode;
 }
 
 const Collapse: FC<CollapseProps> = ({ children, defaultFold = true, header, headerStyle, contentStyle, ...props }: any) => {

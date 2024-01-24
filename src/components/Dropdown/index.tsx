@@ -6,6 +6,7 @@ export interface DropdownProps {
 	dropDownStyle?: CSSProperties;
 	overlay?: ReactNode;
 	onBlur?(blur: () => void): void;
+	children?: ReactNode;
 }
 
 const Dropdown: FC<DropdownProps> = ({ dropDownStyle, children, overlay, onBlur }) => {

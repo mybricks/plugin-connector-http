@@ -5,13 +5,13 @@
   font-weight: 400;
   white-space: nowrap;
   text-align: center;
-  margin-left: 8px !important;
+  margin-left: 8px;
   color: rgba(0,0,0,.85);
   border: 1px solid #d9d9d9;
   background: #fff;
-  font-size: 12px !important;
+  font-size: 12px;
   height: 24px;
-  line-height: 1 !important;
+  line-height: 1;
   border-radius: 3px;
   padding: 0 10px;
   outline: 0;
@@ -23,5 +23,10 @@
     border-color: @color-primary;
     background-color: @color-primary;
     font-weight: bold;
+  }
+
+  &[type="default"] {
+    color: @color-primary;
+    border-color: @color-primary;
   }
 }

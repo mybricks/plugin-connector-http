@@ -6,8 +6,10 @@ import Button from './Button';
 import Dropdown from './Dropdown';
 import RadioButtons from './RadioButtons';
 import Switch from './Switch';
+import Input, { TextArea } from './Input';
 import Debug from '../plugin/components/debug';
 import { notice } from './Message';
+import { uuid, safeDecode } from '../utils';
 
 export {
 	PanelWrap,
@@ -19,4 +21,8 @@ export {
 	Switch,
 	Debug,
 	notice,
+	Input,
+	TextArea,
+	uuid,
+	safeDecode
 };
