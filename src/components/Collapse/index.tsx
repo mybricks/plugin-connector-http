@@ -1,17 +1,32 @@
-import React, { useState, useCallback } from 'react';
-import css from './index.less';
+import React, { useState, useCallback, FC, ReactNode, CSSProperties } from 'react';
 import { arror } from '../../icon';
-export default function Collapse({ children, defaultFold = true, header, headerStyle, contentStyle, ...props }: any) {
+
+import styles from './index.less';
+
+export interface CollapseProps {
+	/** 默认关闭 */
+	defaultFold?: boolean;
+	/** 标题 */
+	header?: ReactNode;
+	/** 标题样式 */
+	headerStyle?: CSSProperties;
+	/** 内容容器样式 */
+	contentStyle?: CSSProperties;
+}
+
+const Collapse: FC<CollapseProps> = ({ children, defaultFold = true, header, headerStyle, contentStyle, ...props }: any) => {
 	const [fold, setFold] = useState<boolean>(defaultFold);
 	const onHeaderClick = useCallback(() => setFold((fold) => !fold), []);
 
 	return (
-		<div className={css.collapse} {...props}>
-			<div className={`${css.header}`} style={headerStyle} onClick={onHeaderClick}>
-				<div className={`${css.icon} ${fold ? css.fold : ''}`}>{arror}</div>
+		<div className={styles.collapse} {...props}>
+			<div className={`${styles.header}`} style={headerStyle} onClick={onHeaderClick}>
+				<div className={`${styles.icon} ${fold ? styles.fold : ''}`}>{arror}</div>
 				{header}
 			</div>
-	    {fold ? null : <div className={`${css.content}`} style={contentStyle}>{children}</div>}
+	    {fold ? null : <div className={`${styles.content}`} style={contentStyle}>{children}</div>}
 		</div>
 	);
-}
+};
+
+export default Collapse;

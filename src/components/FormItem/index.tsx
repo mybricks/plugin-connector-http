@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { CSSProperties, FC } from 'react';
+
 import css from './index.less';
 
-export default function FormItem({
-  label: title,
-  require,
-	contentStyle,
-  className = '',
-  children,
-  labelTop = false
-}: any) {
+export interface FormItemProps {
+  label?: string;
+  require?: boolean;
+  /** label 是否显示在顶部 */
+  labelTop?: boolean;
+  className?: string;
+  contentStyle?: CSSProperties
+}
+
+const FormItem: FC<FormItemProps> = props => {
+  const { label: title, require, contentStyle, className = '', children, labelTop = false } = props;
+
   return (
     <div className={`${css.item} ${labelTop ? css.labelTop : ''} ${className}`}>
       <label>
@@ -20,4 +25,6 @@ export default function FormItem({
       </div>
     </div>
   );
-}
+};
+
+export default FormItem;

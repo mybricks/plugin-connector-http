@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
-import {render, unmountComponentAtNode} from 'react-dom';
-import {error, success, warning} from '../../icon';
+import { render, unmountComponentAtNode } from 'react-dom';
+import { error, success, warning } from '../../icon';
 
 import styles from './index.less';
 
@@ -15,10 +15,7 @@ type OptionType = {
 	timeout?: number;
 }
 
-export const notice = (
-	message = '',
-	option: OptionType = { type: 'error', timeout: 2000 }
-) => {
+export const notice = (message = '', option: OptionType = { type: 'error', timeout: 2000 }) => {
 	const container = document.querySelector('div[data-id=plugin-panel]')?.parentNode?.parentNode;
 	
 	if (!container) {

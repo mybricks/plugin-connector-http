@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import DebugForm from '../debug';
+import DebugForm, { Model } from '../debug';
 import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
 import {safeDecode, uuid} from '../../../utils';
@@ -81,7 +81,7 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 			style={style}
 			title={model?.title}
 			blurMap={blurMapRef.current}
-			extra={<Button type='primary' size='small' onClick={onSaveClick}>保 存</Button>}
+			extra={<Button type="primary" size="small" onClick={onSaveClick}>保 存</Button>}
 			onClose={onClosePanel}
 		>
 			<Collapse header="基本信息" defaultFold={false}>
@@ -99,7 +99,7 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 					onChange={method => setModel(model => ({ ...model, method }))}
 				/>
 			</Collapse>
-			<Collapse header='当开始请求'>
+			<Collapse header="当开始请求">
 				<EditorWithFullScreen
 					key={model.id}
 					CDN={CDN}
@@ -109,7 +109,7 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 					value={safeDecode(model.input)}
 				/>
 			</Collapse>
-			<Collapse header='当返回响应'>
+			<Collapse header="当返回响应">
 				<EditorWithFullScreen
 					key={model.id}
 					CDN={CDN}
@@ -119,7 +119,7 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 					value={safeDecode(model.output)}
 				/>
 			</Collapse>
-			<Collapse header='其他信息'>
+			<Collapse header="其他信息">
 				<DescriptionInput
 					defaultValue={model.desc}
 					onBlur={(e) => setModel(model => ({ ...model, desc: e.target.value }))}
@@ -129,9 +129,9 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 					defaultValue={model.doc}
 				/>
 			</Collapse>
-			<Collapse header='接口调试' defaultFold={false}>
+			<Collapse header="接口调试" defaultFold={false}>
 				<DebugForm
-					model={model}
+					model={model as Model}
 					connect={sidebarContext.connector.test}
 					onChangeModel={setModel}
 					registerBlur={registerBlur}

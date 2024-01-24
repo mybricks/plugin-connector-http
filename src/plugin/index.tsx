@@ -10,7 +10,7 @@ import GlobalPanel from './compoment/globalPanel';
 import Switch from '../components/Switch';
 import { copyText } from '../utils/copy';
 
-import css from '../style-cssModules.less';
+import styles from './style-cssModules.less';
 
 interface IProps {
   connector: IConnector;
@@ -51,7 +51,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
     isEdit: false,
     formModel: { path: '', title: '', id: '', type: '', input: '', output: '' },
     addActions: addActions
-      ? addActions.some(({ type }: any) => type === 'defalut')
+      ? addActions.some(({ type }: any) => type === 'default')
         ? addActions
         : [{ type: 'http', title: '普通接口' }].concat(addActions)
       : [{ type: 'http', title: '普通接口' }],
@@ -59,9 +59,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
       add: (args: any) => connector.add({ ...args }),
       remove: (id: string) => connector.remove(id),
 			getAllByType: (type: string) => (connector.getAllByType?.(type) || []),
-      update: (args: any) => {
-        connector.update({ ...args });
-      },
+      update: (args: any) => connector.update({ ...args }),
       test: (...args: any) => connector.test(...args),
     },
     search: setSearchValue,
@@ -132,9 +130,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 	  });
   };
 
-  const createService = () => {
-	  return updateService('create');
-  };
+  const createService = () => updateService('create');
 
   const removeService = useCallback((item: any) => {
     return new Promise((resolve) => {
@@ -270,7 +266,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
       if (copy) {
         return (
           <span
-            className={css['sidebar-panel-list-item__copy']}
+            className={styles['sidebar-panel-list-item__copy']}
           >{`${item[key]}`}</span>
         );
       }
@@ -278,7 +274,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
         return get(item, key) ? (
           <span
             onClick={() => onLinkClick(get(item, key))}
-            className={css['doc-link']}
+            className={styles['doc-link']}
           >
             点击跳转
           </span>
@@ -429,19 +425,19 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
   return (
 	  <div
 		  ref={ref}
-		  className={`${css['sidebar-panel']} ${css['sidebar-panel-open']}`}
+		  className={`${styles['sidebar-panel']} ${styles['sidebar-panel-open']}`}
 		  onClick={() => Object.values(blurMap.current).forEach(fn => fn())}
 	  >
-		  <div className={`${css['sidebar-panel-view']}`}>
-			  <div className={css['sidebar-panel-header']}>
-				  <div className={css['sidebar-panel-header__title']}>
+		  <div className={`${styles['sidebar-panel-view']}`}>
+			  <div className={styles['sidebar-panel-header']}>
+				  <div className={styles['sidebar-panel-header__title']}>
 					  <span onDoubleClick={onDoubleClick}>服务连接</span>
-					  <div className={css.rightOperate}>
-						  <div className={css.globalMock} data-mybricks-tip="开启全局Mock，页面调试时所有接口将默认使用Mock能力">
-							  <span className={data?.config?.globalMock ? css.warning : ''}>全局 Mock:</span>
-							  <Switch defaultChecked={data?.config?.globalMock} onChange={onChangeGlobalMock} />
+					  <div className={styles.rightOperate}>
+						  <div className={styles.globalMock} data-mybricks-tip="开启全局Mock，页面调试时所有接口将默认使用Mock能力">
+							  <span className={data?.config?.globalMock ? styles.warning : ''}>全局 Mock:</span>
+							  <Switch defaultValue={data?.config?.globalMock} onChange={onChangeGlobalMock} />
 						  </div>
-						  <div className={css.icon} onClick={onGlobalConfigClick} data-mybricks-tip="全局设置，可定义接口全局处理逻辑">
+						  <div className={styles.icon} onClick={onGlobalConfigClick} data-mybricks-tip="全局设置，可定义接口全局处理逻辑">
 							  {Icons.set}
 						  </div>
 					  </div>
@@ -453,7 +449,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 					  setRender={setRender}
 				  />
 			  </div>
-			  <div className={css['sidebar-panel-list']}>
+			  <div className={styles['sidebar-panel-list']}>
 				  {
 					  data?.connectors
 						  .filter((item) => item.content.type !== 'domain')
@@ -474,48 +470,48 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 								  <div key={item.id}>
 									  <div
 										  key={item.id}
-										  className={`${css['sidebar-panel-list-item']} ${sidebarContext.activeId === item.id ? css.active : ''} ${
+										  className={`${styles['sidebar-panel-list-item']} ${sidebarContext.activeId === item.id ? styles.active : ''} ${
 											  sidebarContext.isEdit
 												  ? sidebarContext.activeId === item.id
-													  ? css.chose
-													  : css.disabled
+													  ? styles.chose
+													  : styles.disabled
 												  : ''
 										  }`}
 									  >
 										  <div>
 											  <div
 												  onClick={(e) => onItemClick(e, item)}
-												  className={css['sidebar-panel-list-item__left']}
+												  className={styles['sidebar-panel-list-item__left']}
 											  >
-												  <div className={`${css.icon} ${expand ? css.iconExpand : ''}`}>
+												  <div className={`${styles.icon} ${expand ? styles.iconExpand : ''}`}>
 													  {Icons.arrowR}
 												  </div>
-												  <div className={css.tag}>
+												  <div className={styles.tag}>
 													  {typeLabel}
 												  </div>
-												  <div className={css.name}>
+												  <div className={styles.name}>
 													  <span data-mybricks-tip={curTitle || undefined}>{curTitle}</span>
 												  </div>
 											  </div>
-											  <div className={css['sidebar-panel-list-item__right']}>
+											  <div className={styles['sidebar-panel-list-item__right']}>
 												  <div
 													  data-mybricks-tip="编辑"
 													  ref={clickRef}
-													  className={css.action}
+													  className={styles.action}
 													  onClick={() => onEditItem(item)}
 												  >
 													  {Icons.edit}
 												  </div>
 												  <div
 													  data-mybricks-tip="复制"
-													  className={css.action}
+													  className={styles.action}
 													  onClick={() => onCopyItem(item)}
 												  >
 													  {Icons.copy}
 												  </div>
 												  <div
 													  data-mybricks-tip="删除"
-													  className={css.action}
+													  className={styles.action}
 													  onClick={() => onRemoveItem(item)}
 												  >
 													  {Icons.remove}
@@ -524,20 +520,20 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 										  </div>
 									  </div>
 									  {expand ? (
-										  <div className={css['sidebar-panel-list-item__expand']}>
+										  <div className={styles['sidebar-panel-list-item__expand']}>
 											  {getInterfaceParams(item).map((param: any) => {
 												  return (
 													  <div
-														  className={css['sidebar-panel-list-item__param']}
+														  className={styles['sidebar-panel-list-item__param']}
 														  key={param.key}
 													  >
 		                            <span
-			                            className={css['sidebar-panel-list-item__name']}
+			                            className={styles['sidebar-panel-list-item__name']}
 			                            style={{ width: param.width }}
 		                            >
 		                              {param.name}:
 		                            </span>
-														  <span className={css['sidebar-panel-list-item__content']}>
+														  <span className={styles['sidebar-panel-list-item__content']}>
 		                              {renderParam(item, param)}
 		                            </span>
 													  </div>

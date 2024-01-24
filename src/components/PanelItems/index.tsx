@@ -1,7 +1,7 @@
 import React, { FC, CSSProperties, useState, useRef } from 'react';
 import FormItem from '../FormItem';
 import Input, { TextArea } from '../Input';
-import RadioButtons from '../../plugin/compoment/defaultPanel/RadioBtn';
+import RadioButtons from '../RadioButtons';
 import Editor from '@mybricks/code-editor';
 import { fullScreen, fullScreenExit } from '../../icon';
 

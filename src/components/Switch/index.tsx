@@ -1,8 +1,14 @@
-import React, { useState, useCallback } from 'react';
-import css from './index.less';
+import React, { useState, useCallback, FC } from 'react';
 
-export default function Switch({ defaultChecked = false, onChange }: any) {
-  const [checked, setChecked] = useState<boolean>(defaultChecked);
+import styles from './index.less';
+
+export interface SwitchProps {
+  defaultValue?: boolean;
+  onChange?(value: boolean): void;
+}
+
+const Switch: FC<SwitchProps> = ({ defaultValue = false, onChange }) => {
+  const [checked, setChecked] = useState<boolean>(defaultValue);
 
   const onClick = useCallback(() => {
     setChecked(!checked);
@@ -10,13 +16,14 @@ export default function Switch({ defaultChecked = false, onChange }: any) {
   }, [checked, onChange]);
 
   return (
-    <div className={css.ct}>
+    <div className={styles.ct}>
       <button
         onClick={onClick}
-        className={`${css.switch} ${checked ? css.checked : ''}`}
+        className={`${styles.switch} ${checked ? styles.checked : ''}`}
       >
-        <div className={css.handle}></div>
+        <div className={styles.handle}></div>
       </button>
     </div>
   );
-}
+};
+export default Switch;

@@ -1,19 +1,19 @@
-import React, { CSSProperties, FC, ReactElement, useCallback } from 'react';
+import React, { CSSProperties, FC, ReactNode, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import Button from '../Button';
 
 import styles from './index.less';
 
-interface PanelWrap {
+export interface PanelWrapProps {
 	blurMap?: Record<string, () => void>;
 	style?: CSSProperties;
 	className?: string;
 	title?: string;
-	extra?: ReactElement;
+	extra?: ReactNode;
 	onClose?(): void;
 }
 
-const PanelWrap: FC<PanelWrap> = props => {
+const PanelWrap: FC<PanelWrapProps> = props => {
 	const { children, blurMap = {}, style, className = '', title = '', extra = null, onClose } = props;
 
 	const onBlurAll = useCallback(() => Object.values(blurMap).forEach(blur => blur?.()), [blurMap]);
@@ -29,7 +29,7 @@ const PanelWrap: FC<PanelWrap> = props => {
 					<div>{title}</div>
 					<div>
 						{extra}
-						<Button size='small' onClick={onClose}>
+						<Button size="small" onClick={onClose}>
 							关 闭
 						</Button>
 					</div>

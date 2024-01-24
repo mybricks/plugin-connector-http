@@ -1,8 +1,14 @@
-import React, { useState, useCallback, useEffect, FC } from 'react';
+import React, { useState, useCallback, useEffect, FC, CSSProperties, ReactNode } from 'react';
 
-import css from './index.less';
+import styles from './index.less';
 
-const Dropdown: FC<any> = ({ dropDownStyle, children, overlay, onBlur }) => {
+export interface DropdownProps {
+	dropDownStyle?: CSSProperties;
+	overlay?: ReactNode;
+	onBlur?(blur: () => void): void;
+}
+
+const Dropdown: FC<DropdownProps> = ({ dropDownStyle, children, overlay, onBlur }) => {
   const [visible, setVisible] = useState(false);
   const onClick = useCallback(event => {
 	  event.stopPropagation();
@@ -14,9 +20,9 @@ const Dropdown: FC<any> = ({ dropDownStyle, children, overlay, onBlur }) => {
 	}, []);
 	
   return (
-    <div className={css.dropdown}>
+    <div className={styles.dropdown}>
       <div onClick={onClick}>{children}</div>
-      <div style={dropDownStyle} className={css.content}>
+      <div style={dropDownStyle} className={styles.content}>
         {visible ? overlay : null}
       </div>
     </div>

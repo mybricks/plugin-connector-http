@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	extractParamsAndSchemaByJSON,
 	extractParamsBySchema,
@@ -25,6 +25,38 @@ import Tooltip from '../../../components/tooltip';
 import { CDN, PLUGIN_CONNECTOR_NAME } from '../../../constant';
 
 import styles from './index.less';
+
+export interface Model {
+	id: string;
+	input: string;
+	output: string;
+	inputSchema?: any;
+	params?: any;
+	title: string;
+	type: string
+	path: string;
+	desc?: string;
+	method: string;
+	markList?: Array<{
+		title: string;
+		id: string;
+		predicate?: {
+			key: string;
+			value: string;
+			operator: string;
+		},
+		outputKeys: string[];
+		excludeKeys: string[];
+		outputSchema?: any;
+		resultSchema?: any;
+	}>;
+}
+export interface DebugProps {
+	model: Model;
+	onChangeModel(model: Model): void;
+	connect(connector: Record<string, any>, params: any): Promise<any>;
+	registerBlur(key: string, blur: () => void): void;
+}
 
 function DataShow({ data }: any) {
   let valueStr = '';
@@ -57,7 +89,7 @@ const CodeIcon = (
 		<path d="M321.828571 226.742857c-14.628571-14.628571-36.571429-14.628571-51.2 0L7.314286 482.742857c-14.628571 14.628571-14.628571 36.571429 0 51.2l256 256c14.628571 14.628571 36.571429 14.628571 51.2 0 14.628571-14.628571 14.628571-36.571429 0-51.2L87.771429 512l234.057142-234.057143c7.314286-14.628571 7.314286-36.571429 0-51.2z m263.314286 0c-14.628571 0-36.571429 7.314286-43.885714 29.257143l-131.657143 497.371429c-7.314286 21.942857 7.314286 36.571429 29.257143 43.885714s36.571429-7.314286 43.885714-29.257143l131.657143-497.371429c7.314286-14.628571-7.314286-36.571429-29.257143-43.885714z m431.542857 256l-256-256c-14.628571-14.628571-36.571429-14.628571-51.2 0-14.628571 14.628571-14.628571 36.571429 0 51.2L936.228571 512l-234.057142 234.057143c-14.628571 14.628571-14.628571 36.571429 0 51.2 14.628571 14.628571 36.571429 14.628571 51.2 0l256-256c14.628571-14.628571 14.628571-43.885714 7.314285-58.514286z"></path>
 	</svg>
 );
-export default function Debug({ model, onChangeModel, connect, registerBlur }: any) {
+const Debug: FC<DebugProps> = ({ model, onChangeModel, connect, registerBlur }) => {
   const [remoteData, setData] = useState<any>();
 	const [showParamsCode, setShowParamsCode] = useState(false);
 	const [showResponseCode, setShowResponseCode] = useState(false);
@@ -683,4 +715,6 @@ export default function Debug({ model, onChangeModel, connect, registerBlur }: a
 		    )}
 		</>
   );
-}
+};
+
+export default Debug;
