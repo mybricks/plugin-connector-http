@@ -7,14 +7,14 @@ import { CDN } from '../../../constant';
 import { debounce } from '../../../utils/lodash';
 import { NameInput, AddressInput, MethodRadio, DocInput, DescriptionInput, EditorWithFullScreen } from '../../../components'
 import { notice } from '../../../components';
-import PanelWrap from '../../../components/panel';
+import PanelWrap, { PanelWrapRef } from '../../../components/panel';
 
 /** type 由各自类型指定 */
 const getDefaultModel = () => {
 	return { path: '', title: '', method: 'POST', id: uuid(), type: 'http', input: '', output: '' };
 };
 export default function DefaultPanel({ sidebarContext, style, onSubmit, setRender }: any) {
-	const blurMapRef = useRef<any>({});
+	const panelRef = useRef<PanelWrapRef>();
 	const [model, setModel] = useState<Record<string, any>>(sidebarContext.formModel || getDefaultModel());
 	/** 错误字段 */
 	const [errorFields, setErrorFields] = useState([]);
@@ -68,19 +68,15 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 		model.path && setErrorFields([]);
 	}, [model.path]);
 
-	const registerBlur = useCallback((key, blur) => {
-		blurMapRef.current = { ...blurMapRef.current, [key]: blur };
-	}, []);
-
 	const addressError = useMemo(() => {
 		return errorFields.length && errorFields.includes('path') ? '请填写完整的地址' : ''
 	}, [errorFields]);
 
 	return (
 		<PanelWrap
+			ref={panelRef}
 			style={style}
 			title={model?.title}
-			blurMap={blurMapRef.current}
 			extra={<Button type="primary" size="small" onClick={onSaveClick}>保 存</Button>}
 			onClose={onClosePanel}
 		>
@@ -134,7 +130,7 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 					model={model as Model}
 					connect={sidebarContext.connector.test}
 					onChangeModel={setModel}
-					registerBlur={registerBlur}
+					registerBlur={panelRef.current?.registerBlur}
 				/>
 			</Collapse>
 		</PanelWrap>
