@@ -6,7 +6,7 @@ import Button from './Button';
 import Dropdown from './Dropdown';
 import RadioButtons from './RadioButtons';
 import Switch from './Switch';
-import Debug from '../plugin/compoment/debug';
+import Debug from '../plugin/components/debug';
 import { notice } from './Message';
 
 export {

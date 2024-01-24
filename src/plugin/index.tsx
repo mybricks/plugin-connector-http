@@ -3,10 +3,10 @@ import { uuid } from '../utils';
 import { exampleParamsFunc, exampleResultFunc, GLOBAL_PANEL, PLUGIN_CONNECTOR_NAME, SERVICE_TYPE } from '../constant';
 import { cloneDeep, get } from '../utils/lodash';
 import { formatDate } from '../utils/moment';
-import DefaultPanel from './compoment/defaultPanel';
-import Toolbar from './compoment/toolbar';
+import DefaultPanel from './components/defaultPanel';
+import Toolbar from './components/toolbar';
 import * as Icons from '../icon';
-import GlobalPanel from './compoment/globalPanel';
+import GlobalPanel from './components/globalPanel';
 import Switch from '../components/Switch';
 import { copyText } from '../utils/copy';
 
