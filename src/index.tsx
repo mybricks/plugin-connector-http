@@ -11,6 +11,7 @@ import {
 import { call } from './runtime/callConnectorHttp';
 import { getScript, getDecodeString } from './script';
 import { mock } from './script/mock';
+// @ts-ignore
 import * as Items from './components';
 // @ts-ignore
 import pkg from '../package.json';

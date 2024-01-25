@@ -51,7 +51,7 @@ export let CDN = {
     vs: '/mfs/editor_assets/monaco-editor/0.33.0/min/vs',
   },
   monacoLoader: '/mfs/editor_assets/monaco-editor/0.33.0/min/vs/loader.min.js'
-}
+};
 
 export const resetCDN = () => {
   CDN = undefined;
@@ -69,3 +69,10 @@ export const MarkTypes = {
   predicate: ['number', 'string', 'boolean'],
   output: ['any']
 };
+
+export enum Methods {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  DELETE = 'DELETE',
+}

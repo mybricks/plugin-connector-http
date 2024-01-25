@@ -275,7 +275,10 @@ const Debug: FC<DebugProps> = ({ model, onChangeModel, connect, registerBlur }) 
     }
 	  setShowPreviewSchema(false);
   };
-	const onCloseTip = useCallback(() => setShowTip(false), []);
+	const onCloseTip = useCallback(() => {
+		setShowTip(false);
+		setShowPreviewSchema(false);
+	}, []);
 	const onToggleSchemaPreview = useCallback(() => setShowPreviewSchema(show => !show), []);
   const onParamsChange = useCallback((params) => {
     if (params !== void 0) {
@@ -590,7 +593,7 @@ const Debug: FC<DebugProps> = ({ model, onChangeModel, connect, registerBlur }) 
 			</div>
 	    {showPreviewSchema
 		    ? (
-			    <FormItem label='预览最新类型' labelTop>
+			    <FormItem label='预览类型' labelTop>
 				    <ReturnSchema
 					    outputKeys={[]}
 					    excludeKeys={[]}

@@ -1,14 +1,14 @@
 import React, { FC, CSSProperties, useState, useRef, FocusEventHandler, ReactNode } from 'react';
+import Editor from '@mybricks/code-editor';
 import FormItem from '../FormItem';
 import Input, { TextArea } from '../Input';
 import RadioButtons from '../RadioButtons';
-import Editor from '@mybricks/code-editor';
 import { fullScreen, fullScreenExit } from '../../icon';
+import { Methods } from '../../constant';
 
 import styles from './index.less';
 
-
-export interface CommonItemProps {
+interface CommonItemProps {
   defaultValue: string;
   onBlur?: FocusEventHandler<any>;
   onChange?(value: any): void;
@@ -25,10 +25,10 @@ export interface CommonItemProps {
  * 请求方法选项
  */
 const methodOpts = [
-  { title: 'GET', value: 'GET' },
-  { title: 'POST', value: 'POST' },
-  { title: 'PUT', value: 'PUT' },
-  { title: 'DELETE', value: 'DELETE' },
+  { title: 'GET', value: Methods.GET },
+  { title: 'POST', value: Methods.POST },
+  { title: 'PUT', value: Methods.PUT },
+  { title: 'DELETE', value: Methods.DELETE },
 ];
 
 /** ------------基本信息配置项---------- **/

@@ -1,4 +1,4 @@
-export * from './PanelItems';
+import { NameInput, AddressInput, MethodRadio, DescriptionInput, DocInput, EditorWithFullScreen } from './PanelItems';
 import PanelWrap from './panel';
 import FormItem from './FormItem';
 import Collapse from './Collapse';
@@ -10,8 +10,15 @@ import Input, { TextArea } from './Input';
 import Debug from '../plugin/components/debug';
 import { notice } from './Message';
 import { uuid, safeDecode } from '../utils';
+import { CDN, Methods } from '../constant';
 
 export {
+	NameInput,
+	AddressInput,
+	MethodRadio,
+	DescriptionInput,
+	DocInput,
+	EditorWithFullScreen,
 	PanelWrap,
 	FormItem,
 	Collapse,
@@ -24,5 +31,7 @@ export {
 	Input,
 	TextArea,
 	uuid,
-	safeDecode
+	safeDecode,
+	Methods,
+	CDN
 };
