@@ -90,7 +90,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
 
         return call({ useProxy: true, ...connector, ...curConnector }, params, config);
       } else {
-        return Promise.reject('找不到对应连接器 Script 执行脚本.');
+        return Promise.reject('接口不存在，请检查连接器插件中接口配置');
       }
     },
     /** 页面导出 JSON 时，会调用插件 toJSON 方法，数据防止在页面 JSON 中 */

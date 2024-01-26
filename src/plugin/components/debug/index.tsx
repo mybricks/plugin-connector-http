@@ -106,6 +106,7 @@ const Debug: FC<DebugProps> = ({ model, onChangeModel, connect, registerBlur }) 
   const [showMarkAdder, setShowMarkAdder] = useState(false);
   const [markGroupId, setMarkGroupId] = useState('default');
 	const markAdderInputValue = useRef('');
+	const markInputRef = useRef<any>();
 	const curMark = useMemo(() => model.markList?.find(mark => mark.id === markGroupId), [model, markGroupId]);
 
 	const initModel = useCallback((model) => {
@@ -554,6 +555,10 @@ const Debug: FC<DebugProps> = ({ model, onChangeModel, connect, registerBlur }) 
 		initModel(model);
 	}, [model.id]);
 
+	useEffect(() => {
+		showMarkAdder && markInputRef.current?.focus?.();
+	}, [showMarkAdder]);
+
 	return (
     <>
 			<div className={styles.paramEditContainer}>
@@ -683,7 +688,7 @@ const Debug: FC<DebugProps> = ({ model, onChangeModel, connect, registerBlur }) 
 										    </Tooltip>
 										    {showMarkAdder ? (
 											    <div className={styles.markAdder}>
-												    <input className={styles.markInput} onKeyUp={onMarkInputPressEnter} onChange={onChangeMarkInput} />
+												    <input className={styles.markInput} ref={markInputRef} onKeyUp={onMarkInputPressEnter} onChange={onChangeMarkInput} />
 												    <button className={styles.button} onClick={addMark}>确定</button>
 											    </div>
 										    ) : null}
