@@ -87,24 +87,25 @@ export default function ({ command, userId }) {
           overflow: "scroll",
         }}
       >
-        <h2 style={{fontSize: 16}}>普通模式回答的较好的问题示例</h2>
-        <p>添加一个按钮，标题是添加活动</p>
-        <p>添加一个用于选择体育项目的下拉框</p>
-        <p>添加一个多选框组件，选项有足球、篮球、羽毛球、排球</p>
+        {/* <h2 style={{fontSize: 16}}>普通模式回答的较好的问题示例</h2> */}
+        <h2 style={{fontSize: 16}}>示例</h2>
+        {/* <p>添加一个按钮，标题是添加活动</p> */}
+        {/* <p>添加一个用于选择体育项目的下拉框</p> */}
+        {/* <p>添加一个多选框组件，选项有足球、篮球、羽毛球、排球</p> */}
         <p>添加一个危险按钮，风格是次按钮，小尺寸，标题是添加活动</p>
-        <p>添加一用于记录学生成绩的表格，需要包含学生姓名和各科成绩，学生姓名列需要左固定</p>
+        {/* <p>添加一用于记录学生成绩的表格，需要包含学生姓名和各科成绩，学生姓名列需要左固定</p> */}
         <p>添加一个下拉菜单，弹出位置是右下方，提示内容设置为请选择，宽度设置为120px，并关闭子选项</p>
-        <p>添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计</p>
-        <h2 style={{fontSize: 16}}>专家模式回答的较好的问题示例</h2>
+        {/* <p>添加一个文本框，最大支持输入四个字，显示尾部的清除图标，提示内容为请输入名称，显示字数统计</p> */}
+        {/* <h2 style={{fontSize: 16}}>专家模式回答的较好的问题示例</h2> */}
         <p>添加三个按钮，分别是新增、编辑、删除，样式分别是主按钮风格、次按钮风格、危险警告</p>
-        <p>添加一个学生查询表单，包含学号文本框、姓名文本框、兴趣爱好下拉框、性别选择</p>
-        <p>
+        {/* <p>添加一个学生查询表单，包含学号文本框、姓名文本框、兴趣爱好下拉框、性别选择</p> */}
+        {/* <p>
           添加一个折叠面板，标题为学生信息，折叠面板里添加一个学生信息表格，表格展示姓名、年龄、入学年份等信息。
-        </p>
-        <p>
-          添加一个卡片，标题为订单列表，里面有一个输入框用于查询，还有一个表格用于展示
+        </p> */}
+        {/* <p>
+          添加一个卡片，标题为订单列表，里面有一个搜索框用于查询，还有一个表格用于展示
           订单信息，表格里包含订单号，订单价格，订单时间等信息。
-        </p>
+        </p> */}
       </div>
       <div
         style={{
@@ -117,7 +118,7 @@ export default function ({ command, userId }) {
           userSelect: "text",
         }}
       >
-        <h2 style={{ width: "100%", fontSize: 16 }}>历史记录：</h2>
+        <h2 style={{ width: "100%", fontSize: 16 }}>历史记录</h2>
         {historyList?.map((i, index) => {
           return (
             <p>
@@ -136,7 +137,7 @@ export default function ({ command, userId }) {
       >
         <div className={`${css.input} ${isTextAreaFocused ? css.focused : ""}`}>
           <TextArea
-            placeholder="简单模式：速度快，回答问题相对简单；均衡模式：平衡性能和准确性；专家模式：能回答复杂问题，响应相对较慢。如果失败，可尝试切换专家模式重试"
+            // placeholder="简单模式：速度快，回答问题相对简单；均衡模式：平衡性能和准确性；专家模式：能回答复杂问题，响应相对较慢。如果失败，可尝试切换专家模式重试"
             className={css.textarea}
             value={requirement}
             onChange={(e) => setRequirement(e.target.value)}
@@ -153,7 +154,7 @@ export default function ({ command, userId }) {
             onBlur={() => setIsTextAreaFocused(false)}
           />
           <div className={css.magicInputFooter}>
-            <Select
+            {/* {<Select
               className={css.modeSelect}
               style={{ width: 95, marginLeft: "-5px" }}
               value={mode}
@@ -167,7 +168,7 @@ export default function ({ command, userId }) {
                 { value: "multi", label: "均衡模式" },
                 { value: "expert", label: "专家模式" },
               ]}
-            />
+            />} */}
             <div className={css.magicInputFooterLimit}>{requirement.length}/1000</div>
             <button
               type="button"
