@@ -106,7 +106,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
           pureConnectors.config.resultFn = getDecodeString(pureConnectors.config.resultFn);
           pureConnectors.config.errorResultFn = getDecodeString(pureConnectors.config.errorResultFn);
           pureConnectors.connectors = pureConnectors.connectors.map(connector => {
-            const { type, id, content: { input, output, method, path, excludeKeys, outputKeys } } = connector;
+            const { type, id, content: { input, output, method, path, markList } } = connector;
 
             return {
               type,
@@ -115,8 +115,15 @@ export default function pluginEntry(pluginConfig: any = {}) {
               output: getDecodeString(output),
               method,
               path: path?.trim(),
-              excludeKeys,
-              outputKeys
+              markList: markList.map(m => {
+                return {
+                  id: m.id,
+                  title: m.title,
+                  predicate: m.predicate,
+                  excludeKeys: m.excludeKeys,
+                  outputKeys: m.outputKeys,
+                };
+              }),
             };
           });
         } catch (error) {
