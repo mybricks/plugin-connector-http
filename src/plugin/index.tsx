@@ -66,7 +66,8 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
   });
   const updateService = async (action?: string, item?: any) => {
 	  return new Promise((resolve) => {
-		  const { id = uuid(), script, ...others }: any = item || sidebarContext.formModel;
+		  const updateAll = action === 'updateAll';
+		  const { id = uuid(), script, ...others }: any = updateAll ? {} : (item || sidebarContext.formModel);
 		  if (action === 'create') {
 			  const serviceItem = {
 				  id,
@@ -81,7 +82,6 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 				  createTime: Date.now(),
 				  updateTime: Date.now(),
 			  };
-				const defaultMark = others.markList.find(m => m.id === 'default');
 			  /** 插件内连接器数据 */
 			  data.connectors.push(serviceItem);
 			  /** 设计器内连接器数据，支持服务接口组件选择接口 */
@@ -94,10 +94,9 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
           script: undefined,
           globalMock: data.config.globalMock,
 				  inputSchema: others.inputSchema,
-				  outputSchema: defaultMark?.outputSchema || { type: 'object' },
+				  markList: others.markList || []
 			  });
 		  } else {
-			  const updateAll = action === 'updateAll';
 			  data.connectors.forEach((service: any, index: number) => {
 				  if (service.id === id || updateAll) {
 					  let serviceItem = data.connectors[index];
@@ -110,7 +109,6 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 						  data.connectors[index] = serviceItem;
 					  }
 					  try {
-						  const defaultMark = serviceItem.content.markList.find(m => m.id === 'default');
 						  sidebarContext.connector.update({
 							  id: updateAll ? serviceItem.id : id,
 							  title: others.title || serviceItem.content.title,
@@ -119,7 +117,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
                 script: undefined,
                 globalMock: data.config.globalMock,
 							  inputSchema: serviceItem.content.inputSchema,
-							  outputSchema: defaultMark?.outputSchema || { type: 'object' }
+							  markList: serviceItem.content.markList || []
 						  });
 					  } catch (error) {}
 				  }

@@ -32,7 +32,7 @@ export default function ReturnSchema({ mark, onMarkChange, schema, error, noMark
     }
 
     if (type === 'predicate') {
-      const predicate: Record<string, unknown> = { key: curKeyRef.current, value: 1, operator: '=', type: 'success' };
+      const predicate: Record<string, unknown> = { key: curKeyRef.current, value: 1, operator: '=' };
       /** 设置标识值的默认值 */
       if (originSchema.type === 'boolean') {
         predicate.value = true;
@@ -102,7 +102,6 @@ export default function ReturnSchema({ mark, onMarkChange, schema, error, noMark
 
     const onChangeValue = value => onMarkChange({ ...mark, predicate: { ...mark.predicate, value } });
     const onChangeOperator = e => onMarkChange({ ...mark, predicate: { ...mark.predicate, operator: e.target.value } });
-    const onChangeType = e => onMarkChange({ ...mark, predicate: { ...mark.predicate, type: e.target.value } });
 
     return (
       <div key={key} className={`${styles.item} ${root ? styles.rootItem : ''} ${(markedAsReturn || markedAsPredicate) ? styles.markAsReturn : ''}`}>
@@ -161,15 +160,7 @@ export default function ReturnSchema({ mark, onMarkChange, schema, error, noMark
                   <option value={0}>false</option>
                 </select>
               ) : null}
-              <span style={{ marginLeft: 0 }}>时，即</span>
-              <select
-                value={mark?.predicate?.type || 'success'}
-                className={styles.markValueSelect}
-                onChange={e => onChangeType(e)}
-              >
-                <option value="success">请求成功</option>
-                <option value="failed">请求失败</option>
-              </select>
+              <span style={{ marginLeft: 0 }}>时生效</span>
             </>
           ) : null}
           {showCancel && !noMark ? (

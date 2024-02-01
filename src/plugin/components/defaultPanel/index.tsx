@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DebugForm, { Model } from '../debug';
 import Button from '../../../components/Button';
 import Collapse from '../../../components/Collapse';
-import {safeDecode, uuid} from '../../../utils';
+import { safeDecode, uuid } from '../../../utils';
 import { CDN } from '../../../constant';
 import { debounce } from '../../../utils/lodash';
 import { NameInput, AddressInput, MethodRadio, DocInput, DescriptionInput, EditorWithFullScreen } from '../../../components'

@@ -2,19 +2,15 @@ import { schema2data } from '../utils';
 
 export function mock(connector: { id: string; script: string; [key: string]: any }) {
 	return new Promise((resolve, reject) => {
-		if (connector.type === 'http' || connector.type === 'http-sql') {
-			try {
-				if (connector.outputSchema) {
-					// use mock data
-					return resolve(schema2data(connector.outputSchema))
-				} else {
-					reject(`当前接口不存在返回值schema，不支持Mock`)
-				}
-			} catch (ex) {
-				reject(`connecotr mock error.`);
+		const schema = connector.outputSchema || connector.mockSchema;
+		try {
+			if (schema) {
+				resolve({ __OUTPUT_ID__: connector.mockOutputId, __ORIGIN_RESPONSE__: schema2data(connector.outputSchema) });
+			} else {
+				reject('服务接口组件返回值类型不存在，不支持模拟数据')
 			}
-		} else {
-			reject(`error connecotr type`);
+		} catch (ex) {
+			reject('服务接口数据模拟失败');
 		}
 	});
 }

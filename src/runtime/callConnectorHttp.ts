@@ -243,7 +243,7 @@ const getFetch = (connector) => {
       let hasCallThrowError = false;
       let curOutputKeys = [];
       let curExcludeKeys = [];
-      let curThrowExtraError = false;
+      let curOutputId = 'then';
       config
         .ajax(options)
         .catch(error => {
@@ -283,12 +283,12 @@ const getFetch = (connector) => {
 
           showLog && console.log('【连接器调试日志】接口自定义出参拦截器(执行后数据)：', cloneDeep(result));
           for (let i = 0; i < markList.length; i++) {
-            const { predicate = { key: '', value: undefined }, excludeKeys, outputKeys } = markList[i];
+            const { id, predicate = { key: '', value: undefined }, excludeKeys, outputKeys } = markList[i];
 
             if (!predicate || !predicate.key || predicate.value === undefined) {
               curOutputKeys = outputKeys;
               curExcludeKeys = excludeKeys;
-              curThrowExtraError = predicate.type === 'failed';
+              curOutputId = id === 'default' ? 'then' : id;
               break;
             }
 
@@ -300,7 +300,7 @@ const getFetch = (connector) => {
             if (!keys.length && (predicate.operator === '=' ? curResult === predicate.value : curResult !== predicate.value)) {
               curOutputKeys = outputKeys;
               curExcludeKeys = excludeKeys;
-              curThrowExtraError = predicate.type === 'failed';
+              curOutputId = id === 'default' ? 'then' : id;
               break;
             }
           }
@@ -338,7 +338,7 @@ const getFetch = (connector) => {
             }
           }
 
-          curThrowExtraError ? onError(outputData) : then(outputData);
+          then({ __OUTPUT_ID__: curOutputId, __ORIGIN_RESPONSE__: outputData });
         })
         .catch((error) => {
           if (error?.message === 'HTTP_FETCH_ERROR') {

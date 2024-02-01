@@ -29,7 +29,7 @@ export const templateResultFunc = `export default function ({ response, config }
 export const templateErrorResultFunc = `export default function handleError({ error, response, config }, { throwError }) {
   // 错误抛出时预处理数据，请注意：必须调用 throwError 抛出错误;
   // config：请求入参；error：错误对象；response：响应原始对象；response.status：获取 HTTP 状态码，response.data：获取接口返回值
-  throwError(response.data.message || error);
+  throwError(response.data.message || error.message || error);
 }
 `;
 

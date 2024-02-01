@@ -70,7 +70,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
 
       /** 非连接测试情况，启动 Mock */
       if (connector.mode !== 'test' && (pureConnectors.config.globalMock || config?.openMock)) {
-        return mock({ ...connector, outputSchema: config.mockSchema });
+        return mock({ ...connector, ...config });
       }
 
       /** mode = test，即在编辑面板点击调试 */
@@ -115,6 +115,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
               output: getDecodeString(output),
               method,
               path: path?.trim(),
+              globalMock: pureConnectors.config.globalMock,
               markList: markList.map(m => {
                 return {
                   id: m.id,

@@ -151,7 +151,7 @@ function getScript(serviceItem) {
         let hasCallThrowError = false;
         let curOutputKeys = [];
         let curExcludeKeys = [];
-        let curThrowExtraError = false;
+        let curOutputId = 'then';
         config
           .ajax(options)
           .catch(error => {
@@ -183,12 +183,12 @@ function getScript(serviceItem) {
           .then((response) => {
             const result = __output__(response, Object.assign({}, options), { throwError: onError });
             for (let i = 0; i < markList.length; i++) {
-              const { predicate = { key: '', value: undefined }, excludeKeys, outputKeys } = markList[i];
+              const { id, predicate = { key: '', value: undefined }, excludeKeys, outputKeys } = markList[i];
 
               if (!predicate || !predicate.key || predicate.value === undefined) {
                 curOutputKeys = outputKeys;
                 curExcludeKeys = excludeKeys;
-                curThrowExtraError = predicate.type === 'failed';
+                curOutputId = id === 'default' ? 'then' : id;
                 break;
               }
 
@@ -200,7 +200,7 @@ function getScript(serviceItem) {
               if (!keys.length && (predicate.operator === '=' ? curResult === predicate.value : curResult !== predicate.value)) {
                 curOutputKeys = outputKeys;
                 curExcludeKeys = excludeKeys;
-                curThrowExtraError = predicate.type === 'failed';
+                curOutputId = id === 'default' ? 'then' : id;
                 break;
               }
             }
@@ -239,8 +239,7 @@ function getScript(serviceItem) {
 		            }
 	            }
             }
-
-            curThrowExtraError ? onError(outputData) : then(outputData);
+            then({ __OUTPUT_ID__: curOutputId, __ORIGIN_RESPONSE__: outputData });
           })
           .catch((error) => {
             if (error && error.message === 'HTTP_FETCH_ERROR') {
