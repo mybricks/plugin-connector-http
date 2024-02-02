@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {getDecodeString} from '../script';
+import { getDecodeString } from '../script';
 import { cloneDeep } from '../utils/lodash';
 
 interface IOptions {
@@ -37,12 +37,12 @@ export function call(
   return new Promise((resolve, reject) => {
     try {
       const fn = connector.script ? eval(`(${decodeURIComponent(connector.script)})`) : getFetch(connector);
-      const { before = defaultFn } = config || {};
+      const { before = defaultFn, ...otherConfig } = config || {};
       fn(
         params,
         { then: resolve, onError: reject },
         {
-          executeEnv: connector.executeEnv,
+          ...otherConfig,
           ajax(options: IOptions) {
             const opts = before({ ...options });
             const { url } = opts;
@@ -338,7 +338,7 @@ const getFetch = (connector) => {
             }
           }
 
-          then({ __OUTPUT_ID__: curOutputId, __ORIGIN_RESPONSE__: outputData });
+          then(config.isMultipleOutputs ? { __OUTPUT_ID__: curOutputId, __ORIGIN_RESPONSE__: outputData } : outputData);
         })
         .catch((error) => {
           if (error?.message === 'HTTP_FETCH_ERROR') {

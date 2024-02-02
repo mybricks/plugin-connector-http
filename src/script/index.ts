@@ -239,7 +239,7 @@ function getScript(serviceItem) {
 		            }
 	            }
             }
-            then({ __OUTPUT_ID__: curOutputId, __ORIGIN_RESPONSE__: outputData });
+            then(config.isMultipleOutputs ? { __OUTPUT_ID__: curOutputId, __ORIGIN_RESPONSE__: outputData } : outputData);
           })
           .catch((error) => {
             if (error && error.message === 'HTTP_FETCH_ERROR') {
