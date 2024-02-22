@@ -81,9 +81,7 @@ function getScript(serviceItem) {
       try {
         const url = path;
         const newParams = __globalParamsFn__(
-          method.startsWith('GET')
-            ? { params, url, method }
-            : { data: params, url, method }
+          ['GET', 'DELETE'].includes(method) ? { params, data: {}, header: {}, url, method } : { params: {}, data: params, header: {}, url, method }
         );
         const hasGlobalResultFn = __hasGlobalResultFn__;
         newParams.url = newParams.url || url;

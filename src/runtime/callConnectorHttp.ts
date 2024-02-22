@@ -157,7 +157,7 @@ const getFetch = (connector) => {
       showLog && console.log('【连接器调试日志】接口传入参数：', cloneDeep(params));
 
       const url = path;
-      const originParams = method.startsWith('GET') ? { params, url, method } : { data: params, url, method };
+      const originParams = ['GET', 'DELETE'].includes(method) ? { params, data: {}, header: {}, url, method } : { params: {}, data: params, header: {}, url, method };
 
       showLog && console.log('【连接器调试日志】全局入参拦截器(执行前配置)：', cloneDeep(originParams));
 
