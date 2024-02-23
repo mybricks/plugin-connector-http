@@ -111,6 +111,10 @@
   flex: 1;
   flex-direction: column;
 
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
   &-item {
     border-bottom: 1px solid #ccc;
     display: flex;
@@ -281,4 +285,46 @@
   font-style: italic;
   color: #999999;
   margin-top: 12px;
+}
+
+.dropdownItem {
+  background-color: #fff;
+  padding: 4px 0;
+  box-shadow: 0 0 10px 3px #ddd;
+  width: 80px;
+
+  .item {
+    padding: 5px 12px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f5f7f9;
+    }
+  }
+}
+
+.empty {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: #999;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.folderList {
+  position: relative;
+  padding: 0 0 0 6px;
+
+  &:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: #eae9e9;
+  }
 }

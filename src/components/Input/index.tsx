@@ -4,7 +4,7 @@ import styles from './index.less';
 
 export interface InputProps {
   defaultValue?: string;
-  onChange?(value: string): void;
+  onChange?(e: any): void;
   onBlur?: FocusEventHandler<HTMLTextAreaElement | HTMLInputElement>;
   validateError?: string;
   placeholder?: string;

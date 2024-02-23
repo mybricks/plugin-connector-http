@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { uuid } from '../utils';
+import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
+import { filterConnectorsByKeyword, findConnector, getConnectorsByTree, uuid } from '../utils';
 import { exampleParamsFunc, exampleResultFunc, GLOBAL_PANEL, PLUGIN_CONNECTOR_NAME, SERVICE_TYPE } from '../constant';
 import { cloneDeep, get } from '../utils/lodash';
 import { formatDate } from '../utils/moment';
@@ -8,7 +8,11 @@ import Toolbar from './components/toolbar';
 import * as Icons from '../icon';
 import GlobalPanel from './components/globalPanel';
 import Switch from '../components/Switch';
+import Drag from '../components/drag';
 import { copyText } from '../utils/copy';
+import FolderPanel from './components/folderPanel';
+import { plus } from '../icon';
+import Dropdown from '../components/Dropdown';
 
 import styles from './style-cssModules.less';
 
@@ -41,20 +45,22 @@ const interfaceParams = [
   { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
 ];
 
-export default function Sidebar({ addActions, connector, data, serviceListUrl, initialValue = {} }: IProps) {
-  const ref = useRef<HTMLDivElement>(null);
+const Plugin: FC<IProps> = props => {
+	const { addActions, connector, data, serviceListUrl, initialValue = {} } = props;
+  const pluginRef = useRef<HTMLDivElement>(null);
   const blurMap = useRef<Record<string, () => void>>({});
   const [searchValue, setSearchValue] = useState('');
+  const [expandIdList, setExpandIdList] = useState([]);
   const [sidebarContext, setContext] = useState<any>({
     activeId: '',
     type: '',
     isEdit: false,
     formModel: { path: '', title: '', id: '', type: '', input: '', output: '' },
-    addActions: addActions
-      ? addActions.some(({ type }: any) => type === 'default')
-        ? addActions
-        : [{ type: 'http', title: '普通接口' }].concat(addActions)
-      : [{ type: 'http', title: '普通接口' }],
+    addActions: [{ type: SERVICE_TYPE.FOLDER, title: '文件夹' }].concat(addActions
+	    ? addActions.some(({ type }: any) => type === 'default')
+		    ? addActions
+		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }].concat(addActions)
+	    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }]),
     connector: {
       add: (args: any) => connector.add({ ...args }),
       remove: (id: string) => connector.remove(id),
@@ -66,12 +72,11 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
   });
   const updateService = async (action?: string, item?: any) => {
 	  return new Promise((resolve) => {
-		  const updateAll = action === 'updateAll';
-		  const { id = uuid(), script, ...others }: any = updateAll ? {} : (item || sidebarContext.formModel);
+		  const { id = uuid(), script, ...others }: any = (item || sidebarContext.formModel);
 		  if (action === 'create') {
 			  const serviceItem = {
 				  id,
-				  type: sidebarContext.formModel.type || sidebarContext.type || 'http',
+				  type: sidebarContext.formModel.type || sidebarContext.type || SERVICE_TYPE.HTTP,
 				  content: {
 					  input: encodeURIComponent(exampleParamsFunc),
 					  output: encodeURIComponent(exampleResultFunc),
@@ -83,12 +88,19 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 				  updateTime: Date.now(),
 			  };
 			  /** 插件内连接器数据 */
-			  data.connectors.push(serviceItem);
+				if (!sidebarContext.parent) {
+					data.connectors.push(serviceItem);
+				} else {
+					const { index, parent } = findConnector(data.connectors, sidebarContext.parent);
+
+					if (parent) {
+						parent[index].children.push(serviceItem);
+					}
+				}
 			  /** 设计器内连接器数据，支持服务接口组件选择接口 */
 			  sidebarContext.connector.add({
 				  id,
-				  type:
-					  sidebarContext.formModel.type || sidebarContext.type || 'http',
+				  type: sidebarContext.formModel.type || sidebarContext.type || SERVICE_TYPE.HTTP,
 				  title: others.title,
           connectorName: PLUGIN_CONNECTOR_NAME,
           script: undefined,
@@ -97,51 +109,42 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 				  markList: others.markList || []
 			  });
 		  } else {
-			  data.connectors.forEach((service: any, index: number) => {
-				  if (service.id === id || updateAll) {
-					  let serviceItem = data.connectors[index];
-					  if (!updateAll) {
-						  serviceItem = {
-							  ...service,
-							  updateTime: Date.now(),
-							  content: { ...others },
-						  };
-						  data.connectors[index] = serviceItem;
-					  }
-					  try {
-						  sidebarContext.connector.update({
-							  id: updateAll ? serviceItem.id : id,
-							  title: others.title || serviceItem.content.title,
-							  type: service.type,
-                connectorName: PLUGIN_CONNECTOR_NAME,
-                script: undefined,
-                globalMock: data.config.globalMock,
-							  inputSchema: serviceItem.content.inputSchema,
-							  markList: serviceItem.content.markList || []
-						  });
-					  } catch (error) {}
-				  }
-			  });
+			  const { index, parent } = findConnector(data.connectors, { id });
+				if (parent) {
+					const serviceItem = { ...parent[index], updateTime: Date.now(), content: { ...others } };
+					parent?.splice(index, 1, serviceItem);
+
+					try {
+						sidebarContext.connector.update({
+							id,
+							title: others.title || serviceItem.content.title,
+							type: serviceItem.type,
+							connectorName: PLUGIN_CONNECTOR_NAME,
+							script: undefined,
+							globalMock: data.config.globalMock,
+							inputSchema: serviceItem.content.inputSchema,
+							markList: serviceItem.content.markList || []
+						});
+					} catch (error) {}
+				}
 		  }
 		  // @ts-ignore
 		  resolve('');
 	  });
   };
 
-  const createService = () => updateService('create');
-
   const removeService = useCallback((item: any) => {
     return new Promise((resolve) => {
-      const index = data.connectors.findIndex((service) => {
-        return String(service.id) === String(item.id);
-      });
-      data.connectors.splice(index, 1);
-      try {
-        sidebarContext.connector.remove(item.id);
-      } catch (error) {}
+	    const { index, parent } = findConnector(data.connectors, item);
+	    parent?.splice(index, 1);
+	    getConnectorsByTree(item.children ?? [item]).forEach(con => {
+		    try {
+			    sidebarContext.connector.remove(con.id);
+		    } catch (error) {}
+	    });
       resolve('');
     });
-  }, []);
+  }, [data]);
 
   const clickRef = useRef();
 
@@ -165,6 +168,9 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
     if (item.type === SERVICE_TYPE.TG) {
       obj.type = SERVICE_TYPE.TG;
       obj.formModel = { id: item.id, type: item.type, ...item.content };
+    } else if (item.type === SERVICE_TYPE.FOLDER) {
+	    obj.type = SERVICE_TYPE.FOLDER;
+	    obj.formModel = item;
     } else {
       const noUseInnerEdit = sidebarContext.addActions.find(action => action.type === item.type)?.noUseInnerEdit;
       obj.type = noUseInnerEdit ? item.type : SERVICE_TYPE.HTTP;
@@ -180,22 +186,25 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
     setRender(obj);
   }, [sidebarContext]);
 
-  const onCopyItem = useCallback(async (item) => {
+  const onCopyItem = useCallback(async (item, parent) => {
     sidebarContext.formModel = cloneDeep(item.content);
+	  sidebarContext.parent = parent;
     sidebarContext.formModel.title += ' 复制';
+    sidebarContext.formModel.id = uuid();
     setRender(sidebarContext);
-    await createService();
+    await updateService('create');
   }, []);
 
   const onRemoveItem = useCallback(async (item) => {
-    if (confirm(`确认删除 ${item.content.title} 吗`)) {
-      await removeService(item);
-	    sidebarContext.type = '';
-      setRender(sidebarContext);
-    }
-  }, [sidebarContext]);
+	  if (confirm(item.type === SERVICE_TYPE.FOLDER ? `确认删除文件夹 ${item.content.title} 吗，其包含接口也将被删除` : `确认删除 ${item.content.title} 吗`)) {
+		  await removeService(item);
+		  sidebarContext.type = '';
+		  setRender(sidebarContext);
+	  }
+  }, [sidebarContext, data]);
 
 	sidebarContext.addDefaultService = useCallback(async () => {
+		sidebarContext.isEdit = false;
 		sidebarContext.type = SERVICE_TYPE.HTTP;
 	  sidebarContext.formModel = {
 			id: uuid(),
@@ -208,7 +217,20 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 		  output: encodeURIComponent(exampleResultFunc),
 	  };
 	  setRender(sidebarContext);
-  }, []);
+  }, [sidebarContext]);
+	sidebarContext.addServiceFolder = useCallback(async () => {
+		sidebarContext.isEdit = false;
+		sidebarContext.type = SERVICE_TYPE.FOLDER;
+	  sidebarContext.formModel = {
+			id: uuid(),
+		  content: {
+			  title: '文件夹',
+		  },
+		  type: SERVICE_TYPE.FOLDER,
+		  children: []
+	  };
+	  setRender(sidebarContext);
+  }, [sidebarContext]);
   sidebarContext.updateService = updateService;
 
   const onGlobalConfigClick = useCallback(() => {
@@ -219,6 +241,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
   const closeTemplateForm = useCallback(() => {
     sidebarContext.type = '';
     sidebarContext.isEdit = false;
+	  sidebarContext.formModel = {};
     setRender(sidebarContext);
   }, []);
 
@@ -233,7 +256,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
     if (sidebarContext.isEdit) {
       await updateService();
     } else {
-      await createService();
+      await updateService('create');
     }
     sidebarContext.type = '';
     sidebarContext.activeId = void 0;
@@ -242,15 +265,29 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
     setRender(sidebarContext);
   };
 
-  const onItemClick = useCallback((e: any, item: any) => {
-    if (item.id === sidebarContext.expandId) {
-      sidebarContext.expandId = 0;
-      setRender(sidebarContext);
-      return;
-    }
-    sidebarContext.expandId = item.id;
-    setRender(sidebarContext);
-  }, [setRender, sidebarContext]);
+	const onFolderFinish = (folder) => {
+		if (sidebarContext.isEdit) {
+			const { index, parent } = findConnector(data.connectors, folder);
+
+			parent?.splice(index, 1, folder);
+		} else {
+			if (!sidebarContext.parent) {
+				data.connectors.push(folder);
+			} else {
+				const { index, parent } = findConnector(data.connectors, sidebarContext.parent);
+
+				if (parent) {
+					parent[index].children.push(folder);
+				}
+			}
+		}
+
+		closeTemplateForm();
+	};
+
+  const onItemClick = useCallback((item: any) => {
+	  setExpandIdList(list => list.includes(item.id) ? list.filter(id => id !== item.id) : [...list, item.id]);
+  }, []);
 
   const onLinkClick = useCallback((url: string) => {
     window.open(url);
@@ -263,36 +300,23 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
       }
       if (copy) {
         return (
-          <span
-            className={styles['sidebar-panel-list-item__copy']}
-          >{`${item[key]}`}</span>
+          <span className={styles['sidebar-panel-list-item__copy']}>{item[key]}</span>
         );
       }
       if (link) {
         return get(item, key) ? (
-          <span
-            onClick={() => onLinkClick(get(item, key))}
-            className={styles['doc-link']}
-          >
+          <span onClick={() => onLinkClick(get(item, key))} className={styles['doc-link']}>
             点击跳转
           </span>
-        ) : (
-          '无'
-        );
+        ) : '无';
       }
       if (isTpl) {
         const domainObj = item[key];
         return (
           <>
-            <span>
-              {typeof domainObj === 'object'
-                ? domainObj.domain || '无'
-                : domainObj || '无'}
-            </span>
+            <span>{typeof domainObj === 'object' ? domainObj.domain || '无' : domainObj || '无'}</span>
             <br />
-            {get(item, [key, 'laneId']) && (
-              <span>{get(item, [key, 'laneId'])}</span>
-            )}
+            {get(item, [key, 'laneId']) && <span>{get(item, [key, 'laneId'])}</span>}
           </>
         );
       }
@@ -304,7 +328,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
   const renderAddActions = useCallback(() => {
 		const curAction = sidebarContext.addActions.find(action => action.type === sidebarContext.type && action.render);
 		let node = null;
-		
+
 		if (curAction) {
 			node = (
         curAction?.render({
@@ -335,19 +359,28 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 					onSubmit={onFinish}
 					key={sidebarContext.type + sidebarContext.formModel?.id}
 					globalConfig={data.config}
-					style={{ top: ref.current?.getBoundingClientRect().top }}
+					style={{ top: pluginRef.current?.getBoundingClientRect().top }}
+				/>
+			);
+		} else if (sidebarContext.type === SERVICE_TYPE.FOLDER) {
+			node = (
+				<FolderPanel
+					folder={sidebarContext.formModel}
+					onClose={closeTemplateForm}
+					onSubmit={onFolderFinish}
+					style={{ top: pluginRef.current?.getBoundingClientRect().top }}
 				/>
 			);
 		}
-		
+
 		return node;
-  }, [sidebarContext, sidebarContext.type, serviceListUrl, updateService]);
+  }, [sidebarContext, sidebarContext.type, serviceListUrl, updateService, onFolderFinish]);
 
   const renderGlobalPanel = useCallback(() => {
     return sidebarContext.type === GLOBAL_PANEL ? (
       <GlobalPanel
-        style={{ top: ref.current?.getBoundingClientRect().top }}
-        closeTemplateForm={closeTemplateForm}
+        style={{ top: pluginRef.current?.getBoundingClientRect().top }}
+        onClose={closeTemplateForm}
         data={data}
       />
     ) : null;
@@ -370,7 +403,7 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
         const { title, inputSchema, outputSchema } = item.content || {};
         const ctr = {
           id: item.id,
-          type: sidebarContext.formModel.type || sidebarContext.type || 'http',
+          type: sidebarContext.formModel.type || sidebarContext.type || SERVICE_TYPE.HTTP,
           title,
 					connectorName: PLUGIN_CONNECTOR_NAME,
 					globalMock: data.config.globalMock,
@@ -404,10 +437,11 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 		}
     initData();
 		try {
+			const allConnectors = getConnectorsByTree(data.connectors);
 			sidebarContext.addActions
 				.reduce((pre, item) => [...pre, ...(sidebarContext.connector.getAllByType(item.type))], [])
 				.forEach(designerConnector => {
-					const pluginConnector = data.connectors?.find(con => con.id === designerConnector.id);
+					const pluginConnector = allConnectors?.find(con => con.id === designerConnector.id);
 
 						if (!pluginConnector) {
 							sidebarContext.connector.remove(designerConnector.id);
@@ -420,9 +454,164 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 		}
   }, []);
 
+	const onDrop = useCallback((dragItem, dropItem, place: 'bottom' | 'top' | 'inner') => {
+		const { parent: dragParent, index: dragIndex } = findConnector(data.connectors, dragItem);
+		dragParent.splice(dragIndex, 1);
+		const { parent: dropParent, index: dropIndex } = findConnector(data.connectors, dropItem);
+
+		if (place === 'inner') {
+			dropItem.children.push(dragItem);
+		} else {
+			dropParent.splice(place === 'bottom' ? dropIndex + 1 : dropIndex, 0, dragItem);
+		}
+	}, [data]);
+
+	const renderItem = (connectors: any[], parent) => {
+		return connectors?.length
+			? connectors
+				.map(item => {
+					const expand = expandIdList.includes(item.id);
+					item.updateTime = formatDate(item.updateTime || item.createTime);
+					const { type } = item;
+					const curAction = sidebarContext.addActions.find(action => action.type === type);
+					let typeLabel = '接口';
+
+					if (sidebarContext.addActions.length > 1) {
+						typeLabel = curAction?.title || typeLabel;
+					}
+					const curTitle = curAction?.getTitle?.(item) || item.content.title;
+
+					return (
+						<>
+							<Drag key={item.id} item={item} draggable onDrop={onDrop}>
+								<div
+									key={item.id}
+									className={`${styles['sidebar-panel-list-item']} ${sidebarContext.activeId === item.id ? styles.active : ''} ${
+										sidebarContext.isEdit
+											? sidebarContext.activeId === item.id
+												? styles.chose
+												: styles.disabled
+											: ''
+									}`}
+								>
+									<div>
+										<div
+											onClick={() => onItemClick(item)}
+											className={styles['sidebar-panel-list-item__left']}
+										>
+											<div className={`${styles.icon} ${expand ? styles.iconExpand : ''}`}>
+												{Icons.arrowR}
+											</div>
+											<div className={styles.tag}>
+												{typeLabel}
+											</div>
+											<div className={styles.name}>
+												<span data-mybricks-tip={curTitle || undefined}>{curTitle}</span>
+											</div>
+										</div>
+										<div className={styles['sidebar-panel-list-item__right']}>
+											<div
+												data-mybricks-tip="编辑"
+												ref={clickRef}
+												className={styles.action}
+												onClick={() => onEditItem(item)}
+											>
+												{Icons.edit}
+											</div>
+											{type === SERVICE_TYPE.FOLDER ? (
+												<Dropdown
+													dropDownStyle={{ right: 0 }}
+													onBlur={fn => blurMap.current['toolbar' + item.id] = fn}
+													overlay={(
+														<div className={styles.dropdownItem}>
+															{sidebarContext.addActions.map(({ type, title }: any) => {
+																return (
+																	<div
+																		className={styles.item}
+																		key={type}
+																		onClick={() => {
+																			sidebarContext.activeId = void 0;
+																			sidebarContext.parent = item;
+
+																			if (type === SERVICE_TYPE.HTTP) {
+																				sidebarContext.addDefaultService();
+																			} else if (type === SERVICE_TYPE.FOLDER) {
+																				sidebarContext.addServiceFolder();
+																			} else {
+																				sidebarContext.type = type;
+																				sidebarContext.isEdit = false;
+																				sidebarContext.formModel = { type };
+																				setRender(sidebarContext);
+																			}
+																		}}
+																	>
+																		{title}
+																	</div>
+																);
+															})}
+														</div>
+													)}
+												>
+													<div
+														className={styles.action}
+														data-mybricks-tip="创建接口"
+														onClick={() => Object.keys(blurMap.current).filter(key => key !== `toolbar${item.id}`).forEach(key => blurMap.current[key]())}
+													>
+														{plus}
+													</div>
+												</Dropdown>
+											) : (
+												<div data-mybricks-tip="复制" className={styles.action} onClick={() => onCopyItem(item, parent)}>
+													{Icons.copy}
+												</div>
+											)}
+											<div
+												data-mybricks-tip="删除"
+												className={styles.action}
+												onClick={() => onRemoveItem(item)}
+											>
+												{Icons.remove}
+											</div>
+										</div>
+									</div>
+								</div>
+							</Drag>
+							{expand ? (
+								type === SERVICE_TYPE.FOLDER
+									? <div className={styles.folderList}>{renderItem(item.children, item)}</div>
+									: (
+										<div className={styles['sidebar-panel-list-item__expand']}>
+											{getInterfaceParams(item).map((param: any) => {
+												return (
+													<div className={styles['sidebar-panel-list-item__param']} key={param.key}>
+			                      <span
+				                      className={styles['sidebar-panel-list-item__name']}
+				                      style={{ width: param.width }}
+			                      >
+			                        {param.name}:
+			                      </span>
+																<span className={styles['sidebar-panel-list-item__content']}>
+			                        {renderParam(item, param)}
+			                      </span>
+													</div>
+												);
+											})}
+										</div>
+									)
+							) : null}
+						</>
+					);
+				})
+			: (
+				<Drag parent={parent} item={null} draggable onDrop={onDrop}>
+					<div className={styles.empty} style={parent ? { borderBottom: '1px solid #ccc' } : undefined}>暂无接口，请点击新建接口</div>
+				</Drag>
+			);
+	};
+
   return (
 	  <div
-		  ref={ref}
+		  ref={pluginRef}
 		  className={`${styles['sidebar-panel']} ${styles['sidebar-panel-open']}`}
 		  onClick={() => Object.values(blurMap.current).forEach(fn => fn())}
 	  >
@@ -448,105 +637,13 @@ export default function Sidebar({ addActions, connector, data, serviceListUrl, i
 				  />
 			  </div>
 			  <div className={styles['sidebar-panel-list']}>
-				  {
-					  data?.connectors
-						  .filter((item) => item.content.type !== 'domain')
-						  .filter((item) => searchValue ? item.content.title.includes(searchValue) : true)
-						  .map((item) => {
-							  const expand = sidebarContext.expandId === item.id;
-							  item.updateTime = formatDate(item.updateTime || item.createTime);
-							  const { type } = item.content;
-							  const curAction = sidebarContext.addActions.find(action => action.type === type);
-							  let typeLabel = '接口';
-
-							  if (sidebarContext.addActions.length > 1) {
-								  typeLabel = curAction?.title || typeLabel;
-							  }
-							  const curTitle = curAction?.getTitle?.(item) || item.content.title;
-
-							  return (
-								  <div key={item.id}>
-									  <div
-										  key={item.id}
-										  className={`${styles['sidebar-panel-list-item']} ${sidebarContext.activeId === item.id ? styles.active : ''} ${
-											  sidebarContext.isEdit
-												  ? sidebarContext.activeId === item.id
-													  ? styles.chose
-													  : styles.disabled
-												  : ''
-										  }`}
-									  >
-										  <div>
-											  <div
-												  onClick={(e) => onItemClick(e, item)}
-												  className={styles['sidebar-panel-list-item__left']}
-											  >
-												  <div className={`${styles.icon} ${expand ? styles.iconExpand : ''}`}>
-													  {Icons.arrowR}
-												  </div>
-												  <div className={styles.tag}>
-													  {typeLabel}
-												  </div>
-												  <div className={styles.name}>
-													  <span data-mybricks-tip={curTitle || undefined}>{curTitle}</span>
-												  </div>
-											  </div>
-											  <div className={styles['sidebar-panel-list-item__right']}>
-												  <div
-													  data-mybricks-tip="编辑"
-													  ref={clickRef}
-													  className={styles.action}
-													  onClick={() => onEditItem(item)}
-												  >
-													  {Icons.edit}
-												  </div>
-												  <div
-													  data-mybricks-tip="复制"
-													  className={styles.action}
-													  onClick={() => onCopyItem(item)}
-												  >
-													  {Icons.copy}
-												  </div>
-												  <div
-													  data-mybricks-tip="删除"
-													  className={styles.action}
-													  onClick={() => onRemoveItem(item)}
-												  >
-													  {Icons.remove}
-												  </div>
-											  </div>
-										  </div>
-									  </div>
-									  {expand ? (
-										  <div className={styles['sidebar-panel-list-item__expand']}>
-											  {getInterfaceParams(item).map((param: any) => {
-												  return (
-													  <div
-														  className={styles['sidebar-panel-list-item__param']}
-														  key={param.key}
-													  >
-		                            <span
-			                            className={styles['sidebar-panel-list-item__name']}
-			                            style={{ width: param.width }}
-		                            >
-		                              {param.name}:
-		                            </span>
-														  <span className={styles['sidebar-panel-list-item__content']}>
-		                              {renderParam(item, param)}
-		                            </span>
-													  </div>
-												  );
-											  })}
-										  </div>
-									  ) : null}
-								  </div>
-							  );
-						  })
-				  }
+				  {renderItem(filterConnectorsByKeyword(data?.connectors, searchValue), null)}
 			  </div>
 		  </div>
 		  {renderAddActions()}
 		  {renderGlobalPanel()}
 	  </div>
   );
-}
+};
+
+export default Plugin;

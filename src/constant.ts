@@ -37,6 +37,7 @@ export const SERVICE_TYPE = {
   HTTP: 'http',
   TG: 'http-tg',
   KDEV: 'http-kdev',
+  FOLDER: 'folder',
 };
 
 export const GLOBAL_PANEL = 'global-setting';

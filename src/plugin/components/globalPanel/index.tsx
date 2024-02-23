@@ -5,13 +5,9 @@ import { CDN, templateErrorResultFunc } from '../../../constant';
 import { debounce } from '../../../utils/lodash';
 import PanelWrap from '../../../components/panel';
 
-export default function GlobalPanel({
-  closeTemplateForm,
-  style,
-  data,
-}: any) {
+export default function GlobalPanel({ onClose, style, data }: any) {
 	return (
-		<PanelWrap style={style} title="全局配置" onClose={closeTemplateForm}>
+		<PanelWrap style={style} title="全局配置" onClose={onClose}>
 			<Collapse header="当开始请求">
 				<Editor
 					width="100%"

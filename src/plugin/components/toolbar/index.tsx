@@ -1,6 +1,7 @@
 import React from 'react';
 import { plus } from '../../../icon'
 import Dropdown from '../../../components/Dropdown';
+import { SERVICE_TYPE } from '../../../constant';
 
 import css from './index.less';
 
@@ -9,22 +10,18 @@ export default function ({ ctx, setRender, blurMap }: any) {
 	  ctx.type = type;
 	  ctx.activeId = void 0;
 	  ctx.isEdit = false;
+	  ctx.parent = null;
 	  ctx.formModel = { type };
 	  setRender(ctx);
 			
-		if (type === 'http') {
+		if (type === SERVICE_TYPE.HTTP) {
 			ctx.addDefaultService();
+		} else if (type === SERVICE_TYPE.FOLDER) {
+			ctx.addServiceFolder();
 		}
   };
 
   const renderAddActionList = () => {
-	  if (!ctx.addActions || ctx.addActions.length === 1) {
-		  return (
-			  <div className={css.icon} onClick={() => onAddClick('http')} data-mybricks-tip="创建接口">
-				  {plus}
-			  </div>
-		  );
-	  }
 	  const menu = (
 		  <div className={css.ct}>
 			  {ctx.addActions.map(({ type, title }: any) => (
@@ -35,7 +32,7 @@ export default function ({ ctx, setRender, blurMap }: any) {
 	
 	  return (
 		  <Dropdown dropDownStyle={ctx.type ? { right: 0 } : undefined} onBlur={fn => blurMap['toolbar'] = fn} overlay={menu}>
-			  <div className={css.icon} data-mybricks-tip="创建接口">
+			  <div className={css.icon} data-mybricks-tip="创建接口" onClick={() => Object.keys(blurMap).filter(key => key !== 'toolbar').forEach(key => blurMap[key]())}>
 				  {plus}
 			  </div>
 		  </Dropdown>

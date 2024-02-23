@@ -1,19 +1,5 @@
 import { isEmpty, cloneDeep } from '../utils/lodash';
-
-export function getServiceUrl(uri: string) {
-  return `/app/pcspa/desn/${uri}`;
-}
-
-export function getDecodeString(fn: string) {
-  return decodeURIComponent(fn).replace(
-    /export\s+default.*function.*\(/,
-    'function _RT_('
-  );
-}
-
-export function getLast(list: any[]) {
-  return list[list.length - 1];
-}
+import { SERVICE_TYPE } from '../constant';
 
 export function formatSchema(schema: any) {
   if (!schema) return;
@@ -485,4 +471,73 @@ export const extractParamsAndSchemaByJSON = (json) => {
 	dfs(params, json);
 
 	return { params, originSchema };
+};
+
+/** 查询连接器选项的父元素以及对应索引 */
+export const findConnector = (connectors: any[], curConnector: any) => {
+	let parent = null, index = -1;
+	const dfs = (connectors: any[]) => {
+		if (parent) {
+			return;
+		}
+		const curIndex = connectors.findIndex(con => con.id === curConnector.id);
+		if (curIndex !== -1) {
+			parent = connectors;
+			index = curIndex;
+		} else {
+			connectors.filter(con => con.type === SERVICE_TYPE.FOLDER).forEach(con => dfs(con.children));
+		}
+	};
+
+	dfs(connectors);
+
+	return { parent, index };
+};
+
+/** 获取连接器树里所有连接器 */
+export const getConnectorsByTree = (connectors: any[]) => {
+	let list = [];
+	const dfs = (connectors: any[]) => {
+		connectors.forEach(con => {
+			if (con.type === SERVICE_TYPE.FOLDER) {
+				dfs(con.children);
+			} else {
+				list.push(con);
+			}
+		});
+	};
+
+	dfs(connectors);
+
+	return list;
+};
+
+export const filterConnectorsByKeyword = (connectors: any[], keyword: string) => {
+	if (!connectors?.length) {
+		return [];
+	}
+	if (!keyword) {
+		return connectors;
+	}
+
+	const dfs = (connector) => {
+		if (connector.content.title.includes(keyword)) {
+			return connector;
+		}
+
+		if (connector.type === SERVICE_TYPE.FOLDER) {
+			let children = [];
+			connector.children.forEach(con => {
+				const item = dfs(con);
+
+				if (item) {
+					children.push(item);
+				}
+			});
+
+			return children.length ? { ...connector, children } : undefined;
+		}
+	};
+
+	return connectors.map(dfs).filter(Boolean);
 };

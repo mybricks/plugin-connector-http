@@ -15,6 +15,7 @@ import { mock } from './script/mock';
 import * as Items from './components';
 // @ts-ignore
 import pkg from '../package.json';
+import { getConnectorsByTree } from './utils';
 
 console.log(`%c ${pkg.name} %c@${pkg.version}`, `color:#FFF;background:#fa6400`, ``, ``);
 
@@ -66,7 +67,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
     },
     /** 调试时将调用插件的 callConnector 方法 */
     callConnector(connector, params, config) {
-      const pureConnectors = { ...this.data };
+      const pureConnectors = { ...this.data, connectors: getConnectorsByTree(this.data.connectors) };
 
       /** 非连接测试情况，启动 Mock */
       if (connector.mode !== 'test' && (pureConnectors.config.globalMock || config?.openMock)) {
@@ -95,7 +96,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
     },
     /** 页面导出 JSON 时，会调用插件 toJSON 方法，数据防止在页面 JSON 中 */
     toJSON({ data }) {
-      const pureConnectors = { ...data };
+      const pureConnectors = { ...data, connectors: getConnectorsByTree(data.connectors) };
       if (!pureConnectors.config) {
         pureConnectors.config = {};
       }
@@ -151,7 +152,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
     },
     getConnectorScript(connector) {
       const isTestMode = connector.mode === 'test';
-      const curConnector = isTestMode ? connector : this.data.connectors.find(con => con.id === connector.id);
+      const curConnector = isTestMode ? connector : getConnectorsByTree(this.data.connectors).find(con => con.id === connector.id);
 
       try {
         return {

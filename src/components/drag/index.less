@@ -1,0 +1,32 @@
+@import '../../theme.less';
+
+.hovering {
+  position: relative;
+
+  & > div {
+    background: rgba(250, 100, 0, 0.1)!important;
+  }
+}
+
+.hoverTop,
+.hoverBottom {
+  position: relative;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: @color-primary;
+    z-index: 100;
+  }
+}
+
+.hoverBottom {
+  &:before {
+    top: unset;
+    bottom: 0;
+  }
+}
