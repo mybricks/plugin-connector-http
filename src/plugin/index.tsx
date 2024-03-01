@@ -23,7 +23,7 @@ window._AI_HISTORY_LIST_ = [
 
 window.AI_MODE = "multi";
 
-export default function ({ command, userId }) {
+export default function ({ command, user: { id: userId } }) {
   const [requirement, setRequirement] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -40,8 +40,8 @@ export default function ({ command, userId }) {
     setSuccess(false);
     setError(false);
     axios
-    .post("https://ai.mybricks.world/api/chat/generator", {
-      // .post("http://localhost:13000/api/chat/generator", {
+      .post("https://ai.mybricks.world/api/chat/generator", {
+        // .post("http://localhost:13000/api/chat/generator", {
         requirement: requirement,
         mode: mode,
         userId: userId,
@@ -50,7 +50,7 @@ export default function ({ command, userId }) {
         if (data.code === 1) {
           const schema = data.data.schema;
 
-          const comArray = traverseSchemaRecursively(schema)
+          const comArray = traverseSchemaRecursively(schema);
 
           const component = { data: comArray };
           console.log("AI res: ", component);
@@ -88,7 +88,7 @@ export default function ({ command, userId }) {
         }}
       >
         {/* <h2 style={{fontSize: 16}}>普通模式回答的较好的问题示例</h2> */}
-        <h2 style={{fontSize: 16}}>示例</h2>
+        <h2 style={{ fontSize: 16 }}>示例</h2>
         {/* <p>添加一个按钮，标题是添加活动</p> */}
         {/* <p>添加一个用于选择体育项目的下拉框</p> */}
         {/* <p>添加一个多选框组件，选项有足球、篮球、羽毛球、排球</p> */}
