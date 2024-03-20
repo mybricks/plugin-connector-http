@@ -109,7 +109,7 @@ export const baseEditorConfig = {
 }
 
 /** 带全屏编辑能力的编辑器 */
-export const EditorWithFullScreen = ({ CDN, value, unique, onChange, isTsx = true, language = ' typescript' }) => {
+export const EditorWithFullScreen = ({ CDN, value, unique, onChange, isTsx = false, language = 'javascript' }) => {
   const [open, setOpen] = useState<boolean>(false);
 
   const editorRef = useRef<HandlerType>(null);
@@ -152,7 +152,7 @@ export const EditorWithFullScreen = ({ CDN, value, unique, onChange, isTsx = tru
         width="100%"
         ref={editorRef}
         key={unique}
-        height={400}
+        height={500}
         eslint={{
           src: CDN?.eslint,
         }}
@@ -162,6 +162,7 @@ export const EditorWithFullScreen = ({ CDN, value, unique, onChange, isTsx = tru
             open,
             width: "90%",
             title: "编辑代码",
+            height: '90%',
             inside: true,
             onOpen,
             onClose,

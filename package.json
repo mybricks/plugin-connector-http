@@ -17,8 +17,7 @@
     "Readme.md"
   ],
   "dependencies": {
-    "@mybricks/code-editor": "1.1.7",
-    "@mybricks/coder": "0.0.33",
+    "@mybricks/coder": "0.0.34",
     "axios": "^1.1.3"
   },
   "devDependencies": {

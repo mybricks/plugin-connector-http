@@ -99,7 +99,6 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 				<EditorWithFullScreen
 					unique={'request'}
 					CDN={CDN}
-					// path={`file:///${model.id}_global_req_code.ts`}
 					onChange={debounce((code: string) => {
 						setModel(model => ({ ...model, input: encodeURIComponent(code) }))
 					}, 200)}
@@ -110,7 +109,6 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 				<EditorWithFullScreen
 					unique={'response'}
 					CDN={CDN}
-					// path={`file:///${model.id}_global_req_code.ts`}
 					onChange={debounce((code: string) => {
 						setModel(model => ({ ...model, output: encodeURIComponent(code) }))
 					}, 200)}

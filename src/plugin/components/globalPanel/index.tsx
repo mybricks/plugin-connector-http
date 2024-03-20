@@ -15,7 +15,7 @@ export default function GlobalPanel({ onClose, style, data }: any) {
 					eslint={{
 						src: CDN?.eslint,
 					}}
-					path={`file:///_global_req_code.ts`}
+					path={`file:///_global_req_code.js`}
 					babel={{ standalone: CDN?.babel }}
 					loaderConfig={{ paths: CDN?.paths }}
 					language="javascript"
@@ -37,7 +37,7 @@ export default function GlobalPanel({ onClose, style, data }: any) {
 					eslint={{
 						src: CDN?.eslint,
 					}}
-					path={`file:///_global_res_code.ts`}
+					path={`file:///_global_res_code.js`}
 					babel={{ standalone: CDN?.babel }}
 					loaderConfig={{ paths: CDN?.paths }}
 					value={decodeURIComponent(data.config.resultFn)}
