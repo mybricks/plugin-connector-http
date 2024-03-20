@@ -1,4 +1,4 @@
-import React, { FC, CSSProperties, useState, useRef, FocusEventHandler, ReactNode, useCallback } from 'react';
+import React, { FC, CSSProperties, useState, useRef, FocusEventHandler, ReactNode, useCallback, useMemo } from 'react';
 import Editor, { HandlerType } from "@mybricks/coder";
 import FormItem from '../FormItem';
 import Input, { TextArea } from '../Input';
@@ -109,8 +109,7 @@ export const baseEditorConfig = {
 }
 
 /** 带全屏编辑能力的编辑器 */
-export const EditorWithFullScreen = ({ CDN, value, key, onChange }) => {
-  const [isFullScreen, setIsFullScreen] = useState(false)
+export const EditorWithFullScreen = ({ CDN, value, unique, onChange, isTsx = true, language = ' typescript' }) => {
   const [open, setOpen] = useState<boolean>(false);
 
   const editorRef = useRef<HandlerType>(null);
@@ -123,6 +122,21 @@ export const EditorWithFullScreen = ({ CDN, value, key, onChange }) => {
   const onClose = useCallback(async () => {
     setOpen(false);
   }, []);
+
+  const path = useMemo(() => {
+    let path = `file:///${Math.random()}_code`;
+    if (language === "typescript") {
+      path += ".ts";
+    } else if (language === "javascript") {
+      path += ".js";
+    } else {
+      path += `.${language}`;
+    }
+    if (isTsx) {
+      path += "x";
+    }
+    return path;
+  }, [unique]);
 
   return (
     <>
@@ -137,15 +151,16 @@ export const EditorWithFullScreen = ({ CDN, value, key, onChange }) => {
       <Editor
         width="100%"
         ref={editorRef}
-        key={key}
+        key={unique}
         height={400}
         eslint={{
           src: CDN?.eslint,
         }}
+        path={path}
         modal={
           {
             open,
-            width: 1200,
+            width: "90%",
             title: "编辑代码",
             inside: true,
             onOpen,
@@ -157,7 +172,6 @@ export const EditorWithFullScreen = ({ CDN, value, key, onChange }) => {
         language="javascript"
         theme="light"
         value={value}
-
         onChange={onChange}
       />
     </>

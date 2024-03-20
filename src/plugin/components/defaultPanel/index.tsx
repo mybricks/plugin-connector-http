@@ -97,8 +97,9 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 			</Collapse>
 			<Collapse header="当开始请求">
 				<EditorWithFullScreen
-					key={model.id}
+					unique={'request'}
 					CDN={CDN}
+					// path={`file:///${model.id}_global_req_code.ts`}
 					onChange={debounce((code: string) => {
 						setModel(model => ({ ...model, input: encodeURIComponent(code) }))
 					}, 200)}
@@ -107,8 +108,9 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 			</Collapse>
 			<Collapse header="当返回响应">
 				<EditorWithFullScreen
-					key={model.id}
+					unique={'response'}
 					CDN={CDN}
+					// path={`file:///${model.id}_global_req_code.ts`}
 					onChange={debounce((code: string) => {
 						setModel(model => ({ ...model, output: encodeURIComponent(code) }))
 					}, 200)}
