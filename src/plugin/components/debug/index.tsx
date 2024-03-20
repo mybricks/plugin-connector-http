@@ -12,7 +12,7 @@ import {
 	uuid,
 } from '../../../utils';
 import { checkValidJsonSchema } from '../../../utils/validateJsonSchema';
-import JSONView from '@mybricks/code-editor';
+import JSONView from "@mybricks/coder";
 import ReturnSchema from '../returnSchema';
 import ParamsEdit from '../paramsEdit';
 import Params from '../params';
@@ -71,14 +71,10 @@ function DataShow({ data }: any) {
 			<div className={styles.title}>标记后的返回结果示例</div>
 			{/* @ts-ignore */}
 			<JSONView
-				CDN={CDN}
 				value={valueStr}
 				language='json'
-				env={{
-					isNode: false,
-					isElectronRenderer: false,
-				}}
-				readOnly
+				theme='light'
+				options={{ readOnly: true }}
 			/>
 		</div>
 	);
