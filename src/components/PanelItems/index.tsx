@@ -152,7 +152,6 @@ export const EditorWithFullScreen = ({ CDN, value, unique, onChange, path }) => 
             onOpen,
             maskClosable: true,
             contentClassName: styles.modalContent,
-            footer: null,
             onClose,
           }
         }
