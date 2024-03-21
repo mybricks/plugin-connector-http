@@ -1,5 +1,5 @@
 import React, { FC, CSSProperties, useState, useRef, FocusEventHandler, ReactNode, useCallback, useMemo } from 'react';
-import Editor, { HandlerType } from "@mybricks/coder";
+import Editor, { HandlerType, Icon } from "@mybricks/coder";
 import FormItem from '../FormItem';
 import Input, { TextArea } from '../Input';
 import RadioButtons from '../RadioButtons';
@@ -122,15 +122,16 @@ export const EditorWithFullScreen = ({ CDN, value, unique, onChange, path }) => 
   const onClose = useCallback(async () => {
     setOpen(false);
   }, []);
-  
+
   return (
-    <>
+    <div className={styles.wrap}>
       {
         !open ? <div
-        onClick={onOpen}
         className={styles.sidebarPanelCodeIcon}
       >
-        {fullScreen}
+         <span>
+            <Icon className={styles.icon} name="plus" onClick={onOpen} />
+          </span>
       </div> : null
       }
       <Editor
@@ -145,11 +146,13 @@ export const EditorWithFullScreen = ({ CDN, value, unique, onChange, path }) => 
         modal={
           {
             open,
-            width: "90%",
+            width: 1200,
             title: "编辑代码",
-            height: '90%',
             inside: true,
             onOpen,
+            maskClosable: true,
+            contentClassName: styles.modalContent,
+            footer: null,
             onClose,
           }
         }
@@ -160,7 +163,7 @@ export const EditorWithFullScreen = ({ CDN, value, unique, onChange, path }) => 
         value={value}
         onChange={onChange}
       />
-    </>
+    </div>
   )
 }
 
