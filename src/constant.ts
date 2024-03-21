@@ -43,15 +43,10 @@ export const SERVICE_TYPE = {
 export const GLOBAL_PANEL = 'global-setting';
 
 export let CDN = {
-  prettier: {
-    standalone: '/mfs/editor_assets/prettier/2.6.2/standalone.js',
-      babel: '/mfs/editor_assets/prettier/2.6.2/parser-babel.js'
-  },
   eslint: '/mfs/editor_assets/eslint/8.15.0/eslint.js',
   paths: {
     vs: '/mfs/editor_assets/monaco-editor/0.33.0/min/vs',
   },
-  monacoLoader: '/mfs/editor_assets/monaco-editor/0.33.0/min/vs/loader.min.js',
   babel: '/mfs/editor_assets/babel/babel-standalone.min.js'
 };
 

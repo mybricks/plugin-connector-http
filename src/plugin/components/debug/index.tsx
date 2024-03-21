@@ -72,6 +72,7 @@ function DataShow({ data }: any) {
 			{/* @ts-ignore */}
 			<JSONView
 				value={valueStr}
+				height={300}
 				language='json'
 				theme='light'
 				options={{ readOnly: true }}

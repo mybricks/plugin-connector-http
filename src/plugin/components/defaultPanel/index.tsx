@@ -72,6 +72,13 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 		return errorFields.length && errorFields.includes('path') ? '请填写完整的地址' : ''
 	}, [errorFields]);
 
+
+	
+  const editorPath = useMemo(() => {
+    let random = `file:///${Math.random()}_code`;
+    return random;
+  }, []);
+
 	return (
 		<PanelWrap
 			ref={panelRef}
@@ -99,6 +106,7 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 				<EditorWithFullScreen
 					unique={'request'}
 					CDN={CDN}
+					path={editorPath + 'request.js'}
 					onChange={debounce((code: string) => {
 						setModel(model => ({ ...model, input: encodeURIComponent(code) }))
 					}, 200)}
@@ -109,6 +117,7 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 				<EditorWithFullScreen
 					unique={'response'}
 					CDN={CDN}
+					path={editorPath + 'response.js'}
 					onChange={debounce((code: string) => {
 						setModel(model => ({ ...model, output: encodeURIComponent(code) }))
 					}, 200)}

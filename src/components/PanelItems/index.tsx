@@ -109,7 +109,7 @@ export const baseEditorConfig = {
 }
 
 /** 带全屏编辑能力的编辑器 */
-export const EditorWithFullScreen = ({ CDN, value, unique, onChange, isTsx = false, language = 'javascript' }) => {
+export const EditorWithFullScreen = ({ CDN, value, unique, onChange, path }) => {
   const [open, setOpen] = useState<boolean>(false);
 
   const editorRef = useRef<HandlerType>(null);
@@ -122,22 +122,7 @@ export const EditorWithFullScreen = ({ CDN, value, unique, onChange, isTsx = fal
   const onClose = useCallback(async () => {
     setOpen(false);
   }, []);
-
-  const path = useMemo(() => {
-    let path = `file:///${Math.random()}_code`;
-    if (language === "typescript") {
-      path += ".ts";
-    } else if (language === "javascript") {
-      path += ".js";
-    } else {
-      path += `.${language}`;
-    }
-    if (isTsx) {
-      path += "x";
-    }
-    return path;
-  }, [unique]);
-
+  
   return (
     <>
       {
