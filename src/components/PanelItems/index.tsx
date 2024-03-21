@@ -1,5 +1,5 @@
-import React, { FC, CSSProperties, useState, useRef, FocusEventHandler, ReactNode } from 'react';
-import Editor from '@mybricks/code-editor';
+import React, { FC, CSSProperties, useState, useRef, FocusEventHandler, ReactNode, useCallback, useMemo } from 'react';
+import Editor, { HandlerType, Icon } from "@mybricks/coder";
 import FormItem from '../FormItem';
 import Input, { TextArea } from '../Input';
 import RadioButtons from '../RadioButtons';
@@ -109,51 +109,61 @@ export const baseEditorConfig = {
 }
 
 /** 带全屏编辑能力的编辑器 */
-export const EditorWithFullScreen = ({ CDN, value, key, onChange }) => {
-  const [isFullScreen, setIsFullScreen] = useState(false)
+export const EditorWithFullScreen = ({ CDN, value, unique, onChange, path }) => {
+  const [open, setOpen] = useState<boolean>(false);
 
-  const editorRef = useRef<HTMLDivElement>(null);
-  const handleOpenOrClose = (value) => {
-    setIsFullScreen(value)
-    if (value) {
-      editorRef.current?.classList.add(styles.sidebarPanelCodeFull);
-    } else {
-      editorRef.current?.classList.remove(styles.sidebarPanelCodeFull);
-    }
-  }
+  const editorRef = useRef<HandlerType>(null);
+
+
+  const onOpen = useCallback(async () => {
+    setOpen(true);
+  }, []);
+
+  const onClose = useCallback(async () => {
+    setOpen(false);
+  }, []);
+
   return (
-    <>
-      {isFullScreen ? (
-        <div
-          onClick={() => handleOpenOrClose(false)}
-          className={styles.sidebarPanelCodeIconFull}
-        >
-          {fullScreenExit}
-        </div>
-      ) : (
-        <div
-          onClick={() => handleOpenOrClose(true)}
-          className={styles.sidebarPanelCodeIcon}
-        >
-          {fullScreen}
-        </div>
-      )}
+    <div className={styles.wrap}>
+      {
+        !open ? <div
+        className={styles.sidebarPanelCodeIcon}
+      >
+         <span>
+            <Icon className={styles.icon} name="plus" onClick={onOpen} />
+          </span>
+      </div> : null
+      }
       <Editor
-        onMounted={(editor, monaco, container: HTMLDivElement) => {
-          editorRef.current = container;
-          container.onclick = (e) => {
-            if (e.target === container) {
-              handleOpenOrClose(false)
-            }
-          };
+        width="100%"
+        ref={editorRef}
+        key={unique}
+        height={500}
+        eslint={{
+          src: CDN?.eslint,
         }}
-        key={key}
-        CDN={CDN}
-        onChange={onChange}
+        path={path}
+        modal={
+          {
+            open,
+            width: 1200,
+            title: "编辑代码",
+            inside: true,
+            onOpen,
+            maskClosable: true,
+            contentClassName: styles.modalContent,
+            footer: null,
+            onClose,
+          }
+        }
+        babel={{ standalone: CDN?.babel }}
+        loaderConfig={{ paths: CDN?.paths }}
+        language="javascript"
+        theme="light"
         value={value}
-        {...baseEditorConfig}
+        onChange={onChange}
       />
-    </>
+    </div>
   )
 }
 
