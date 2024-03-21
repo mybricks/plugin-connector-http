@@ -54,6 +54,7 @@ export default function GlobalPanel({ onClose, style, data }: any) {
 					height={400}
 					language="javascript"
 					theme="light"
+					path={`file:///_global_error_code.js`}
 					eslint={{
 						src: CDN?.eslint,
 					}}
