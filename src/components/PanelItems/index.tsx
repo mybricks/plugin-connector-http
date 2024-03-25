@@ -138,7 +138,7 @@ export const EditorWithFullScreen = ({ CDN, value, unique, onChange, path }) => 
         width="100%"
         ref={editorRef}
         key={unique}
-        height={500}
+        height={300}
         eslint={{
           src: CDN?.eslint,
         }}
