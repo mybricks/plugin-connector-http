@@ -1,9 +1,8 @@
-import React, { FC, CSSProperties, useState, useRef, FocusEventHandler, ReactNode, useCallback, useMemo } from 'react';
+import React, { FC, CSSProperties, useState, useRef, FocusEventHandler, ReactNode, useCallback } from 'react';
 import Editor, { HandlerType, Icon } from "@mybricks/coder";
 import FormItem from '../FormItem';
 import Input, { TextArea } from '../Input';
 import RadioButtons from '../RadioButtons';
-import { fullScreen, fullScreenExit } from '../../icon';
 import { Methods } from '../../constant';
 
 import styles from './index.less';

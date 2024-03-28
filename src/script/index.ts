@@ -272,7 +272,7 @@ function getScript(serviceItem) {
           ? getDecodeString(serviceItem.globalErrorResultFn)
           : void 0
       )
-      .replace('__markList__', JSON.stringify(serviceItem.markList || []))
+      .replace('__markList__', JSON.stringify((serviceItem.markList || []).map(({ outputSchema, resultSchema, ...other }) => other)))
       .replace(
         '__hasGlobalResultFn__',
         JSON.stringify(!!serviceItem.globalResultFn)
