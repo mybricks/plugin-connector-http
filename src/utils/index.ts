@@ -512,6 +512,26 @@ export const getConnectorsByTree = (connectors: any[]) => {
 	return list;
 };
 
+/** 替换连接器里所有自连接器的id和创建时间 */
+export const replaceConnectorIdsAndTime = (connectors: any[]) => {
+	const dfs = (connectors: any[]) => {
+		connectors.forEach(con => {
+			if (con.type === SERVICE_TYPE.FOLDER) {
+				dfs(con.children);
+        con.id = uuid()
+			} else {
+        con.id = uuid()
+        con.createTime = Date.now()
+        con.updateTime = Date.now()
+			}
+		});
+	};
+
+	dfs(connectors);
+
+	return connectors;
+};
+
 export const filterConnectorsByKeyword = (connectors: any[], keyword: string) => {
 	if (!connectors?.length) {
 		return [];

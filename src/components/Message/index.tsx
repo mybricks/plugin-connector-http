@@ -13,10 +13,11 @@ let timer = null;
 type OptionType = {
 	type?: string;
 	timeout?: number;
+	targetContainer?: HTMLElement
 }
 
-export const notice = (message = '', option: OptionType = { type: 'error', timeout: 2000 }) => {
-	const container = document.querySelector('div[data-id=plugin-panel]')?.parentNode?.parentNode;
+export const notice = (message = '', option: OptionType = { type: 'error', timeout: 2000, targetContainer: undefined }) => {
+	const container = document.querySelector('div[data-id=plugin-panel]')?.parentNode?.parentNode || option?.targetContainer;
 	
 	if (!container) {
 		return;

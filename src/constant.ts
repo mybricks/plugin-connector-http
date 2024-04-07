@@ -41,6 +41,9 @@ export const SERVICE_TYPE = {
   IMPORT: 'import-from-clipboard'
 };
 
+/** 分隔符类型 */
+export const SEPARATOR_TYPE = 'separator'
+
 export const GLOBAL_PANEL = 'global-setting';
 
 export let CDN = {

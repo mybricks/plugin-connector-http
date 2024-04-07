@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
-import { filterConnectorsByKeyword, findConnector, getConnectorsByTree, uuid } from '../utils';
-import { exampleParamsFunc, exampleResultFunc, GLOBAL_PANEL, PLUGIN_CONNECTOR_NAME, SERVICE_TYPE } from '../constant';
+import { filterConnectorsByKeyword, findConnector, getConnectorsByTree, uuid, replaceConnectorIdsAndTime } from '../utils';
+import { exampleParamsFunc, exampleResultFunc, GLOBAL_PANEL, PLUGIN_CONNECTOR_NAME, SERVICE_TYPE, SEPARATOR_TYPE } from '../constant';
 import { cloneDeep, get } from '../utils/lodash';
 import { formatDate } from '../utils/moment';
 import DefaultPanel from './components/defaultPanel';
@@ -11,6 +11,7 @@ import Switch from '../components/Switch';
 import Drag from '../components/drag';
 import { copyText } from '../utils/copy';
 import FolderPanel from './components/folderPanel';
+import { notice } from '../components';
 import { plus } from '../icon';
 import Dropdown from '../components/Dropdown';
 
@@ -56,11 +57,11 @@ const Plugin: FC<IProps> = props => {
     type: '',
     isEdit: false,
     formModel: { path: '', title: '', id: '', type: '', input: '', output: '' },
-    addActions: [{ type: SERVICE_TYPE.FOLDER, title: '文件夹' }, { type: SERVICE_TYPE.IMPORT, title: '导入' }].concat(addActions
+    addActions: [{ type: SERVICE_TYPE.FOLDER, title: '文件夹' }].concat(addActions
 	    ? addActions.some(({ type }: any) => type === 'default')
 		    ? addActions
-		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }].concat(addActions)
-	    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }]),
+		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }].concat(addActions) 
+	    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }]).concat([{ type: SEPARATOR_TYPE, title: '' }, { type: SERVICE_TYPE.IMPORT, title: '导入'}]),
     connector: {
       add: (args: any) => connector.add({ ...args }),
       remove: (id: string) => connector.remove(id),
@@ -195,41 +196,14 @@ const Plugin: FC<IProps> = props => {
     await updateService('create');
   }, []);
 
-	const onExportItem = useCallback(async (item, parent) => {
-    let formModel = cloneDeep(item.content);
+	const onExportItem = useCallback(async (item) => {
+    let formModel = item.type === SERVICE_TYPE.HTTP ?  cloneDeep(item.content) : cloneDeep(item);
     formModel.id = uuid();
 		copyText(JSON.stringify({
 			formModel
 		}))
+		notice('导出成功', { type: 'success', targetContainer: document.body })
   }, []);
-
-	const onImportItem = useCallback(async (item?: any) => {
-		let clipboard = prompt("将导出的接口数据复制到输入框");
-		let isValid = false
-		if (clipboard == null || clipboard == "") {
-			// TODO：提示输入无效
-		} else {
-			try {
-				let parsed = JSON.parse(clipboard)
-				if(parsed.formModel) {
-					isValid = true
-					sidebarContext.formModel = cloneDeep(parsed.formModel);
-					if(item) {
-						sidebarContext.parent = item;
-					}
-					sidebarContext.formModel.title += ' 复制';
-					sidebarContext.formModel.id = uuid();
-					setRender(sidebarContext);
-					await updateService('create');
-				} else {
-				}
-			} catch (error) {
-			}
-		}
-		if(!isValid) {
-			window.alert('输入格式有误')
-		}
-	}, [])
 
   const onRemoveItem = useCallback(async (item) => {
 	  if (confirm(item.type === SERVICE_TYPE.FOLDER ? `确认删除文件夹 ${item.content.title} 吗，其包含接口也将被删除` : `确认删除 ${item.content.title} 吗`)) {
@@ -278,20 +252,37 @@ const Plugin: FC<IProps> = props => {
 			try {
 				let parsed = JSON.parse(clipboard)
 				if(parsed.formModel) {
+					let isImportHttp = parsed.formModel.type === SERVICE_TYPE.HTTP 
 					isValid = true
+					if(parsed.formModel.type ===  SERVICE_TYPE.FOLDER) {
+						parsed.formModel.children = replaceConnectorIdsAndTime(parsed.formModel.children)
+						parsed.formModel.id = uuid();
+						if (!sidebarContext.parent) {
+							data.connectors.push(parsed.formModel);
+						} else {
+							const { index, parent } = findConnector(data.connectors, sidebarContext.parent);
+							if (parent) {
+								parent[index].children.push(parsed.formModel);
+							}
+						}
+					}
+
 					sidebarContext.formModel = cloneDeep(parsed.formModel);
-					sidebarContext.formModel.title += ' 复制';
 					sidebarContext.formModel.id = uuid();
 					setRender(sidebarContext);
-					await updateService('create');
-				} else {
+
+					notice('导入成功', { type: 'success', targetContainer: document.body})
+					if(isImportHttp) {
+						await updateService('create');
+					} else {
+						await updateService()
+					}
 				}
 			} catch (error) {
 			}
 		}
 		if(!isValid) {
-			// TODO:待确定输入格式有误，是否提示；或者保持默认不处理
-			window.alert('输入格式有误')
+			notice('输入数据格式有误', { targetContainer: document.body })
 		}
 	}, [sidebarContext])
   sidebarContext.updateService = updateService;
@@ -588,6 +579,9 @@ const Plugin: FC<IProps> = props => {
 													overlay={(
 														<div className={styles.dropdownItem}>
 															{sidebarContext.addActions.map(({ type, title }: any) => {
+																if (type === SEPARATOR_TYPE) {
+																	return <div className={styles['separator-divider']}></div>
+																}
 																return (
 																	<div
 																		className={styles.item}
@@ -614,6 +608,7 @@ const Plugin: FC<IProps> = props => {
 																	</div>
 																);
 															})}
+
 														</div>
 													)}
 												>
@@ -626,15 +621,13 @@ const Plugin: FC<IProps> = props => {
 													</div>
 												</Dropdown>
 											) : (
-												<>
 												<div data-mybricks-tip="复制" className={styles.action} onClick={() => onCopyItem(item, parent)}>
 													{Icons.copy}
 												</div>
-												<div data-mybricks-tip="导出" className={styles.action} onClick={() => onExportItem(item, parent)}>
-													{Icons.exportIcon}
-												</div>
-												</>
 											)}
+											<div data-mybricks-tip="导出" className={styles.action} onClick={() => onExportItem(item)}>
+												{Icons.exportIcon}
+											</div>
 											<div
 												data-mybricks-tip="删除"
 												className={styles.action}
