@@ -56,7 +56,7 @@ const Plugin: FC<IProps> = props => {
     type: '',
     isEdit: false,
     formModel: { path: '', title: '', id: '', type: '', input: '', output: '' },
-    addActions: [{ type: SERVICE_TYPE.FOLDER, title: '文件夹' }].concat(addActions
+    addActions: [{ type: SERVICE_TYPE.FOLDER, title: '文件夹' }, { type: SERVICE_TYPE.IMPORT, title: '导入' }].concat(addActions
 	    ? addActions.some(({ type }: any) => type === 'default')
 		    ? addActions
 		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }].concat(addActions)
@@ -195,6 +195,42 @@ const Plugin: FC<IProps> = props => {
     await updateService('create');
   }, []);
 
+	const onExportItem = useCallback(async (item, parent) => {
+    let formModel = cloneDeep(item.content);
+    formModel.id = uuid();
+		copyText(JSON.stringify({
+			formModel
+		}))
+  }, []);
+
+	const onImportItem = useCallback(async (item?: any) => {
+		let clipboard = prompt("将导出的接口数据复制到输入框");
+		let isValid = false
+		if (clipboard == null || clipboard == "") {
+			// TODO：提示输入无效
+		} else {
+			try {
+				let parsed = JSON.parse(clipboard)
+				if(parsed.formModel) {
+					isValid = true
+					sidebarContext.formModel = cloneDeep(parsed.formModel);
+					if(item) {
+						sidebarContext.parent = item;
+					}
+					sidebarContext.formModel.title += ' 复制';
+					sidebarContext.formModel.id = uuid();
+					setRender(sidebarContext);
+					await updateService('create');
+				} else {
+				}
+			} catch (error) {
+			}
+		}
+		if(!isValid) {
+			window.alert('输入格式有误')
+		}
+	}, [])
+
   const onRemoveItem = useCallback(async (item) => {
 	  if (confirm(item.type === SERVICE_TYPE.FOLDER ? `确认删除文件夹 ${item.content.title} 吗，其包含接口也将被删除` : `确认删除 ${item.content.title} 吗`)) {
 		  await removeService(item);
@@ -218,6 +254,7 @@ const Plugin: FC<IProps> = props => {
 	  };
 	  setRender(sidebarContext);
   }, [sidebarContext]);
+
 	sidebarContext.addServiceFolder = useCallback(async () => {
 		sidebarContext.isEdit = false;
 		sidebarContext.type = SERVICE_TYPE.FOLDER;
@@ -231,6 +268,32 @@ const Plugin: FC<IProps> = props => {
 	  };
 	  setRender(sidebarContext);
   }, [sidebarContext]);
+
+	sidebarContext.importService = useCallback(async () => {
+		let clipboard = prompt("将导出的接口数据复制到输入框");
+		let isValid = false
+		if (clipboard == null || clipboard == "") {
+			return
+		} else {
+			try {
+				let parsed = JSON.parse(clipboard)
+				if(parsed.formModel) {
+					isValid = true
+					sidebarContext.formModel = cloneDeep(parsed.formModel);
+					sidebarContext.formModel.title += ' 复制';
+					sidebarContext.formModel.id = uuid();
+					setRender(sidebarContext);
+					await updateService('create');
+				} else {
+				}
+			} catch (error) {
+			}
+		}
+		if(!isValid) {
+			// TODO:待确定输入格式有误，是否提示；或者保持默认不处理
+			window.alert('输入格式有误')
+		}
+	}, [sidebarContext])
   sidebarContext.updateService = updateService;
 
   const onGlobalConfigClick = useCallback(() => {
@@ -537,6 +600,8 @@ const Plugin: FC<IProps> = props => {
 																				sidebarContext.addDefaultService();
 																			} else if (type === SERVICE_TYPE.FOLDER) {
 																				sidebarContext.addServiceFolder();
+																			} else if(type === SERVICE_TYPE.IMPORT) {
+																				sidebarContext.importService()
 																			} else {
 																				sidebarContext.type = type;
 																				sidebarContext.isEdit = false;
@@ -561,9 +626,14 @@ const Plugin: FC<IProps> = props => {
 													</div>
 												</Dropdown>
 											) : (
+												<>
 												<div data-mybricks-tip="复制" className={styles.action} onClick={() => onCopyItem(item, parent)}>
 													{Icons.copy}
 												</div>
+												<div data-mybricks-tip="导出" className={styles.action} onClick={() => onExportItem(item, parent)}>
+													{Icons.exportIcon}
+												</div>
+												</>
 											)}
 											<div
 												data-mybricks-tip="删除"

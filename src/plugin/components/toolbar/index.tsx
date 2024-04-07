@@ -18,6 +18,8 @@ export default function ({ ctx, setRender, blurMap }: any) {
 			ctx.addDefaultService();
 		} else if (type === SERVICE_TYPE.FOLDER) {
 			ctx.addServiceFolder();
+		} else if(type === SERVICE_TYPE.IMPORT) {
+			ctx.importService()
 		}
   };
 

@@ -38,6 +38,7 @@ export const SERVICE_TYPE = {
   TG: 'http-tg',
   KDEV: 'http-kdev',
   FOLDER: 'folder',
+  IMPORT: 'import-from-clipboard'
 };
 
 export const GLOBAL_PANEL = 'global-setting';
