@@ -197,12 +197,13 @@ const Plugin: FC<IProps> = props => {
   }, []);
 
 	const onExportItem = useCallback(async (item) => {
-    let formModel = item.type === SERVICE_TYPE.HTTP ?  cloneDeep(item.content) : cloneDeep(item);
+    let formModel = item.type === SERVICE_TYPE.HTTP ? cloneDeep(item.content) : cloneDeep(item);
     formModel.id = uuid();
 		copyText(JSON.stringify({
 			formModel
-		}))
-		notice('导出成功', { type: 'success', targetContainer: document.body })
+		}));
+
+		notice('导出成功', { type: 'success', targetContainer: document.body });
   }, []);
 
   const onRemoveItem = useCallback(async (item) => {
@@ -252,11 +253,11 @@ const Plugin: FC<IProps> = props => {
 			try {
 				let parsed = JSON.parse(clipboard)
 				if(parsed.formModel) {
-					let isImportHttp = parsed.formModel.type === SERVICE_TYPE.HTTP 
-					isValid = true
+					let isImportHttp = parsed.formModel.type === SERVICE_TYPE.HTTP;
+					isValid = true;
+					parsed.formModel.id = uuid();
 					if(parsed.formModel.type ===  SERVICE_TYPE.FOLDER) {
-						parsed.formModel.children = replaceConnectorIdsAndTime(parsed.formModel.children)
-						parsed.formModel.id = uuid();
+						parsed.formModel.children = replaceConnectorIdsAndTime(parsed.formModel.children);
 						if (!sidebarContext.parent) {
 							data.connectors.push(parsed.formModel);
 						} else {
@@ -265,24 +266,35 @@ const Plugin: FC<IProps> = props => {
 								parent[index].children.push(parsed.formModel);
 							}
 						}
+						let connectors = getConnectorsByTree([parsed.formModel])
+						connectors.forEach(connect => {
+							/** 设计器内连接器数据，支持服务接口组件选择接口 */
+							sidebarContext.connector.add({
+								id: connect.id,
+								type: connect.type || SERVICE_TYPE.HTTP,
+								title: connect.content.title,
+								connectorName: PLUGIN_CONNECTOR_NAME,
+								script: undefined,
+								globalMock: data.config.globalMock,
+								inputSchema: connect.content.inputSchema,
+								markList: connect.content.markList || []
+							});
+						})
 					}
 
 					sidebarContext.formModel = cloneDeep(parsed.formModel);
-					sidebarContext.formModel.id = uuid();
 					setRender(sidebarContext);
 
-					notice('导入成功', { type: 'success', targetContainer: document.body})
+					notice('导入成功', { type: 'success', targetContainer: document.body});
 					if(isImportHttp) {
 						await updateService('create');
-					} else {
-						await updateService()
 					}
 				}
 			} catch (error) {
 			}
 		}
 		if(!isValid) {
-			notice('输入数据格式有误', { targetContainer: document.body })
+			notice('输入数据格式有误', { targetContainer: document.body });
 		}
 	}, [sidebarContext])
   sidebarContext.updateService = updateService;
