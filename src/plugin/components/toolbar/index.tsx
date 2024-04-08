@@ -1,7 +1,7 @@
 import React from 'react';
 import { plus } from '../../../icon'
 import Dropdown from '../../../components/Dropdown';
-import { SERVICE_TYPE } from '../../../constant';
+import { SEPARATOR_TYPE, SERVICE_TYPE } from '../../../constant';
 
 import css from './index.less';
 
@@ -18,6 +18,8 @@ export default function ({ ctx, setRender, blurMap }: any) {
 			ctx.addDefaultService();
 		} else if (type === SERVICE_TYPE.FOLDER) {
 			ctx.addServiceFolder();
+		} else if(type === SERVICE_TYPE.IMPORT) {
+			ctx.importService()
 		}
   };
 
@@ -25,7 +27,7 @@ export default function ({ ctx, setRender, blurMap }: any) {
 	  const menu = (
 		  <div className={css.ct}>
 			  {ctx.addActions.map(({ type, title }: any) => (
-				  <div className={css.item} onClick={() => onAddClick(type)} key={type}>{title}</div>
+				 type === SEPARATOR_TYPE ? <div className={css['separator-divider']}></div>: <div className={css.item} onClick={() => onAddClick(type)} key={type}>{title}</div>
 			  ))}
 		  </div>
 	  );

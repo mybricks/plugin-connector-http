@@ -38,7 +38,11 @@ export const SERVICE_TYPE = {
   TG: 'http-tg',
   KDEV: 'http-kdev',
   FOLDER: 'folder',
+  IMPORT: 'import-from-clipboard'
 };
+
+/** 分隔符类型 */
+export const SEPARATOR_TYPE = 'separator'
 
 export const GLOBAL_PANEL = 'global-setting';
 

@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
-import { filterConnectorsByKeyword, findConnector, getConnectorsByTree, uuid } from '../utils';
-import { exampleParamsFunc, exampleResultFunc, GLOBAL_PANEL, PLUGIN_CONNECTOR_NAME, SERVICE_TYPE } from '../constant';
+import { filterConnectorsByKeyword, findConnector, getConnectorsByTree, uuid, replaceConnectorIdsAndTime } from '../utils';
+import { exampleParamsFunc, exampleResultFunc, GLOBAL_PANEL, PLUGIN_CONNECTOR_NAME, SERVICE_TYPE, SEPARATOR_TYPE } from '../constant';
 import { cloneDeep, get } from '../utils/lodash';
 import { formatDate } from '../utils/moment';
 import DefaultPanel from './components/defaultPanel';
@@ -11,6 +11,7 @@ import Switch from '../components/Switch';
 import Drag from '../components/drag';
 import { copyText } from '../utils/copy';
 import FolderPanel from './components/folderPanel';
+import { notice } from '../components';
 import { plus } from '../icon';
 import Dropdown from '../components/Dropdown';
 
@@ -59,8 +60,8 @@ const Plugin: FC<IProps> = props => {
     addActions: [{ type: SERVICE_TYPE.FOLDER, title: '文件夹' }].concat(addActions
 	    ? addActions.some(({ type }: any) => type === 'default')
 		    ? addActions
-		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }].concat(addActions)
-	    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }]),
+		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }].concat(addActions) 
+	    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }]).concat([{ type: SEPARATOR_TYPE, title: '' }, { type: SERVICE_TYPE.IMPORT, title: '导入'}]),
     connector: {
       add: (args: any) => connector.add({ ...args }),
       remove: (id: string) => connector.remove(id),
@@ -195,6 +196,17 @@ const Plugin: FC<IProps> = props => {
     await updateService('create');
   }, []);
 
+	const onExportItem = useCallback(async (item) => {
+		console.log('item ---- ', item)
+    let formModel = item.type === SERVICE_TYPE.HTTP ? cloneDeep(item) : cloneDeep(item);
+    formModel.id = uuid();
+		copyText(JSON.stringify({
+			formModel
+		}));
+
+		notice('导出成功', { type: 'success', targetContainer: document.body });
+  }, []);
+
   const onRemoveItem = useCallback(async (item) => {
 	  if (confirm(item.type === SERVICE_TYPE.FOLDER ? `确认删除文件夹 ${item.content.title} 吗，其包含接口也将被删除` : `确认删除 ${item.content.title} 吗`)) {
 		  await removeService(item);
@@ -218,6 +230,7 @@ const Plugin: FC<IProps> = props => {
 	  };
 	  setRender(sidebarContext);
   }, [sidebarContext]);
+
 	sidebarContext.addServiceFolder = useCallback(async () => {
 		sidebarContext.isEdit = false;
 		sidebarContext.type = SERVICE_TYPE.FOLDER;
@@ -231,6 +244,50 @@ const Plugin: FC<IProps> = props => {
 	  };
 	  setRender(sidebarContext);
   }, [sidebarContext]);
+
+	sidebarContext.importService = useCallback(async () => {
+		let clipboard = prompt("将导出的接口数据复制到输入框");
+		let isValid = false
+		if (clipboard == null || clipboard == "") {
+			return
+		} else {
+			try {
+				let parsed = JSON.parse(clipboard)
+				if(parsed.formModel) {
+					isValid = true;
+					parsed.formModel = replaceConnectorIdsAndTime(parsed.formModel);
+					if (!sidebarContext.parent) {
+						data.connectors.push(parsed.formModel);
+					} else {
+						const { index, parent } = findConnector(data.connectors, sidebarContext.parent);
+						if (parent) {
+							parent[index].children.push(parsed.formModel);
+						}
+					}
+					let connectors = getConnectorsByTree([parsed.formModel])
+					connectors.forEach(connect => {
+						/** 设计器内连接器数据，支持服务接口组件选择接口 */
+						sidebarContext.connector.add({
+							id: connect.id,
+							type: connect.type || SERVICE_TYPE.HTTP,
+							title: connect.content.title,
+							connectorName: PLUGIN_CONNECTOR_NAME,
+							script: undefined,
+							globalMock: data.config.globalMock,
+							inputSchema: connect.content.inputSchema,
+							markList: connect.content.markList || []
+						});
+					})
+
+					notice('导入成功', { type: 'success', targetContainer: document.body});
+				}
+			} catch (error) {
+			}
+		}
+		if(!isValid) {
+			notice('输入数据格式有误', { targetContainer: document.body });
+		}
+	}, [sidebarContext])
   sidebarContext.updateService = updateService;
 
   const onGlobalConfigClick = useCallback(() => {
@@ -525,6 +582,9 @@ const Plugin: FC<IProps> = props => {
 													overlay={(
 														<div className={styles.dropdownItem}>
 															{sidebarContext.addActions.map(({ type, title }: any) => {
+																if (type === SEPARATOR_TYPE) {
+																	return <div className={styles['separator-divider']}></div>
+																}
 																return (
 																	<div
 																		className={styles.item}
@@ -537,6 +597,8 @@ const Plugin: FC<IProps> = props => {
 																				sidebarContext.addDefaultService();
 																			} else if (type === SERVICE_TYPE.FOLDER) {
 																				sidebarContext.addServiceFolder();
+																			} else if(type === SERVICE_TYPE.IMPORT) {
+																				sidebarContext.importService()
 																			} else {
 																				sidebarContext.type = type;
 																				sidebarContext.isEdit = false;
@@ -549,6 +611,7 @@ const Plugin: FC<IProps> = props => {
 																	</div>
 																);
 															})}
+
 														</div>
 													)}
 												>
@@ -565,6 +628,9 @@ const Plugin: FC<IProps> = props => {
 													{Icons.copy}
 												</div>
 											)}
+											<div data-mybricks-tip="导出" className={styles.action} onClick={() => onExportItem(item)}>
+												{Icons.exportIcon}
+											</div>
 											<div
 												data-mybricks-tip="删除"
 												className={styles.action}
