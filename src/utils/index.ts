@@ -528,6 +528,10 @@ export const replaceConnectorIdsAndTime = (connectors: any[] | any) => {
       });
     } else {
       connectors.id = uuid()
+      if(connectors.createTime || connectors.updateTime) {
+        connectors.createTime = Date.now();
+        connectors.updateTime = Date.now();
+      }
       if(connectors.type === SERVICE_TYPE.FOLDER) {
         dfs(connectors.children)
       }

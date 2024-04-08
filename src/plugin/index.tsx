@@ -197,7 +197,6 @@ const Plugin: FC<IProps> = props => {
   }, []);
 
 	const onExportItem = useCallback(async (item) => {
-		console.log('item ---- ', item)
     let formModel = item.type === SERVICE_TYPE.HTTP ? cloneDeep(item) : cloneDeep(item);
     formModel.id = uuid();
 		copyText(JSON.stringify({
