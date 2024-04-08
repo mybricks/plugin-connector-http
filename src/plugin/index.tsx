@@ -197,7 +197,8 @@ const Plugin: FC<IProps> = props => {
   }, []);
 
 	const onExportItem = useCallback(async (item) => {
-    let formModel = item.type === SERVICE_TYPE.HTTP ? cloneDeep(item.content) : cloneDeep(item);
+		console.log('item ---- ', item)
+    let formModel = item.type === SERVICE_TYPE.HTTP ? cloneDeep(item) : cloneDeep(item);
     formModel.id = uuid();
 		copyText(JSON.stringify({
 			formModel
@@ -253,42 +254,32 @@ const Plugin: FC<IProps> = props => {
 			try {
 				let parsed = JSON.parse(clipboard)
 				if(parsed.formModel) {
-					let isImportHttp = parsed.formModel.type === SERVICE_TYPE.HTTP;
 					isValid = true;
-					parsed.formModel.id = uuid();
-					if(parsed.formModel.type ===  SERVICE_TYPE.FOLDER) {
-						parsed.formModel.children = replaceConnectorIdsAndTime(parsed.formModel.children);
-						if (!sidebarContext.parent) {
-							data.connectors.push(parsed.formModel);
-						} else {
-							const { index, parent } = findConnector(data.connectors, sidebarContext.parent);
-							if (parent) {
-								parent[index].children.push(parsed.formModel);
-							}
+					parsed.formModel = replaceConnectorIdsAndTime(parsed.formModel);
+					if (!sidebarContext.parent) {
+						data.connectors.push(parsed.formModel);
+					} else {
+						const { index, parent } = findConnector(data.connectors, sidebarContext.parent);
+						if (parent) {
+							parent[index].children.push(parsed.formModel);
 						}
-						let connectors = getConnectorsByTree([parsed.formModel])
-						connectors.forEach(connect => {
-							/** 设计器内连接器数据，支持服务接口组件选择接口 */
-							sidebarContext.connector.add({
-								id: connect.id,
-								type: connect.type || SERVICE_TYPE.HTTP,
-								title: connect.content.title,
-								connectorName: PLUGIN_CONNECTOR_NAME,
-								script: undefined,
-								globalMock: data.config.globalMock,
-								inputSchema: connect.content.inputSchema,
-								markList: connect.content.markList || []
-							});
-						})
 					}
-
-					sidebarContext.formModel = cloneDeep(parsed.formModel);
-					setRender(sidebarContext);
+					let connectors = getConnectorsByTree([parsed.formModel])
+					connectors.forEach(connect => {
+						/** 设计器内连接器数据，支持服务接口组件选择接口 */
+						sidebarContext.connector.add({
+							id: connect.id,
+							type: connect.type || SERVICE_TYPE.HTTP,
+							title: connect.content.title,
+							connectorName: PLUGIN_CONNECTOR_NAME,
+							script: undefined,
+							globalMock: data.config.globalMock,
+							inputSchema: connect.content.inputSchema,
+							markList: connect.content.markList || []
+						});
+					})
 
 					notice('导入成功', { type: 'success', targetContainer: document.body});
-					if(isImportHttp) {
-						await updateService('create');
-					}
 				}
 			} catch (error) {
 			}
