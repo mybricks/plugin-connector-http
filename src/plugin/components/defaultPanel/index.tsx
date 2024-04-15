@@ -72,11 +72,8 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 		return errorFields.length && errorFields.includes('path') ? '请填写完整的地址' : ''
 	}, [errorFields]);
 
-
-	
   const editorPath = useMemo(() => {
-    let random = `file:///${Math.random()}_code`;
-    return random;
+	  return `file:///${Math.random()}_code`;
   }, []);
 
 	return (

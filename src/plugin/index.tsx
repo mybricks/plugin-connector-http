@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useRef, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { filterConnectorsByKeyword, findConnector, getConnectorsByTree, uuid, replaceConnectorIdsAndTime } from '../utils';
 import { exampleParamsFunc, exampleResultFunc, GLOBAL_PANEL, PLUGIN_CONNECTOR_NAME, SERVICE_TYPE, SEPARATOR_TYPE } from '../constant';
 import { cloneDeep, get } from '../utils/lodash';
@@ -27,6 +27,7 @@ interface IProps {
     config: { paramsFn: string; resultFn?: string; globalMock?: boolean };
   };
   initialValue: any;
+	visibility?: 'hidden' | 'visible';
 }
 
 interface IConnector {
@@ -47,7 +48,7 @@ const interfaceParams = [
 ];
 
 const Plugin: FC<IProps> = props => {
-	const { addActions, connector, data, serviceListUrl, initialValue = {} } = props;
+	const { addActions, connector, data, serviceListUrl, initialValue = {}, visibility } = props;
   const pluginRef = useRef<HTMLDivElement>(null);
   const blurMap = useRef<Record<string, () => void>>({});
   const [searchValue, setSearchValue] = useState('');
@@ -297,15 +298,9 @@ const Plugin: FC<IProps> = props => {
   const closeTemplateForm = useCallback(() => {
     sidebarContext.type = '';
     sidebarContext.isEdit = false;
+	  sidebarContext.activeId = void 0;
 	  sidebarContext.formModel = {};
     setRender(sidebarContext);
-  }, []);
-
-	sidebarContext.onCancel = useCallback(() => {
-	  sidebarContext.type = '';
-	  sidebarContext.activeId = void 0;
-	  sidebarContext.isEdit = false;
-	  setRender(sidebarContext);
   }, []);
 
   const onFinish = async () => {
@@ -674,9 +669,16 @@ const Plugin: FC<IProps> = props => {
 			);
 	};
 
+	useEffect(() => {
+		if (visibility === 'hidden') {
+			closeTemplateForm();
+		}
+	}, [visibility]);
+
   return (
 	  <div
 		  ref={pluginRef}
+		  data-id="plugin-root-panel"
 		  className={`${styles['sidebar-panel']} ${styles['sidebar-panel-open']}`}
 		  onClick={() => Object.values(blurMap.current).forEach(fn => fn())}
 	  >

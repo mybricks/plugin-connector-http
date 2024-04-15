@@ -41,7 +41,6 @@ const PanelWrap: ForwardRefRenderFunction<PanelWrapRef, PanelWrapProps> = (props
 	return ReactDOM.createPortal(
 			<div
 				data-id="plugin-panel"
-				style={style}
 				className={`${styles.pluginPanelContainer} ${className}`}
 				onClick={onBlurAll}
 			>
@@ -56,7 +55,7 @@ const PanelWrap: ForwardRefRenderFunction<PanelWrapRef, PanelWrapProps> = (props
 				</div>
 				<div className={styles.pluginPanelContent}>{children}</div>
 			</div>,
-			document.body
+			document.querySelector('div[data-id=plugin-root-panel]') as HTMLElement
 		);
 };
 
