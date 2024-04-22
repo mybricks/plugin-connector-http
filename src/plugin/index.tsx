@@ -58,11 +58,14 @@ const Plugin: FC<IProps> = props => {
     type: '',
     isEdit: false,
     formModel: { path: '', title: '', id: '', type: '', input: '', output: '' },
-    addActions: [{ type: SERVICE_TYPE.FOLDER, title: '文件夹' }].concat(addActions
-	    ? addActions.some(({ type }: any) => type === 'default')
-		    ? addActions
-		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }].concat(addActions) 
-	    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }]).concat([{ type: SEPARATOR_TYPE, title: '' }, { type: SERVICE_TYPE.IMPORT, title: '导入'}]),
+    addActions: (
+			[].concat(addActions
+		    ? addActions.some(({ type }: any) => type === 'default')
+			    ? addActions
+			    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }].concat(addActions)
+		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }])
+    )
+	    .concat([{ type: SEPARATOR_TYPE, title: '' }, { type: SERVICE_TYPE.FOLDER, title: '文件夹' }, { type: SERVICE_TYPE.IMPORT, title: '导入'}]),
     connector: {
       add: (args: any) => connector.add({ ...args }),
       remove: (id: string) => connector.remove(id),
