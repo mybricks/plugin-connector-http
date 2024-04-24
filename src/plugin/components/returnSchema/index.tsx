@@ -257,7 +257,7 @@ export default function ReturnSchema({ mark, onMarkChange, schema, error, noMark
               className={styles.menuItem}
               key={mark.key}
               onClick={() => markAsReturn(mark.key)}
-              data-mybricks-tip={{ content: mark.description }}
+              data-mybricks-tip={mark.description}
             >
               {mark.title}
             </div>

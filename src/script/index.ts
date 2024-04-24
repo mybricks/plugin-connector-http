@@ -233,7 +233,7 @@ function getScript(serviceItem) {
 				            cascadeOutputKeys.forEach(keys => keys.shift());
 			            }
 		            } catch(e) {
-									console.log('connector format data error', e);
+									console.log('连接器内置数据转换失败，错误是：', e);
 		            }
 	            }
             }

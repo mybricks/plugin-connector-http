@@ -1,4 +1,4 @@
-import { isEmpty, cloneDeep } from '../utils/lodash';
+import { cloneDeep, isEmpty } from '../utils/lodash';
 import { SERVICE_TYPE } from '../constant';
 
 export function formatSchema(schema: any) {
@@ -200,10 +200,7 @@ export function schema2data(schema: any) {
       const { minLength = 0, maxLength = 8 } = schema;
       const min = +minLength;
       const max = +maxLength;
-      const str = uuid(max).slice(
-        max - Math.round(min + Math.random() * (max - min))
-      );
-      return str;
+	    return uuid(max).slice(max - Math.round(min + Math.random() * (max - min)));
     } else {
       const { minimum = 0, maximum = 100 } = schema;
       const min = +minimum;
