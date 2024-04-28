@@ -12,6 +12,8 @@ interface IOptions {
 }
 
 interface IConfig {
+  /** axios 对象 */
+  agent?: any;
   before: (options: IOptions) => any;
   onResponseInterception?(response): any;
 }
@@ -51,8 +53,12 @@ export function call(
               reject('请求路径不能为空');
             }
 
+            if (!config?.agent && !axios) {
+              reject('请检查应用 callConnector 配置，确保传入 agent 实例（即 axios）');
+            }
+
             if (connector.useProxy && httpRegExp.test(url) && url.match(/^https?:\/\/([^/#&?])+/g)?.[0] !== location.origin) {
-              return axios({
+              return (config?.agent ?? axios)({
                   ...opts,
                   url: '/paas/api/proxy',
                   headers: {...(opts.headers || {}), ['x-target-url']: opts.url},
