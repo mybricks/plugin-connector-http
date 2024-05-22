@@ -87,14 +87,15 @@ function getScript(serviceItem) {
         newParams.url = newParams.url || url;
         newParams.method = newParams.method || method;
         const options = __input__(newParams);
-        const isObjectBody = typeof (options.params || options.data) === 'object';
+        const currentParams = ['GET', 'DELETE'].includes(options.method) ? options.params : options.data;
+        const isObjectBody = typeof currentParams === 'object';
         if (isObjectBody) {
-          const isFormData = (options.params || options.data) instanceof FormData;
+          const isFormData = currentParams instanceof FormData;
           const templateParamKeys = [];
           /** url 里支持模板字符串 */
           options.url = (options.url || url).replace(/{([^}]+)}/g, (match, key) => {
             const keys = key ? key.split('.') : [];
-            let curParams = options.params || options.data;
+            let curParams = currentParams;
 
             if (!keys.length) {
               onError(`请求路径中模板字符串错误`);
@@ -134,15 +135,15 @@ function getScript(serviceItem) {
           });
           if (isFormData) {
             templateParamKeys.forEach(key => {
-              (options.params || options.data).delete(key)
+              currentParams.delete(key)
             });
 
-            (options.params || options.data).delete('MYBRICKS_HOST')
+            currentParams.delete('MYBRICKS_HOST')
           } else {
             templateParamKeys.forEach(key => {
-              Reflect.deleteProperty(options.params || options.data || {}, key);
+              Reflect.deleteProperty(currentParams || {}, key);
             });
-            Reflect.deleteProperty(options.params || options.data || {}, 'MYBRICKS_HOST');
+            Reflect.deleteProperty(currentParams || {}, 'MYBRICKS_HOST');
           }
         }
         options.method = options.method || method;
