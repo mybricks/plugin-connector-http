@@ -175,7 +175,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
       sliderView: {
         tab: {
           title: '连接器',
-          icon: icon,
+          icon,
           apiSet: ['connector'],
           render(args: any) {
             // @ts-ignore

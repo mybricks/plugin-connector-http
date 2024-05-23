@@ -12,7 +12,7 @@ import Drag from '../components/drag';
 import { copyText } from '../utils/copy';
 import FolderPanel from './components/folderPanel';
 import { notice } from '../components';
-import { plus } from '../icon';
+import { folder, plus } from '../icon';
 import Dropdown from '../components/Dropdown';
 
 import styles from './style-cssModules.less';
@@ -556,9 +556,7 @@ const Plugin: FC<IProps> = props => {
 											<div className={`${styles.icon} ${expand ? styles.iconExpand : ''}`}>
 												{Icons.arrowR}
 											</div>
-											<div className={styles.tag}>
-												{typeLabel}
-											</div>
+											{type === SERVICE_TYPE.FOLDER ? <div className={styles.folder}>{folder}</div> : <div className={styles.tag}>{typeLabel}</div>}
 											<div className={styles.name}>
 												<span data-mybricks-tip={curTitle || undefined}>{curTitle}</span>
 											</div>
@@ -608,7 +606,6 @@ const Plugin: FC<IProps> = props => {
 																	</div>
 																);
 															})}
-
 														</div>
 													)}
 												>
