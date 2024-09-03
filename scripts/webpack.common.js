@@ -1,4 +1,5 @@
 ﻿module.exports = {
+  target: ["web", "es5"],
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
   },
@@ -30,8 +31,35 @@
             options: {
               silent: true,
               transpileOnly: true,
+              compilerOptions: {
+                module: 'es6',
+                target: 'es5'
+              }
             },
           },
+        ],
+      },
+      {
+        test: /\.jsx?$/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              exclude: [/src\/script/],
+              presets: [
+                '@babel/preset-env',
+                '@babel/preset-react'
+              ],
+              plugins: [
+                ['@babel/plugin-proposal-class-properties', {'loose': true}],
+                ['@babel/plugin-proposal-private-methods', {'loose': true }],
+                [
+                  '@babel/plugin-proposal-private-property-in-object',
+                  { loose: true }
+                ]
+              ],
+            }
+          }
         ],
       },
       {
