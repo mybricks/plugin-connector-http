@@ -5,11 +5,12 @@ import {
   exampleParamsFunc,
   PLUGIN_CONNECTOR_NAME,
   resetCDN,
+  SERVICE_TYPE,
   templateErrorResultFunc,
   templateResultFunc
 } from './constant';
 import { call } from './runtime/callConnectorHttp';
-import { getScript, getDecodeString } from './script';
+import { getScript, getJsScript, getDecodeString } from './script';
 import { mock } from './script/mock';
 // @ts-ignore
 import * as Items from './components';
@@ -39,6 +40,9 @@ export default function pluginEntry(pluginConfig: any = {}) {
       }
 
       this.data.connectors?.forEach(con => {
+        if (con.type !== SERVICE_TYPE.HTTP) {
+          return;
+        }
         if (!con.content?.markList?.length) {
           con.content.markList = [{
             title: '默认',
@@ -136,6 +140,17 @@ export default function pluginEntry(pluginConfig: any = {}) {
       }
 
       return pureConnectors.connectors.map(con => {
+        if (con.type === SERVICE_TYPE.JS) {
+          return {
+            id: con.id,
+            type: con.type,
+            title: con.content.title,
+            script: getJsScript({
+              ...con.content,
+            }),
+          }
+        }
+
         return {
           id: con.id,
           type: con.type,
@@ -176,7 +191,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
         tab: {
           title: '连接器',
           icon,
-          apiSet: ['connector'],
+          apiSet: ['connector', 'component'],
           render(args: any) {
             // @ts-ignore
             return <Plugin {...pluginConfig} {...args} />;

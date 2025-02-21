@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getDecodeString } from '../script';
 import { cloneDeep } from '../utils/lodash';
+import { SERVICE_TYPE } from '../constant';
 
 interface IOptions {
   method: string;
@@ -25,17 +26,22 @@ const defaultFn = (options: IOptions, ...args: any) => ({
 
 const httpRegExp = new RegExp('^(http|https)://');
 
+type Connector = {
+  id: string;
+  script: string;
+  useProxy?: boolean;
+  executeEnv?: string;
+  [key: string]: any
+}
+
 export function call(
-  connector: {
-    id: string;
-    script: string;
-    useProxy?: boolean;
-    executeEnv?: string;
-    [key: string]: any
-  },
+  connector: Connector,
   params: any,
   config?: IConfig
 ) {
+  if (connector.type === SERVICE_TYPE.JS) {
+    return callJs(connector)
+  }
   return new Promise((resolve, reject) => {
     try {
       const fn = connector.script ? eval(`(${decodeURIComponent(connector.script)})`) : getFetch(connector);
@@ -91,6 +97,18 @@ export function call(
       reject(`连接器script错误.`);
     }
   });
+}
+
+const callJs = (connector: Connector) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const result = pluginRun(connector.output)();
+      resolve(result);
+    } catch (ex) {
+      console.log('连接器错误', ex);
+      reject(`连接器script错误.`);
+    }
+  })
 }
 
 const setData = (data, keys, val) => {

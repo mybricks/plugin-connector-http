@@ -290,4 +290,8 @@ function getScript(serviceItem) {
   );
 }
 
-export { getScript };
+function getJsScript(jsItem) {
+  return encodeURIComponent(getDecodeString(jsItem.output));
+}
+
+export { getScript, getJsScript };

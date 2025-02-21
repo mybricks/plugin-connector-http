@@ -14,11 +14,13 @@ import FolderPanel from './components/folderPanel';
 import { notice } from '../components';
 import { folder, plus } from '../icon';
 import Dropdown from '../components/Dropdown';
+import JsPanel from "./components/jsPanel";
 
 import styles from './style-cssModules.less';
 
 interface IProps {
   connector: IConnector;
+	component: IComponent;
 	serviceListUrl?: string;
   callServiceUrl?: string;
   addActions?: any[];
@@ -38,6 +40,10 @@ interface IConnector {
   test: (...args: any) => any;
 }
 
+interface IComponent {
+	addInstance: (value: any) => void;
+}
+
 const interfaceParams = [
   { key: 'id', name: '标识', copy: true },
   { key: 'content.title', name: '标题' },
@@ -48,7 +54,7 @@ const interfaceParams = [
 ];
 
 const Plugin: FC<IProps> = props => {
-	const { addActions, connector, data, serviceListUrl, initialValue = {}, visibility } = props;
+	const { addActions, connector, data, serviceListUrl, initialValue = {}, visibility, component } = props;
   const pluginRef = useRef<HTMLDivElement>(null);
   const blurMap = useRef<Record<string, () => void>>({});
   const [searchValue, setSearchValue] = useState('');
@@ -62,8 +68,8 @@ const Plugin: FC<IProps> = props => {
 			[].concat(addActions
 		    ? addActions.some(({ type }: any) => type === 'default')
 			    ? addActions
-			    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }].concat(addActions)
-		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }])
+			    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }, { type: SERVICE_TYPE.JS, title: 'JS' }].concat(addActions)
+		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }, { type: SERVICE_TYPE.JS, title: 'JS' }])
     )
 	    .concat([{ type: SEPARATOR_TYPE, title: '' }, { type: SERVICE_TYPE.FOLDER, title: '文件夹' }, { type: SERVICE_TYPE.IMPORT, title: '导入'}]),
     connector: {
@@ -163,6 +169,27 @@ const Plugin: FC<IProps> = props => {
     }));
   }, []);
 
+	// const onAddComponentItem = useCallback((item) => {
+	// 	console.log("🚀 向画布添加组件 item => ", item)
+	// 	console.log("🍎 connector => ", {
+	// 		id: item.id,
+	// 		type: SERVICE_TYPE.JS,
+	// 		title: item.content.title,
+	// 		connectorName: PLUGIN_CONNECTOR_NAME
+	// 	})
+
+	// 	component.addInstance({
+	// 		// connector: item,
+	// 		connector: {
+	// 			id: item.id,
+	// 			type: SERVICE_TYPE.JS,
+	// 			title: item.content.title,
+	// 			connectorName: PLUGIN_CONNECTOR_NAME
+	// 		},
+	// 		namespace: 'mybricks.normal-pc.select'
+	// 	})
+	// }, [])
+
   const onEditItem = useCallback((item) => {
 		if (sidebarContext.isEdit && item.id === sidebarContext.activeId) {
 			setRender({ type: '', activeId: void 0, isEdit: false });
@@ -176,7 +203,10 @@ const Plugin: FC<IProps> = props => {
     } else if (item.type === SERVICE_TYPE.FOLDER) {
 	    obj.type = SERVICE_TYPE.FOLDER;
 	    obj.formModel = item;
-    } else {
+    } else if (item.type === SERVICE_TYPE.JS) {
+			obj.type = SERVICE_TYPE.JS;
+	    obj.formModel = item;
+		} else {
       const noUseInnerEdit = sidebarContext.addActions.find(action => action.type === item.type)?.noUseInnerEdit;
       obj.type = noUseInnerEdit ? item.type : SERVICE_TYPE.HTTP;
       obj.formModel = {
@@ -192,12 +222,21 @@ const Plugin: FC<IProps> = props => {
   }, [sidebarContext]);
 
   const onCopyItem = useCallback(async (item, parent) => {
-    sidebarContext.formModel = cloneDeep(item.content);
-	  sidebarContext.parent = parent;
-    sidebarContext.formModel.title += ' 复制';
-    sidebarContext.formModel.id = uuid();
-    setRender(sidebarContext);
-    await updateService('create');
+		if (item.type === SERVICE_TYPE.HTTP) {
+			sidebarContext.formModel = cloneDeep(item.content);
+			sidebarContext.parent = parent;
+			sidebarContext.formModel.title += ' 复制';
+			sidebarContext.formModel.id = uuid();
+			setRender(sidebarContext);
+			await updateService('create');
+		} else {
+			const copyItem = cloneDeep(item);
+			copyItem.id = uuid();
+			copyItem.content.title += ' 复制';
+			if (item.type === SERVICE_TYPE.JS) {
+				onJsFinish(copyItem);
+			}
+		}
   }, []);
 
 	const onExportItem = useCallback(async (item) => {
@@ -293,6 +332,19 @@ const Plugin: FC<IProps> = props => {
 	}, [sidebarContext])
   sidebarContext.updateService = updateService;
 
+	sidebarContext.addDefaultJs = useCallback(() => {
+		sidebarContext.isEdit = false;
+		sidebarContext.type = SERVICE_TYPE.JS;
+		sidebarContext.formModel = {
+			id: uuid(),
+		  type: SERVICE_TYPE.JS,
+			content: {
+				title: "[临时] 记得删除"
+			},
+	  };
+	  setRender(sidebarContext);
+	}, [sidebarContext])
+
   const onGlobalConfigClick = useCallback(() => {
     sidebarContext.type = GLOBAL_PANEL;
     setRender(sidebarContext);
@@ -338,6 +390,48 @@ const Plugin: FC<IProps> = props => {
 
 		closeTemplateForm();
 	};
+
+	const onJsFinish = (js) => {
+		if (sidebarContext.isEdit) {
+			const { index, parent } = findConnector(data.connectors, js);
+			parent?.splice(index, 1, {
+				...js,
+				updateTime: Date.now()
+			});
+			sidebarContext.connector.update({
+				id: js.id,
+				type: SERVICE_TYPE.JS,
+				title: js.content.title,
+				connectorName: PLUGIN_CONNECTOR_NAME,
+				outputSchema: js.content.outputSchema
+			});
+		} else {
+			if (!sidebarContext.parent) {
+				data.connectors.push({
+					...js,
+					createTime: Date.now(),
+					updateTime: Date.now()
+				});
+			} else {
+				const { index, parent } = findConnector(data.connectors, sidebarContext.parent);
+				if (parent) {
+					parent[index].children.push({
+						...js,
+						createTime: Date.now(),
+						updateTime: Date.now()
+					});
+				}
+			}
+			sidebarContext.connector.add({
+				id: js.id,
+				type: SERVICE_TYPE.JS,
+				title: js.content.title,
+				connectorName: PLUGIN_CONNECTOR_NAME,
+				outputSchema: js.content.outputSchema
+			});
+		}
+		closeTemplateForm();
+	}
 
   const onItemClick = useCallback((item: any) => {
 	  setExpandIdList(list => list.includes(item.id) ? list.filter(id => id !== item.id) : [...list, item.id]);
@@ -425,6 +519,16 @@ const Plugin: FC<IProps> = props => {
 					style={{ top: pluginRef.current?.getBoundingClientRect().top }}
 				/>
 			);
+		} else if (sidebarContext.type === SERVICE_TYPE.JS) {
+			node = (
+				<JsPanel
+					key={sidebarContext.activeId}
+					js={sidebarContext.formModel}
+					onClose={closeTemplateForm}
+					onSubmit={onJsFinish}
+					style={{ top: pluginRef.current?.getBoundingClientRect().top }}
+				/>
+			)
 		}
 
 		return node;
@@ -446,7 +550,12 @@ const Plugin: FC<IProps> = props => {
         ({ key }) =>
           !['content.path', 'content.method', 'content.desc'].includes(key)
       );
-    }
+    } else if (item.type === SERVICE_TYPE.JS) {
+			return interfaceParams.filter(
+        ({ key }) =>
+          !['content.path', 'content.method', 'content.doc'].includes(key)
+      ); 
+		}
     return interfaceParams;
   }, []);
 
@@ -562,6 +671,14 @@ const Plugin: FC<IProps> = props => {
 											</div>
 										</div>
 										<div className={styles['sidebar-panel-list-item__right']}>
+											{/* <div
+												data-mybricks-tip="添加组件"
+												ref={clickRef}
+												className={styles.action}
+												onClick={() => onAddComponentItem(item)}
+											>
+												{Icons.edit}
+											</div> */}
 											<div
 												data-mybricks-tip="编辑"
 												ref={clickRef}
@@ -594,6 +711,8 @@ const Plugin: FC<IProps> = props => {
 																				sidebarContext.addServiceFolder();
 																			} else if(type === SERVICE_TYPE.IMPORT) {
 																				sidebarContext.importService()
+																			} else if (type === SERVICE_TYPE.JS) {
+																				sidebarContext.addDefaultJs();
 																			} else {
 																				sidebarContext.type = type;
 																				sidebarContext.isEdit = false;
@@ -685,7 +804,7 @@ const Plugin: FC<IProps> = props => {
 		  <div className={`${styles['sidebar-panel-view']}`}>
 			  <div className={styles['sidebar-panel-header']}>
 				  <div className={styles['sidebar-panel-header__title']}>
-					  <span onDoubleClick={onDoubleClick}>服务连接</span>
+					  <span onDoubleClick={onDoubleClick}>连接器</span>
 					  <div className={styles.rightOperate}>
 						  <div className={styles.globalMock} data-mybricks-tip="开启全局Mock，页面调试时所有接口将默认使用Mock能力">
 							  <span className={data?.config?.globalMock ? styles.warning : ''}>全局 Mock:</span>
