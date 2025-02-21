@@ -169,26 +169,26 @@ const Plugin: FC<IProps> = props => {
     }));
   }, []);
 
-	// const onAddComponentItem = useCallback((item) => {
-	// 	console.log("🚀 向画布添加组件 item => ", item)
-	// 	console.log("🍎 connector => ", {
-	// 		id: item.id,
-	// 		type: SERVICE_TYPE.JS,
-	// 		title: item.content.title,
-	// 		connectorName: PLUGIN_CONNECTOR_NAME
-	// 	})
+	const onAddComponentItem = useCallback((item) => {
+		console.log("🚀 向画布添加组件 item => ", item)
+		console.log("🍎 connector => ", {
+			id: item.id,
+			type: SERVICE_TYPE.JS,
+			title: item.content.title,
+			connectorName: PLUGIN_CONNECTOR_NAME
+		})
 
-	// 	component.addInstance({
-	// 		// connector: item,
-	// 		connector: {
-	// 			id: item.id,
-	// 			type: SERVICE_TYPE.JS,
-	// 			title: item.content.title,
-	// 			connectorName: PLUGIN_CONNECTOR_NAME
-	// 		},
-	// 		namespace: 'mybricks.normal-pc.select'
-	// 	})
-	// }, [])
+		component.addInstance({
+			// connector: item,
+			connector: {
+				id: item.id,
+				type: SERVICE_TYPE.JS,
+				title: item.content.title,
+				connectorName: PLUGIN_CONNECTOR_NAME
+			},
+			namespace: 'mybricks.normal-pc.select'
+		})
+	}, [])
 
   const onEditItem = useCallback((item) => {
 		if (sidebarContext.isEdit && item.id === sidebarContext.activeId) {
@@ -671,14 +671,14 @@ const Plugin: FC<IProps> = props => {
 											</div>
 										</div>
 										<div className={styles['sidebar-panel-list-item__right']}>
-											{/* <div
+											<div
 												data-mybricks-tip="添加组件"
 												ref={clickRef}
 												className={styles.action}
 												onClick={() => onAddComponentItem(item)}
 											>
 												{Icons.edit}
-											</div> */}
+											</div>
 											<div
 												data-mybricks-tip="编辑"
 												ref={clickRef}
