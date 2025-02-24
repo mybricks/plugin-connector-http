@@ -15,7 +15,8 @@ import { notice } from '../components';
 import { folder, plus } from '../icon';
 import Dropdown from '../components/Dropdown';
 import JsPanel from "./components/jsPanel";
-import ComsPanel from "./components/comsPanel";
+// import ComsPanel from "./components/comsPanel";
+import AddComPanel from "./components/addComPanel";
 
 import styles from './style-cssModules.less';
 
@@ -60,6 +61,11 @@ const Plugin: FC<IProps> = props => {
 	const { addActions, connector, data, serviceListUrl, initialValue = {}, visibility, component } = props;
   const pluginRef = useRef<HTMLDivElement>(null);
   const blurMap = useRef<Record<string, () => void>>({});
+	const globalContext = useRef<Record<string, any>>({});
+	const [addComPanelContext, setAddComPanelContext] = useState({
+		addPanel: false,
+		popup: false
+	});
   const [searchValue, setSearchValue] = useState('');
   const [expandIdList, setExpandIdList] = useState([]);
   const [sidebarContext, setContext] = useState<any>({
@@ -83,6 +89,7 @@ const Plugin: FC<IProps> = props => {
       test: (...args: any) => connector.test(...args),
 			getById: (...args: any) => connector.getById(...args),
     },
+		component,
     search: setSearchValue,
   });
   const updateService = async (action?: string, item?: any) => {
@@ -536,17 +543,18 @@ const Plugin: FC<IProps> = props => {
 					style={{ top: pluginRef.current?.getBoundingClientRect().top }}
 				/>
 			)
-		} else if (sidebarContext.type === 'addCom') {
-			node = (
-				<ComsPanel
-					key={sidebarContext.activeId}
-					model={sidebarContext.formModel}
-					onClose={closeTemplateForm}
-					onSubmit={onComsFinish}
-					style={{ top: pluginRef.current?.getBoundingClientRect().top }}
-				/>
-			)
-		}
+		} 
+		// else if (sidebarContext.type === 'addCom') {
+		// 	node = (
+		// 		<ComsPanel
+		// 			key={sidebarContext.activeId}
+		// 			model={sidebarContext.formModel}
+		// 			onClose={closeTemplateForm}
+		// 			onSubmit={onComsFinish}
+		// 			style={{ top: pluginRef.current?.getBoundingClientRect().top }}
+		// 		/>
+		// 	)
+		// }
 
 		return node;
   }, [sidebarContext, sidebarContext.type, serviceListUrl, updateService, onFolderFinish]);
@@ -646,6 +654,27 @@ const Plugin: FC<IProps> = props => {
 		}
 	}, [data]);
 
+	const onDragEnd = useCallback(() => {
+		setAddComPanelContext((context) => {
+			return {
+				...context,
+				addPanel: false,
+			}
+		})
+	}, [])
+
+	const onDragStart = useCallback((item) => {
+		if ([SERVICE_TYPE.HTTP, SERVICE_TYPE.JS].includes(item.type)) {
+			globalContext.current.dragItem = item;
+			setAddComPanelContext((context) => {
+				return {
+					...context,
+					addPanel: true,
+				}
+			})
+		}
+	}, [])
+
 	const renderItem = (connectors: any[], parent) => {
 		return connectors?.length
 			? connectors
@@ -663,7 +692,7 @@ const Plugin: FC<IProps> = props => {
 
 					return (
 						<>
-							<Drag key={item.id} item={item} draggable onDrop={onDrop}>
+							<Drag key={item.id} item={item} draggable onDrop={onDrop} onDragEnd={onDragEnd} onDragStart={onDragStart}>
 								<div
 									key={item.id}
 									className={`${styles['sidebar-panel-list-item']} ${sidebarContext.activeId === item.id ? styles.active : ''} ${
@@ -688,7 +717,7 @@ const Plugin: FC<IProps> = props => {
 											</div>
 										</div>
 										<div className={styles['sidebar-panel-list-item__right']}>
-											{type === SERVICE_TYPE.FOLDER ? null : (
+											{/* {type === SERVICE_TYPE.FOLDER ? null : (
 												<div
 													data-mybricks-tip="添加组件"
 													ref={clickRef}
@@ -698,7 +727,7 @@ const Plugin: FC<IProps> = props => {
 												>
 													{Icons.addCom}
 												</div>
-											)}
+											)} */}
 											<div
 												data-mybricks-tip="编辑"
 												ref={clickRef}
@@ -802,7 +831,7 @@ const Plugin: FC<IProps> = props => {
 					);
 				})
 			: (
-				<Drag parent={parent} item={null} draggable onDrop={onDrop}>
+				<Drag parent={parent} item={null} draggable onDrop={onDrop} onDragEnd={onDragEnd} onDragStart={onDragStart}>
 					<div className={styles.empty} style={parent ? { borderBottom: '1px solid #ccc' } : undefined}>暂无接口，请点击新建接口</div>
 				</Drag>
 			);
@@ -848,6 +877,11 @@ const Plugin: FC<IProps> = props => {
 		  </div>
 		  {renderAddActions()}
 		  {renderGlobalPanel()}
+			<AddComPanel
+				visible={addComPanelContext.addPanel}
+				globalContext={globalContext.current}
+				sidebarContext={sidebarContext}
+			/>
 	  </div>
   );
 };
