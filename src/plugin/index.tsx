@@ -15,6 +15,7 @@ import { notice } from '../components';
 import { folder, plus } from '../icon';
 import Dropdown from '../components/Dropdown';
 import JsPanel from "./components/jsPanel";
+import ComsPanel from "./components/comsPanel";
 
 import styles from './style-cssModules.less';
 
@@ -43,6 +44,7 @@ interface IConnector {
 
 interface IComponent {
 	addInstance: (value: any) => void;
+	getComDefAryBySchema: (schema: any) => any;
 }
 
 const interfaceParams = [
@@ -171,18 +173,19 @@ const Plugin: FC<IProps> = props => {
     }));
   }, []);
 
-	const onAddComponentItem = useCallback((item) => {
-		// const namespace = prompt("请输入要添加的组件namespace");
+	const onAddComItem = useCallback((item) => {
+		const connector = sidebarContext.connector.getById(item.id);
+		const schema = connector.markList[0].outputSchema;
+		const matchedComponentsBySchema = component.getComDefAryBySchema(schema);
 
-		// if (namespace === null) {
-		// 	return
-		// }
-		// const namespace = 'mybricks.normal-pc.select'; // 测试
-		const namespace = 'mybricks.normal-pc.table'; // 测试
-		component.addInstance({
-			connector: sidebarContext.connector.getById(item.id),
-			namespace
-		})
+		setRender({
+			coms: matchedComponentsBySchema,
+			formModel: {
+				coms: matchedComponentsBySchema,
+				connector,
+			},
+			type: 'addCom'
+		});
 	}, [])
 
   const onEditItem = useCallback((item) => {
@@ -428,6 +431,15 @@ const Plugin: FC<IProps> = props => {
 		closeTemplateForm();
 	}
 
+	const onComsFinish = ({ com, connector, position }) => {
+		component.addInstance({
+			connector,
+			namespace: com.namespace
+		})
+
+		closeTemplateForm();
+	}
+
   const onItemClick = useCallback((item: any) => {
 	  setExpandIdList(list => list.includes(item.id) ? list.filter(id => id !== item.id) : [...list, item.id]);
   }, []);
@@ -521,6 +533,16 @@ const Plugin: FC<IProps> = props => {
 					js={sidebarContext.formModel}
 					onClose={closeTemplateForm}
 					onSubmit={onJsFinish}
+					style={{ top: pluginRef.current?.getBoundingClientRect().top }}
+				/>
+			)
+		} else if (sidebarContext.type === 'addCom') {
+			node = (
+				<ComsPanel
+					key={sidebarContext.activeId}
+					model={sidebarContext.formModel}
+					onClose={closeTemplateForm}
+					onSubmit={onComsFinish}
 					style={{ top: pluginRef.current?.getBoundingClientRect().top }}
 				/>
 			)
@@ -666,14 +688,17 @@ const Plugin: FC<IProps> = props => {
 											</div>
 										</div>
 										<div className={styles['sidebar-panel-list-item__right']}>
-											<div
-												data-mybricks-tip="添加组件"
-												ref={clickRef}
-												className={styles.action}
-												onClick={() => onAddComponentItem(item)}
-											>
-												{Icons.edit}
-											</div>
+											{type === SERVICE_TYPE.FOLDER ? null : (
+												<div
+													data-mybricks-tip="添加组件"
+													ref={clickRef}
+													className={styles.action}
+													style={{ marginRight: 2 }}
+													onClick={() => onAddComItem(item)}
+												>
+													{Icons.addCom}
+												</div>
+											)}
 											<div
 												data-mybricks-tip="编辑"
 												ref={clickRef}
