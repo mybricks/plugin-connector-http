@@ -38,11 +38,6 @@ const AddComPanel = (props: AddComPanelProps) => {
   const onClick = (com) => {
     const { pageX, pageY, connector } = context.current;
 
-    console.log({
-      pageX,
-      pageY
-    })
-
     sidebarContext.component.addInstance({
 			connector,
 			namespace: com.namespace
