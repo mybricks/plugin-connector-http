@@ -8,8 +8,8 @@ interface DragProps {
 	parent?: any;
 	draggable?: boolean;
 	onDrop(dragItem: any, dropItem: any, place: 'bottom' | 'top' | 'inner'): void;
-	onDragEnd(): void;
-	onDragStart(dragItem: any): void;
+	onDragEnd?(): void;
+	onDragStart?(dragItem: any): void;
 }
 
 let dragItem = null;
@@ -26,7 +26,7 @@ const Drag: FC<DragProps> = props => {
 
 		current.addEventListener('dragstart', (event) => {
 			dragItem = item;
-			onDragStart(item);
+			onDragStart?.(item);
 		});
 		current.addEventListener('dragover', (event) => {
 			if (shouldCalcRect.current) {
@@ -49,7 +49,7 @@ const Drag: FC<DragProps> = props => {
 			event.stopPropagation();
 		});
 		current.addEventListener('dragend', (event) => {
-			onDragEnd();
+			onDragEnd?.();
 			if (dragItem && event.currentTarget && (!item || dragItem?.id !== item.id)) {
 				(event.currentTarget as HTMLDivElement).classList.remove(styles.hovering, styles.hoverTop, styles.hoverBottom);
 			}

@@ -17,6 +17,7 @@ import Dropdown from '../components/Dropdown';
 import JsPanel from "./components/jsPanel";
 // import ComsPanel from "./components/comsPanel";
 import AddComPanel from "./components/addComPanel";
+import AddComPanel2 from "./components/addComPanel2";
 
 import styles from './style-cssModules.less';
 
@@ -55,6 +56,7 @@ const interfaceParams = [
   { key: 'content.path', name: '路径' },
   { key: 'content.doc', name: '文档链接', link: true },
   { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
+	{ key: 'schemaMatchComs', name: "组件", schemaMatchComs: true }
 ];
 
 const Plugin: FC<IProps> = props => {
@@ -456,7 +458,7 @@ const Plugin: FC<IProps> = props => {
   }, []);
 
   const renderParam = useCallback(
-    (item, { key, format, copy, link, isTpl }) => {
+    (item, { key, format, copy, link, isTpl, schemaMatchComs }) => {
       if (format) {
         return formatDate(item[key], format);
       }
@@ -482,6 +484,18 @@ const Plugin: FC<IProps> = props => {
           </>
         );
       }
+			if (schemaMatchComs) {
+				const connector = sidebarContext.connector.getById(item.id);
+				const schema = connector.markList[0].outputSchema;
+				const matchedComponentsBySchema = sidebarContext.component.getComDefAryBySchema(schema);
+				return (
+					<AddComPanel2
+						connector={connector}
+						coms={matchedComponentsBySchema}
+						component={component}
+					/>
+				)
+			}
       return get(item, key, '无');
     },
     []
@@ -692,7 +706,10 @@ const Plugin: FC<IProps> = props => {
 
 					return (
 						<>
-							<Drag key={item.id} item={item} draggable onDrop={onDrop} onDragEnd={onDragEnd} onDragStart={onDragStart}>
+							<Drag key={item.id} item={item} draggable onDrop={onDrop} 
+							// onDragEnd={onDragEnd} 
+							// onDragStart={onDragStart}
+							>
 								<div
 									key={item.id}
 									className={`${styles['sidebar-panel-list-item']} ${sidebarContext.activeId === item.id ? styles.active : ''} ${
@@ -831,7 +848,10 @@ const Plugin: FC<IProps> = props => {
 					);
 				})
 			: (
-				<Drag parent={parent} item={null} draggable onDrop={onDrop} onDragEnd={onDragEnd} onDragStart={onDragStart}>
+				<Drag parent={parent} item={null} draggable onDrop={onDrop} 
+				// onDragEnd={onDragEnd} 
+				// onDragStart={onDragStart}
+				>
 					<div className={styles.empty} style={parent ? { borderBottom: '1px solid #ccc' } : undefined}>暂无接口，请点击新建接口</div>
 				</Drag>
 			);
