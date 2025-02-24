@@ -20,7 +20,6 @@ export const exampleOutputFunc = `export default function () {
 const defaultContent = {
   title: "",
   output: encodeURIComponent(exampleOutputFunc),
-  outputSchema: { type: 'array' },
 }
 
 interface JsPanelProps {
@@ -33,7 +32,15 @@ interface JsPanelProps {
     content: {
       title: string;
       output: string;
-      outputSchema: object;
+      markList: {
+        id: string;
+        excludeKeys: string[];
+        outputKeys: string[];
+        outputSchema: object;
+        predicate: {};
+        resultSchema: object;
+        title: string;
+      }[];
     }
   }
 }
@@ -48,7 +55,16 @@ const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
       try {
         const outputData = testOutputRun(contentRef.current.output)();
         const outputSchema = jsonToSchema(outputData);
-        onSubmit({...js, content: { ...contentRef.current, outputSchema }});
+        const markList = [{
+          id: "default",
+          excludeKeys: [],
+          outputKeys: [],
+          outputSchema,
+          predicate: {},
+          resultSchema: outputSchema,
+          title: "默认"
+        }]
+        onSubmit({...js, content: { ...contentRef.current, markList }});
       } catch (e) {
         console.error("【返回数据】逻辑错误，请检查 => ", e);
         notice(`【返回数据】逻辑错误，请检查 => ${e.message}`)
@@ -82,7 +98,6 @@ const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
 						defaultValue={contentRef.current.title}
             onChange={onTitleChange}
 						placeholder='请输入名称'
-            // validateError={errorFields.title}
 					/>
 				</FormItem>
 			</Collapse>

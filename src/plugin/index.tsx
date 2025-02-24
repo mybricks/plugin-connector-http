@@ -38,6 +38,7 @@ interface IConnector {
 	getAllByType: (id: string) => Array<any>;
   update: (params: any) => null;
   test: (...args: any) => any;
+	getById: (...args: any) => any;
 }
 
 interface IComponent {
@@ -78,6 +79,7 @@ const Plugin: FC<IProps> = props => {
 			getAllByType: (type: string) => (connector.getAllByType?.(type) || []),
       update: (args: any) => connector.update({ ...args }),
       test: (...args: any) => connector.test(...args),
+			getById: (...args: any) => connector.getById(...args),
     },
     search: setSearchValue,
   });
@@ -170,23 +172,16 @@ const Plugin: FC<IProps> = props => {
   }, []);
 
 	const onAddComponentItem = useCallback((item) => {
-		console.log("🚀 向画布添加组件 item => ", item)
-		console.log("🍎 connector => ", {
-			id: item.id,
-			type: SERVICE_TYPE.JS,
-			title: item.content.title,
-			connectorName: PLUGIN_CONNECTOR_NAME
-		})
+		// const namespace = prompt("请输入要添加的组件namespace");
 
+		// if (namespace === null) {
+		// 	return
+		// }
+		// const namespace = 'mybricks.normal-pc.select'; // 测试
+		const namespace = 'mybricks.normal-pc.table'; // 测试
 		component.addInstance({
-			// connector: item,
-			connector: {
-				id: item.id,
-				type: SERVICE_TYPE.JS,
-				title: item.content.title,
-				connectorName: PLUGIN_CONNECTOR_NAME
-			},
-			namespace: 'mybricks.normal-pc.select'
+			connector: sidebarContext.connector.getById(item.id),
+			namespace
 		})
 	}, [])
 
@@ -403,7 +398,7 @@ const Plugin: FC<IProps> = props => {
 				type: SERVICE_TYPE.JS,
 				title: js.content.title,
 				connectorName: PLUGIN_CONNECTOR_NAME,
-				outputSchema: js.content.outputSchema
+				markList: js.content.markList
 			});
 		} else {
 			if (!sidebarContext.parent) {
@@ -427,7 +422,7 @@ const Plugin: FC<IProps> = props => {
 				type: SERVICE_TYPE.JS,
 				title: js.content.title,
 				connectorName: PLUGIN_CONNECTOR_NAME,
-				outputSchema: js.content.outputSchema
+				markList: js.content.markList
 			});
 		}
 		closeTemplateForm();
