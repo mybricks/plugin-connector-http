@@ -23,11 +23,11 @@ const AddComPanel = (props: AddComPanelProps) => {
     const connector = sidebarContext.connector.getById(globalContext.dragItem.id);
     const schema = connector.markList[0].outputSchema;
     const matchedComponentsBySchema = sidebarContext.component.getComDefAryBySchema(schema);
-    setComs(matchedComponentsBySchema);
-    setShowPupup(true);
     context.current.pageX = e.pageX;
     context.current.pageY = e.pageY;
     context.current.connector = connector;
+    setComs(matchedComponentsBySchema);
+    setShowPupup(true);
   }
 
   const onClose = () => {
@@ -74,7 +74,14 @@ const AddComPanel = (props: AddComPanelProps) => {
       </div>
       {showPopup && (
         <div className={css.mask} onClick={onMaskClick}>
-          <div className={css.popup} onClick={(e) => e.stopPropagation()}>
+          <div
+            className={css.popup}
+            style={{
+              left: context.current.pageX,
+              top: context.current.pageY,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className={css.title}>
               <div>添加组件</div>
               <div>
