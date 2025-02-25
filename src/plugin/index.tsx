@@ -50,12 +50,13 @@ interface IComponent {
 }
 
 const interfaceParams = [
-  { key: 'id', name: '标识', copy: true },
+  // { key: 'id', name: '标识', copy: true },
   { key: 'content.title', name: '标题' },
-  { key: 'content.method', name: '方法' },
+  // { key: 'content.method', name: '方法' },
   { key: 'content.path', name: '路径' },
-  { key: 'content.doc', name: '文档链接', link: true },
-  { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
+	{ key: 'split0', split: true },
+  // { key: 'content.doc', name: '文档链接', link: true },
+  // { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
 	{ key: 'schemaMatchComs', name: "组件", schemaMatchComs: true }, // 展示与连接器schema匹配的组件
 ];
 
@@ -82,7 +83,9 @@ const Plugin: FC<IProps> = props => {
 			    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }, { type: SERVICE_TYPE.JS, title: 'JS' }].concat(addActions)
 		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }, { type: SERVICE_TYPE.JS, title: 'JS' }])
     )
-	    .concat([{ type: SEPARATOR_TYPE, title: '' }, { type: SERVICE_TYPE.FOLDER, title: '文件夹' }, { type: SERVICE_TYPE.IMPORT, title: '导入'}]),
+	    .concat([
+				// { type: SEPARATOR_TYPE, title: '' }, 
+				{ type: SERVICE_TYPE.FOLDER, title: '文件夹' }, { type: SERVICE_TYPE.IMPORT, title: '导入'}]),
     connector: {
       add: (args: any) => connector.add({ ...args }),
       remove: (id: string) => connector.remove(id),
@@ -759,7 +762,69 @@ const Plugin: FC<IProps> = props => {
 											>
 												{Icons.edit}
 											</div>
-											{type === SERVICE_TYPE.FOLDER ? (
+											<Dropdown
+												dropDownStyle={{ right: 0 }}
+												onBlur={fn => blurMap.current['toolbar' + item.id] = fn}
+												overlay={(
+													<div className={styles.dropdownItem}>
+														{type === SERVICE_TYPE.FOLDER ? sidebarContext.addActions.map(({ type, title }: any) => {
+																if (type === SEPARATOR_TYPE) {
+																	return <div className={styles['separator-divider']}></div>
+																}
+																return (
+																	<div
+																		className={styles.item}
+																		key={type}
+																		onClick={() => {
+																			sidebarContext.activeId = void 0;
+																			sidebarContext.parent = item;
+
+																			if (type === SERVICE_TYPE.HTTP) {
+																				sidebarContext.addDefaultService();
+																			} else if (type === SERVICE_TYPE.FOLDER) {
+																				sidebarContext.addServiceFolder();
+																			} else if(type === SERVICE_TYPE.IMPORT) {
+																				sidebarContext.importService()
+																			} else if (type === SERVICE_TYPE.JS) {
+																				sidebarContext.addDefaultJs();
+																			} else {
+																				sidebarContext.type = type;
+																				sidebarContext.isEdit = false;
+																				sidebarContext.formModel = { type };
+																				setRender(sidebarContext);
+																			}
+																		}}
+																	>
+																		{title}
+																	</div>
+																);
+															}) : (
+															<div className={styles.item} onClick={() => onCopyItem(item, parent)}>
+																复制
+															</div>
+														)}
+
+														
+														<div className={styles.item} onClick={() => onExportItem(item)}>
+															导出
+														</div>
+														<div className={styles['separator-divider']}></div>
+														<div className={styles.item} onClick={() => onRemoveItem(item)}>
+															删除
+														</div>
+													</div>
+												)}
+											>
+												<div
+													className={styles.action}
+													data-mybricks-tip="更多"
+													onClick={() => Object.keys(blurMap.current).filter(key => key !== `toolbar${item.id}`).forEach(key => blurMap.current[key]())}
+												>
+													{Icons.more}
+												</div>
+											</Dropdown>
+											
+											{/* {type === SERVICE_TYPE.FOLDER ? (
 												<Dropdown
 													dropDownStyle={{ right: 0 }}
 													onBlur={fn => blurMap.current['toolbar' + item.id] = fn}
@@ -812,8 +877,8 @@ const Plugin: FC<IProps> = props => {
 												<div data-mybricks-tip="复制" className={styles.action} onClick={() => onCopyItem(item, parent)}>
 													{Icons.copy}
 												</div>
-											)}
-											<div data-mybricks-tip="导出" className={styles.action} onClick={() => onExportItem(item)}>
+											)} */}
+											{/* <div data-mybricks-tip="导出" className={styles.action} onClick={() => onExportItem(item)}>
 												{Icons.exportIcon}
 											</div>
 											<div
@@ -822,7 +887,7 @@ const Plugin: FC<IProps> = props => {
 												onClick={() => onRemoveItem(item)}
 											>
 												{Icons.remove}
-											</div>
+											</div> */}
 										</div>
 									</div>
 								</div>
@@ -833,6 +898,14 @@ const Plugin: FC<IProps> = props => {
 									: (
 										<div className={styles['sidebar-panel-list-item__expand']}>
 											{getInterfaceParams(item).map((param: any) => {
+
+												if (param.split) {
+													return <div className={styles.split}></div>
+												}
+
+												const content = renderParam(item, param);
+												const tip = typeof content === "string" ? content : null;
+
 												return (
 													<div className={styles['sidebar-panel-list-item__param']} key={param.key}>
 			                      <span
@@ -841,8 +914,8 @@ const Plugin: FC<IProps> = props => {
 			                      >
 			                        {param.name}:
 			                      </span>
-																<span className={styles['sidebar-panel-list-item__content']}>
-			                        {renderParam(item, param)}
+																<span data-mybricks-tip={tip} className={styles['sidebar-panel-list-item__content']}>
+			                        {content}
 			                      </span>
 													</div>
 												);

@@ -158,12 +158,18 @@
       color: #aaa;
       padding-right: 3px;
       text-align: right;
-      flex: 0 0 55px;
+      // flex: 0 0 55px;
     }
 
     &__content {
       flex: 1;
       word-break: break-all;
+      // 
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      display: block;
     }
 
     &__param {
@@ -360,4 +366,9 @@
     width: 12px;
     background: #eae9e9;
   }
+}
+
+.split {
+  border-bottom: 1px solid #ccc;
+  margin: 6px 6px 10px 6px;
 }
