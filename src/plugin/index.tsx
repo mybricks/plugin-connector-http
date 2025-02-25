@@ -493,6 +493,7 @@ const Plugin: FC<IProps> = props => {
 						connector={connector}
 						coms={matchedComponentsBySchema}
 						component={component}
+						closePlugin={closePlugin}
 					/>
 				)
 			}
@@ -667,6 +668,11 @@ const Plugin: FC<IProps> = props => {
 			dropParent.splice(place === 'bottom' ? dropIndex + 1 : dropIndex, 0, dragItem);
 		}
 	}, [data]);
+
+	const closePlugin = useCallback(() => {
+		closeTemplateForm();
+		pluginRef.current?.parentElement?.parentElement?.click?.();
+	}, [])
 
 	// const onDragEnd = useCallback(() => {
 	// 	setAddComPanelContext((context) => {

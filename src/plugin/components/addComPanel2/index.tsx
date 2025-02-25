@@ -3,7 +3,7 @@ import React from "react";
 import css from "./index.less";
 
 
-const AddComPanel2 = ({ connector, coms, component }) => {
+const AddComPanel2 = ({ connector, coms, component, closePlugin }) => {
   return (
     <div className={css.comsList}>
       {coms.length ? coms.map((com) => {
@@ -16,6 +16,7 @@ const AddComPanel2 = ({ connector, coms, component }) => {
                 ...com,
                 connector
               })
+              closePlugin();
             }}
           >
             <div className={css.comIcon}>
