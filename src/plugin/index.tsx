@@ -349,7 +349,7 @@ const Plugin: FC<IProps> = props => {
 			id: uuid(),
 		  type: SERVICE_TYPE.JS,
 			content: {
-				title: "[临时] 记得删除"
+				title: ""
 			},
 	  };
 	  setRender(sidebarContext);
