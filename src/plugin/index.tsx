@@ -16,7 +16,7 @@ import { folder, plus } from '../icon';
 import Dropdown from '../components/Dropdown';
 import JsPanel from "./components/jsPanel";
 // import ComsPanel from "./components/comsPanel";
-import AddComPanel from "./components/addComPanel";
+// import AddComPanel from "./components/addComPanel";
 import AddComPanel2 from "./components/addComPanel2";
 
 import styles from './style-cssModules.less';
@@ -56,18 +56,18 @@ const interfaceParams = [
   { key: 'content.path', name: '路径' },
   { key: 'content.doc', name: '文档链接', link: true },
   { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
-	{ key: 'schemaMatchComs', name: "组件", schemaMatchComs: true }
+	{ key: 'schemaMatchComs', name: "组件", schemaMatchComs: true }, // 展示与连接器schema匹配的组件
 ];
 
 const Plugin: FC<IProps> = props => {
 	const { addActions, connector, data, serviceListUrl, initialValue = {}, visibility, component } = props;
   const pluginRef = useRef<HTMLDivElement>(null);
   const blurMap = useRef<Record<string, () => void>>({});
-	const globalContext = useRef<Record<string, any>>({});
-	const [addComPanelContext, setAddComPanelContext] = useState({
-		addPanel: false,
-		popup: false
-	});
+	// const globalContext = useRef<Record<string, any>>({});
+	// const [addComPanelContext, setAddComPanelContext] = useState({
+	// 	addPanel: false,
+	// 	popup: false
+	// });
   const [searchValue, setSearchValue] = useState('');
   const [expandIdList, setExpandIdList] = useState([]);
   const [sidebarContext, setContext] = useState<any>({
@@ -182,20 +182,20 @@ const Plugin: FC<IProps> = props => {
     }));
   }, []);
 
-	const onAddComItem = useCallback((item) => {
-		const connector = sidebarContext.connector.getById(item.id);
-		const schema = connector.markList[0].outputSchema;
-		const matchedComponentsBySchema = component.getComDefAryBySchema(schema);
+	// const onAddComItem = useCallback((item) => {
+	// 	const connector = sidebarContext.connector.getById(item.id);
+	// 	const schema = connector.markList[0].outputSchema;
+	// 	const matchedComponentsBySchema = component.getComDefAryBySchema(schema);
 
-		setRender({
-			coms: matchedComponentsBySchema,
-			formModel: {
-				coms: matchedComponentsBySchema,
-				connector,
-			},
-			type: 'addCom'
-		});
-	}, [])
+	// 	setRender({
+	// 		coms: matchedComponentsBySchema,
+	// 		formModel: {
+	// 			coms: matchedComponentsBySchema,
+	// 			connector,
+	// 		},
+	// 		type: 'addCom'
+	// 	});
+	// }, [])
 
   const onEditItem = useCallback((item) => {
 		if (sidebarContext.isEdit && item.id === sidebarContext.activeId) {
@@ -440,14 +440,14 @@ const Plugin: FC<IProps> = props => {
 		closeTemplateForm();
 	}
 
-	const onComsFinish = ({ com, connector, position }) => {
-		component.addInstance({
-			connector,
-			namespace: com.namespace
-		})
+	// const onComsFinish = ({ com, connector, position }) => {
+	// 	component.addInstance({
+	// 		connector,
+	// 		namespace: com.namespace
+	// 	})
 
-		closeTemplateForm();
-	}
+	// 	closeTemplateForm();
+	// }
 
   const onItemClick = useCallback((item: any) => {
 	  setExpandIdList(list => list.includes(item.id) ? list.filter(id => id !== item.id) : [...list, item.id]);
@@ -668,26 +668,26 @@ const Plugin: FC<IProps> = props => {
 		}
 	}, [data]);
 
-	const onDragEnd = useCallback(() => {
-		setAddComPanelContext((context) => {
-			return {
-				...context,
-				addPanel: false,
-			}
-		})
-	}, [])
+	// const onDragEnd = useCallback(() => {
+	// 	setAddComPanelContext((context) => {
+	// 		return {
+	// 			...context,
+	// 			addPanel: false,
+	// 		}
+	// 	})
+	// }, [])
 
-	const onDragStart = useCallback((item) => {
-		if ([SERVICE_TYPE.HTTP, SERVICE_TYPE.JS].includes(item.type)) {
-			globalContext.current.dragItem = item;
-			setAddComPanelContext((context) => {
-				return {
-					...context,
-					addPanel: true,
-				}
-			})
-		}
-	}, [])
+	// const onDragStart = useCallback((item) => {
+	// 	if ([SERVICE_TYPE.HTTP, SERVICE_TYPE.JS].includes(item.type)) {
+	// 		globalContext.current.dragItem = item;
+	// 		setAddComPanelContext((context) => {
+	// 			return {
+	// 				...context,
+	// 				addPanel: true,
+	// 			}
+	// 		})
+	// 	}
+	// }, [])
 
 	const renderItem = (connectors: any[], parent) => {
 		return connectors?.length
@@ -897,11 +897,11 @@ const Plugin: FC<IProps> = props => {
 		  </div>
 		  {renderAddActions()}
 		  {renderGlobalPanel()}
-			<AddComPanel
+			{/* <AddComPanel
 				visible={addComPanelContext.addPanel}
 				globalContext={globalContext.current}
 				sidebarContext={sidebarContext}
-			/>
+			/> */}
 	  </div>
   );
 };
