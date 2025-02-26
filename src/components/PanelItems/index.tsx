@@ -159,6 +159,7 @@ export const EditorWithFullScreen = ({ CDN, value, unique, onChange, path }) => 
         theme="light"
         value={value}
         onChange={onChange}
+        options={{fontSize: 12}}
       />
     </div>
   )

@@ -54,9 +54,10 @@ const interfaceParams = [
   { key: 'content.title', name: '标题' },
   // { key: 'content.method', name: '方法' },
   { key: 'content.path', name: '路径' },
+	{ key: 'split0', split: true },
   // { key: 'content.doc', name: '文档链接', link: true },
   // { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
-	{ key: 'schemaMatchComs', schemaMatchComs: true }, // 展示与连接器schema匹配的组件
+	{ key: 'schemaMatchComs', name: "组件", schemaMatchComs: true }, // 展示与连接器schema匹配的组件
 ];
 
 const Plugin: FC<IProps> = props => {
@@ -894,42 +895,34 @@ const Plugin: FC<IProps> = props => {
 							{expand ? (
 								type === SERVICE_TYPE.FOLDER
 									? <div className={styles.folderList}>{renderItem(item.children, item)}</div>
-									: (
-										<div className={styles['sidebar-panel-list-item__expand']}>
-											{getInterfaceParams(item).map((param: any) => {
+									: renderParam(item, {schemaMatchComs: true})
+									// (
+									// 	<div className={styles['sidebar-panel-list-item__expand']}>
+									// 		{getInterfaceParams(item).map((param: any) => {
 
-												const content = renderParam(item, param);
+									// 			if (param.split) {
+									// 				return <div className={styles.split}></div>
+									// 			}
 
-												return typeof content === "string" ? (
-													<div className={styles['sidebar-panel-list-item__param']} key={param.key}>
-			                      <span
-				                      className={styles['sidebar-panel-list-item__name']}
-				                      style={{ width: param.width }}
-			                      >
-			                        {param.name}:
-			                      </span>
-																<span data-mybricks-tip={content} className={styles['sidebar-panel-list-item__content']}>
-			                        {content}
-			                      </span>
-													</div>
-												) : <div key={param.key}>{content}</div>;
+									// 			const content = renderParam(item, param);
+									// 			const tip = typeof content === "string" ? content : null;
 
-												// return (
-												// 	<div className={styles['sidebar-panel-list-item__param']} key={param.key}>
-			                  //     <span
-				                //       className={styles['sidebar-panel-list-item__name']}
-				                //       style={{ width: param.width }}
-			                  //     >
-			                  //       {param.name}:
-			                  //     </span>
-												// 				<span data-mybricks-tip={tip} className={styles['sidebar-panel-list-item__content']}>
-			                  //       {content}
-			                  //     </span>
-												// 	</div>
-												// );
-											})}
-										</div>
-									)
+									// 			return (
+									// 				<div className={styles['sidebar-panel-list-item__param']} key={param.key}>
+			            //           <span
+				          //             className={styles['sidebar-panel-list-item__name']}
+				          //             style={{ width: param.width }}
+			            //           >
+			            //             {param.name}:
+			            //           </span>
+									// 							<span data-mybricks-tip={tip} className={styles['sidebar-panel-list-item__content']}>
+			            //             {content}
+			            //           </span>
+									// 				</div>
+									// 			);
+									// 		})}
+									// 	</div>
+									// )
 							) : null}
 						</>
 					);

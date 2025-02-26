@@ -6,7 +6,7 @@ import css from "./index.less";
 const AddComPanel2 = ({ connector, coms, component, closePlugin }) => {
   return coms.length ? (
     <>
-      <div className={css.split}></div>
+      {/* <div className={css.split}></div> */}
       <div className={css.comsList}>
         {coms.map((com) => {
           return (
@@ -32,7 +32,7 @@ const AddComPanel2 = ({ connector, coms, component, closePlugin }) => {
         })}
       </div>
     </>
-  ) : null;
+  ) : <span className={css.empty}>未匹配到对应schema的组件</span>;
 }
 
 export default AddComPanel2;
