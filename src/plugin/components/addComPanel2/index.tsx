@@ -7,6 +7,7 @@ const AddComPanel2 = ({ connector, coms, component, closePlugin }) => {
   return coms.length ? (
     <>
       {/* <div className={css.split}></div> */}
+      <span className={css.tips}>以下组件可直接拖动添加</span>
       <div className={css.comsList}>
         {coms.map((com) => {
           return (
@@ -32,7 +33,7 @@ const AddComPanel2 = ({ connector, coms, component, closePlugin }) => {
         })}
       </div>
     </>
-  ) : <span className={css.empty}>未匹配到对应schema的组件</span>;
+  ) : <span className={css.tips}>未匹配到对应schema的组件</span>;
 }
 
 export default AddComPanel2;
