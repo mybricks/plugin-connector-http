@@ -75,7 +75,7 @@ function DataShow({ data }: any) {
 				height={300}
 				language='json'
 				theme='light'
-				options={{ readOnly: true }}
+				options={{ readOnly: true, fontSize: 12 }}
 			/>
 		</div>
 	);

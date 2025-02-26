@@ -26,6 +26,7 @@ export default function GlobalPanel({ onClose, style, data }: any) {
 							data.config.paramsFn = code;
 						}
 					}, 100)}
+					options={{fontSize: 12}}
 				/>
 			</Collapse>
 			<Collapse header="当返回响应">
@@ -46,6 +47,7 @@ export default function GlobalPanel({ onClose, style, data }: any) {
 							data.config.resultFn = code;
 						}
 					}, 100)}
+				  options={{fontSize: 12}}
 				/>
 			</Collapse>
 			<Collapse header="当接口响应错误时">
@@ -66,6 +68,7 @@ export default function GlobalPanel({ onClose, style, data }: any) {
 							data.config.errorResultFn = code;
 						}
 					}, 100)}
+					options={{fontSize: 12}}
 				/>
 			</Collapse>
 		</PanelWrap>
