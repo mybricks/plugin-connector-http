@@ -80,8 +80,8 @@ const Plugin: FC<IProps> = props => {
 			[].concat(addActions
 		    ? addActions.some(({ type }: any) => type === 'default')
 			    ? addActions
-			    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }, { type: SERVICE_TYPE.JS, title: 'JS' }].concat(addActions)
-		    : [{ type: SERVICE_TYPE.HTTP, title: '普通接口' }, { type: SERVICE_TYPE.JS, title: 'JS' }])
+			    : [{ type: SERVICE_TYPE.HTTP, title: '服务接口' }, { type: SERVICE_TYPE.JS, title: '静态数据' }, { type: SEPARATOR_TYPE }].concat(addActions)
+		    : [{ type: SERVICE_TYPE.HTTP, title: '服务接口' }, { type: SERVICE_TYPE.JS, title: '静态数据' }, { type: SEPARATOR_TYPE }])
     )
 	    .concat([
 				// { type: SEPARATOR_TYPE, title: '' }, 
