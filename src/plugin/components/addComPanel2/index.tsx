@@ -7,7 +7,7 @@ const AddComPanel2 = ({ connector, coms, component, closePlugin }) => {
   return coms.length ? (
     <>
       {/* <div className={css.split}></div> */}
-      <span className={css.tips}>以下组件可直接拖动添加</span>
+      <span className={css.tips}>（以下组件可拖动添加至画布）</span>
       <div className={css.comsList}>
         {coms.map((com) => {
           return (
