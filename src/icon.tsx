@@ -90,6 +90,6 @@ export const addCom = (
 )
 
 export const more = (
-	<svg width="12" height="12" fill="currentColor" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="702"><path d="M96 512m-96 0a3 3 0 1 0 192 0 3 3 0 1 0-192 0ZM512 512m-96 0a3 3 0 1 0 192 0 3 3 0 1 0-192 0ZM928 512m-96 0a3 3 0 1 0 192 0 3 3 0 1 0-192 0Z" p-id="703"></path></svg>
+	<svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1500" width="12" height="12"><path d="M512 298.6496a85.3504 85.3504 0 1 0 0-170.6496 85.3504 85.3504 0 0 0 0 170.6496z" fill="currentColor" p-id="1501"></path><path d="M512 512m-85.3504 0a85.3504 85.3504 0 1 0 170.7008 0 85.3504 85.3504 0 1 0-170.7008 0Z" fill="currentColor" p-id="1502"></path><path d="M512 896a85.3504 85.3504 0 1 0 0-170.7008 85.3504 85.3504 0 0 0 0 170.7008z" fill="currentColor" p-id="1503"></path></svg>
 )
 

@@ -4,32 +4,35 @@ import css from "./index.less";
 
 
 const AddComPanel2 = ({ connector, coms, component, closePlugin }) => {
-  return (
-    <div className={css.comsList}>
-      {coms.length ? coms.map((com) => {
-        return (
-          <div
-            className={css.comItem}
-            data-mybricks-tip={com.title}
-            onMouseDown={(e) => {
-              component.dragToAddInstance(e, {
-                ...com,
-                connector
-              })
-              closePlugin();
-            }}
-          >
-            <div className={css.comIcon}>
-              <img className={css.comImg} src={com.icon} />
+  return coms.length ? (
+    <>
+      <div className={css.split}></div>
+      <div className={css.comsList}>
+        {coms.map((com) => {
+          return (
+            <div
+              className={css.comItem}
+              data-mybricks-tip={com.title}
+              onMouseDown={(e) => {
+                component.dragToAddInstance(e, {
+                  ...com,
+                  connector
+                })
+                closePlugin();
+              }}
+            >
+              <div className={css.comIcon}>
+                <img className={css.comImg} src={com.icon} />
+              </div>
+              <div className={css.comTitle}>
+                {com.title}
+              </div>
             </div>
-            <div className={css.comTitle}>
-              {com.title}
-            </div>
-          </div>
-        )
-      }) : "未匹配到对应schema的组件"}
-  </div>
-  );
+          )
+        })}
+      </div>
+    </>
+  ) : null;
 }
 
 export default AddComPanel2;

@@ -54,10 +54,9 @@ const interfaceParams = [
   { key: 'content.title', name: '标题' },
   // { key: 'content.method', name: '方法' },
   { key: 'content.path', name: '路径' },
-	{ key: 'split0', split: true },
   // { key: 'content.doc', name: '文档链接', link: true },
   // { key: 'updateTime', name: '更新时间', format: 'YYYY-MM-DD HH:mm:ss' },
-	{ key: 'schemaMatchComs', name: "组件", schemaMatchComs: true }, // 展示与连接器schema匹配的组件
+	{ key: 'schemaMatchComs', schemaMatchComs: true }, // 展示与连接器schema匹配的组件
 ];
 
 const Plugin: FC<IProps> = props => {
@@ -899,14 +898,9 @@ const Plugin: FC<IProps> = props => {
 										<div className={styles['sidebar-panel-list-item__expand']}>
 											{getInterfaceParams(item).map((param: any) => {
 
-												if (param.split) {
-													return <div className={styles.split}></div>
-												}
-
 												const content = renderParam(item, param);
-												const tip = typeof content === "string" ? content : null;
 
-												return (
+												return typeof content === "string" ? (
 													<div className={styles['sidebar-panel-list-item__param']} key={param.key}>
 			                      <span
 				                      className={styles['sidebar-panel-list-item__name']}
@@ -914,11 +908,25 @@ const Plugin: FC<IProps> = props => {
 			                      >
 			                        {param.name}:
 			                      </span>
-																<span data-mybricks-tip={tip} className={styles['sidebar-panel-list-item__content']}>
+																<span data-mybricks-tip={content} className={styles['sidebar-panel-list-item__content']}>
 			                        {content}
 			                      </span>
 													</div>
-												);
+												) : <div key={param.key}>{content}</div>;
+
+												// return (
+												// 	<div className={styles['sidebar-panel-list-item__param']} key={param.key}>
+			                  //     <span
+				                //       className={styles['sidebar-panel-list-item__name']}
+				                //       style={{ width: param.width }}
+			                  //     >
+			                  //       {param.name}:
+			                  //     </span>
+												// 				<span data-mybricks-tip={tip} className={styles['sidebar-panel-list-item__content']}>
+			                  //       {content}
+			                  //     </span>
+												// 	</div>
+												// );
 											})}
 										</div>
 									)
