@@ -36,7 +36,7 @@ export default function ({ ctx, setRender, blurMap }: any) {
 	
 	  return (
 		  <Dropdown dropDownStyle={ctx.type ? { right: 0 } : undefined} onBlur={fn => blurMap['toolbar'] = fn} overlay={menu}>
-			  <div className={css.icon} data-mybricks-tip="创建接口" onClick={() => Object.keys(blurMap).filter(key => key !== 'toolbar').forEach(key => blurMap[key]())}>
+			  <div className={css.icon} data-mybricks-tip="创建连接器" onClick={() => Object.keys(blurMap).filter(key => key !== 'toolbar').forEach(key => blurMap[key]())}>
 				  {plus}
 			  </div>
 		  </Dropdown>

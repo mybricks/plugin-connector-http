@@ -867,7 +867,7 @@ const Plugin: FC<IProps> = props => {
 												>
 													<div
 														className={styles.action}
-														data-mybricks-tip="创建接口"
+														data-mybricks-tip="创建连接器"
 														onClick={() => Object.keys(blurMap.current).filter(key => key !== `toolbar${item.id}`).forEach(key => blurMap.current[key]())}
 													>
 														{plus}

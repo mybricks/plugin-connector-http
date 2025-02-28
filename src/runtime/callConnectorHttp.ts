@@ -105,7 +105,7 @@ const callJs = (connector: Connector, params: any, config?: IConfig) => {
     try {
       // const result = pluginRun(connector.output)(params);
       // resolve(result);
-      pluginRun(connector.output)(params, { output: config.stream || (() => {}) });
+      pluginRun(connector.script || connector.output)(params, { output: config.stream || (() => {}) });
     } catch (ex) {
       console.log('连接器错误', ex);
       reject(`连接器script错误.`);
