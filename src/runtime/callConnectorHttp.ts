@@ -17,6 +17,7 @@ interface IConfig {
   agent?: any;
   before: (options: IOptions) => any;
   onResponseInterception?(response): any;
+  stream?: (val: any) => void;
 }
 
 const defaultFn = (options: IOptions, ...args: any) => ({
@@ -40,7 +41,7 @@ export function call(
   config?: IConfig
 ) {
   if (connector.type === SERVICE_TYPE.JS) {
-    return callJs(connector)
+    return callJs(connector, params, config)
   }
   return new Promise((resolve, reject) => {
     try {
@@ -99,11 +100,12 @@ export function call(
   });
 }
 
-const callJs = (connector: Connector) => {
+const callJs = (connector: Connector, params: any, config?: IConfig) => {
   return new Promise((resolve, reject) => {
     try {
-      const result = pluginRun(connector.output)();
-      resolve(result);
+      // const result = pluginRun(connector.output)(params);
+      // resolve(result);
+      pluginRun(connector.output)(params, { output: config.stream || (() => {}) });
     } catch (ex) {
       console.log('连接器错误', ex);
       reject(`连接器script错误.`);

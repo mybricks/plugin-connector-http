@@ -3,12 +3,22 @@
 import { exampleParamsFunc } from '../constant';
 
 export function getDecodeString(fn: string) {
-  return fn
-    ? decodeURIComponent(fn).replace(
-        /export\s+default.*function.*\(/,
-        'function _RT_('
-      )
-    : fn;
+  if (fn) {
+    const decodeFn = decodeURIComponent(fn);
+    const exportCodeMatch = decodeFn.match(/export\s+default.*function.*\(/);
+    return decodeFn.replace(
+      /export\s+default.*function.*\(/,
+      exportCodeMatch[0]?.includes("async") ? 'async function _RT_(' :  'function _RT_('
+    )
+  }
+
+  return fn;
+  // return fn
+  //   ? decodeURIComponent(fn).replace(
+  //       /export\s+default.*function.*\(/,
+  //       'async function _RT_('
+  //     )
+  //   : fn;
 }
 
 function getScript(serviceItem) {

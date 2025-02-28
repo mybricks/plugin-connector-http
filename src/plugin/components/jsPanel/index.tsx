@@ -12,8 +12,8 @@ import { getDecodeString } from "../../../script";
 const testOutputRun = functionString => eval(`(() => { return ${functionString ? getDecodeString(functionString) : '_ => _;' }})()`);
 
 /** 默认返回数据值 */
-export const exampleOutputFunc = `export default function () {
-  return [];
+export const exampleOutputFunc = `export default async function (params, { output }) {
+  
 }
 `;
 
@@ -48,13 +48,16 @@ interface JsPanelProps {
 const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
   const contentRef = useRef({ ...defaultContent, ...js.content });
 
-  const onSaveClick = () => {
+  const onSaveClick = async () => {
     if (!contentRef.current.title.length) {
       notice("请输入名称")
     } else {
       try {
-        const outputData = testOutputRun(contentRef.current.output)();
-        const outputSchema = jsonToSchema(outputData);
+        // const outputData = await testOutputRun(contentRef.current.output)({}, { output: () => {} });
+        // console.log('outputData => ', outputData)
+        // const outputSchema = jsonToSchema(outputData);
+        // console.log("outputSchema => ", outputSchema)
+        const outputSchema = {type: 'unknown'}; // [TODO]: 自定义
         const markList = [{
           id: "default",
           excludeKeys: [],
