@@ -489,8 +489,8 @@ const Plugin: FC<IProps> = props => {
       }
 			if (schemaMatchComs) {
 				const connector = sidebarContext.connector.getById(item.id);
-				const schema = connector.markList[0].outputSchema;
-				const matchedComponentsBySchema = sidebarContext.component.getComDefAryBySchema(schema);
+				const schema = connector.markList?.[0].outputSchema;
+				const matchedComponentsBySchema = schema ? sidebarContext.component.getComDefAryBySchema(schema) : [];
 				return (
 					<AddComPanel2
 						connector={connector}
