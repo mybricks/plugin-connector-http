@@ -1,4 +1,4 @@
-import React, { CSSProperties, FC, useCallback, useMemo, useRef } from 'react';
+import React, { CSSProperties, FC, useCallback, useMemo, useRef, useState } from 'react';
 import PanelWrap from '../../../components/panel';
 import FormItem from '../../../components/FormItem';
 import Input from '../../../components/Input';
@@ -47,6 +47,7 @@ interface JsPanelProps {
 
 const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
   const contentRef = useRef({ ...defaultContent, ...js.content });
+  const [model, setModel] = useState({ ...defaultContent, ...js.content });
 
   const onSaveClick = async () => {
     if (!contentRef.current.title.length) {
@@ -81,6 +82,7 @@ const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
 
   const onOutputChange = useCallback(debounce((code: string) => {
     contentRef.current.output = encodeURIComponent(code)
+    setModel(model => ({ ...model, output: encodeURIComponent(code) }))
   }, 200), [])
 
   const editorPath = useMemo(() => {
@@ -104,13 +106,14 @@ const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
 					/>
 				</FormItem>
 			</Collapse>
-      <Collapse header="返回数据" defaultFold={false}>
+      <Collapse header="自定义" defaultFold={false}>
 				<EditorWithFullScreen
 					unique={'output'}
 					CDN={CDN}
 					path={editorPath + 'output.js'}
           onChange={onOutputChange}
-					value={safeDecode(contentRef.current.output)}
+          value={safeDecode(model.output)}
+					// value={safeDecode(contentRef.current.output)}
 				/>
 			</Collapse>
 		</PanelWrap>

@@ -8,7 +8,7 @@ export function getDecodeString(fn: string) {
     const exportCodeMatch = decodeFn.match(/export\s+default.*function.*\(/);
     return decodeFn.replace(
       /export\s+default.*function.*\(/,
-      exportCodeMatch[0]?.includes("async") ? 'async function _RT_(' :  'function _RT_('
+      exportCodeMatch?.[0]?.includes("async") ? 'async function _RT_(' :  'function _RT_('
     )
   }
 
