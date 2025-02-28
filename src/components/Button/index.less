@@ -1,6 +1,7 @@
 @import '../../theme.less';
 
 button.btn {
+  position: relative;
   display: inline-block;
   font-weight: 400;
   white-space: nowrap;
@@ -29,4 +30,13 @@ button.btn {
     color: @color-primary;
     border-color: @color-primary;
   }
+}
+
+.dotTip {
+  position: absolute;
+  top: -1px;
+  right: 3px;
+  font-size: 12px;
+  color: #FFF;
+  transform: scale(0.8);
 }

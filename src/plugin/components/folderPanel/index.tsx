@@ -14,16 +14,22 @@ interface FolderPanelProps {
 
 const FolderPanel: FC<FolderPanelProps> = ({ onClose, style, folder, onSubmit }) => {
 	const [title, setTitle] = useState(folder.content.title);
+	const [dotTip, setDotTip] = useState(false);
 	const onSaveClick = useCallback(() => onSubmit({ ...folder, content: { ...folder.content, title } }), [title, folder, onSubmit]);
 
+	const onTitleChange = (e) => {
+		setTitle(e.target.value);
+		setDotTip(true);
+	}
+
 	return (
-		<PanelWrap style={style} title="新建文件夹" onClose={onClose} extra={<Button type="primary" size="small" onClick={onSaveClick}>保 存</Button>}>
+		<PanelWrap style={style} title="新建文件夹" onClose={onClose} extra={<Button type="primary" size="small" dotTip={dotTip} onClick={onSaveClick}>保 存</Button>}>
 			<Collapse header="基本信息" defaultFold={false}>
 				<FormItem label='名称' require>
 					<Input
 						key='interfaceName'
 						defaultValue={folder.content.title}
-						onChange={e => setTitle(e.target.value)}
+						onChange={onTitleChange}
 						placeholder='文件夹的名称'
 					/>
 				</FormItem>

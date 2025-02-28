@@ -46,11 +46,11 @@ interface JsPanelProps {
 }
 
 const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
-  const contentRef = useRef({ ...defaultContent, ...js.content });
   const [model, setModel] = useState({ ...defaultContent, ...js.content });
+  const [dotTip, setDotTip] = useState(false);
 
   const onSaveClick = async () => {
-    if (!contentRef.current.title.length) {
+    if (!model.title.length) {
       notice("请输入名称")
     } else {
       try {
@@ -68,7 +68,7 @@ const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
           resultSchema: outputSchema,
           title: "默认"
         }]
-        onSubmit({...js, content: { ...contentRef.current, markList }});
+        onSubmit({...js, content: { ...model, markList }});
       } catch (e) {
         console.error("【返回数据】逻辑错误，请检查 => ", e);
         notice(`【返回数据】逻辑错误，请检查 => ${e.message}`)
@@ -77,11 +77,12 @@ const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
   }
 
   const onTitleChange = (e) => {
-    contentRef.current.title = e.target.value.trim();
+    setDotTip(true);
+    setModel((model) => ({ ...model, title: e.target.value.trim() }))
   }
 
   const onOutputChange = useCallback(debounce((code: string) => {
-    contentRef.current.output = encodeURIComponent(code)
+    setDotTip(true);
     setModel(model => ({ ...model, output: encodeURIComponent(code) }))
   }, 200), [])
 
@@ -92,15 +93,15 @@ const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
 	return (
 		<PanelWrap
       style={style}
-      title={contentRef.current.title}
+      title={model.title}
       onClose={onClose}
-      extra={<Button type="primary" size="small" onClick={onSaveClick}>保 存</Button>}
+      extra={<Button type="primary" size="small" dotTip={dotTip} onClick={onSaveClick}>保 存</Button>}
     >
 			<Collapse header="基本信息" defaultFold={false}>
 				<FormItem label='名称' require>
 					<Input
 						key='title'
-						defaultValue={contentRef.current.title}
+						defaultValue={model.title}
             onChange={onTitleChange}
 						placeholder='请输入名称'
 					/>
@@ -113,7 +114,6 @@ const JsPanel: FC<JsPanelProps> = ({ onClose, style, onSubmit, js }) => {
 					path={editorPath + 'output.js'}
           onChange={onOutputChange}
           value={safeDecode(model.output)}
-					// value={safeDecode(contentRef.current.output)}
 				/>
 			</Collapse>
 		</PanelWrap>

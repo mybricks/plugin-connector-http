@@ -6,6 +6,7 @@ export type ButtonProps = Omit<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButton
   type?: string;
   size?: string;
   children?: ReactNode;
+  dotTip?: boolean;
 }
 
 const Button: FC<ButtonProps> = props => {
@@ -13,6 +14,7 @@ const Button: FC<ButtonProps> = props => {
 
   return (
     <button className={styles.btn} {...(otherProps as Record<string, string>)}>
+      {otherProps.dotTip && <div className={styles.dotTip}>＊</div>}
       <span>{children}</span>
     </button>
   );

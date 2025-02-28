@@ -8,6 +8,7 @@ import { debounce } from '../../../utils/lodash';
 import { NameInput, AddressInput, MethodRadio, DocInput, DescriptionInput, EditorWithFullScreen } from '../../../components'
 import { notice } from '../../../components';
 import PanelWrap, { PanelWrapRef } from '../../../components/panel';
+import { useUpdateEffect } from '../../../hooks';
 
 /** type 由各自类型指定 */
 const getDefaultModel = () => {
@@ -18,6 +19,7 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 	const [model, setModel] = useState<Record<string, any>>(sidebarContext.formModel || getDefaultModel());
 	/** 错误字段 */
 	const [errorFields, setErrorFields] = useState([]);
+	const [dotTip, setDotTip] = useState(false);
 	const onClosePanel = useCallback(() => {
 		sidebarContext.type = '';
 		sidebarContext.activeId = void 0;
@@ -76,12 +78,18 @@ export default function DefaultPanel({ sidebarContext, style, onSubmit, setRende
 	  return `file:///${Math.random()}_code`;
   }, []);
 
+	useUpdateEffect(() => {
+		setDotTip(true);
+	}, [model], {
+		skipCount: sidebarContext.isEdit ? 1 : 2
+	})
+
 	return (
 		<PanelWrap
 			ref={panelRef}
 			style={style}
 			title={model?.title}
-			extra={<Button type="primary" size="small" onClick={onSaveClick}>保 存</Button>}
+			extra={<Button type="primary" size="small" dotTip={dotTip} onClick={onSaveClick}>保 存</Button>}
 			onClose={onClosePanel}
 		>
 			<Collapse header="基本信息" defaultFold={false}>
