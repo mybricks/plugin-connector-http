@@ -38,14 +38,15 @@ type Connector = {
 export function call(
   connector: Connector,
   params: any,
-  config?: IConfig
+  config?: IConfig,
+  env?: any
 ) {
   if (connector.type === SERVICE_TYPE.JS) {
     return callJs(connector, params, config)
   }
   return new Promise((resolve, reject) => {
     try {
-      const fn = connector.script ? eval(`(${decodeURIComponent(connector.script)})`) : getFetch(connector);
+      const fn = connector.script ? eval(`(${decodeURIComponent(connector.script)})`) : getFetch(connector, env);
       const { before = defaultFn, ...otherConfig } = config || {};
       fn(
         params,
@@ -167,7 +168,7 @@ const del = (data, keys) => {
   dfs(data, 0);
 };
 const pluginRun = functionString => eval(`(() => { return ${functionString ? getDecodeString(functionString) : '_ => _;' }})()`);
-const getFetch = (connector) => {
+const getFetch = (connector, env = {}) => {
   return (params, { then, onError }, config) => {
     const method = connector.method;
     const path = connector.path.trim();
@@ -188,7 +189,7 @@ const getFetch = (connector) => {
       showLog && console.log('【连接器调试日志】全局入参拦截器(执行前配置)：', cloneDeep(originParams));
 
       /** 全局入参处理 */
-      const newParams = pluginRun(connector.globalParamsFn)(originParams);
+      const newParams = pluginRun(connector.globalParamsFn)(originParams, env);
 
       showLog && console.log('【连接器调试日志】全局入参拦截器(执行后配置)：', cloneDeep(newParams));
 
@@ -198,7 +199,7 @@ const getFetch = (connector) => {
       showLog && console.log('【连接器调试日志】接口自定义入参拦截器(执行前配置)：', cloneDeep(newParams));
 
       /** 局部入参处理 */
-      const options = pluginRun(connector.input)(newParams);
+      const options = pluginRun(connector.input)(newParams, env);
 
       showLog && console.log('【连接器调试日志】接口自定义入参拦截器(执行后配置)：', cloneDeep(options));
       showLog && console.log('【连接器调试日志】接口请求路径模板字符串处理(执行前配置)：', cloneDeep(options));

@@ -70,7 +70,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
       this.data.config.errorResultFn = this.data.config.errorResultFn || pluginConfig?.initialValue?.errorResultFn || templateErrorResultFunc;
     },
     /** 调试时将调用插件的 callConnector 方法 */
-    callConnector(connector, params, config) {
+    callConnector(connector, params, config, env) {
       const pureConnectors = { ...this.data, connectors: getConnectorsByTree(this.data.connectors) };
 
       /** 非连接测试情况，启动 Mock */
@@ -93,7 +93,7 @@ export default function pluginEntry(pluginConfig: any = {}) {
           };
         }
 
-        return call({ useProxy: true, ...connector, ...curConnector }, params, config);
+        return call({ useProxy: true, ...connector, ...curConnector }, params, config, env);
       } else {
         return Promise.reject('接口不存在，请检查连接器插件中接口配置');
       }
