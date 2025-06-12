@@ -9,7 +9,7 @@ export function getDecodeString(fn: string) {
     return decodeFn.replace(
       /export\s+default.*function.*\(/,
       exportCodeMatch?.[0]?.includes("async") ? 'async function _RT_(' :  'function _RT_('
-    )
+    ).replace(/^\s*\/\/.*$/gm, '').replace(/^\s+|\s+$/g, '')
   }
 
   return fn;
