@@ -1,4 +1,4 @@
-# Mybricks插件-连接器-http
+# MyBricks插件-连接器-http
 ## 简介
 用于连接端到端的http接口，支持get、post、put、delete等请求。
 
