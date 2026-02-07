@@ -9,6 +9,8 @@ import Switch from './Switch';
 import Input, { TextArea } from './Input';
 import Debug from '../plugin/components/debug';
 import { notice } from './Message';
+import confirm from './Confirm';
+import prompt from './Prompt';
 import { uuid, safeDecode } from '../utils';
 import { CDN, Methods } from '../constant';
 
@@ -28,6 +30,8 @@ export {
 	Switch,
 	Debug,
 	notice,
+	confirm,
+	prompt,
 	Input,
 	TextArea,
 	uuid,

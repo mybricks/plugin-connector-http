@@ -1,0 +1,40 @@
+.mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prompt {
+  width: 400px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  
+  .title {
+    font-size: 14px;
+    color: #333;
+    line-height: 22px;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .content {
+    margin-bottom: 20px;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+}

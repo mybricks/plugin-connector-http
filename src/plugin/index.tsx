@@ -11,7 +11,7 @@ import Switch from '../components/Switch';
 import Drag from '../components/drag';
 import { copyText } from '../utils/copy';
 import FolderPanel from './components/folderPanel';
-import { notice } from '../components';
+import { notice, confirm, prompt } from '../components';
 import { folder, plus } from '../icon';
 import Dropdown from '../components/Dropdown';
 import JsPanel from "./components/jsPanel";
@@ -260,7 +260,7 @@ const Plugin: FC<IProps> = props => {
   }, []);
 
   const onRemoveItem = useCallback(async (item) => {
-	  if (confirm(item.type === SERVICE_TYPE.FOLDER ? `确认删除文件夹 ${item.content.title} 吗，其包含接口也将被删除` : `确认删除 ${item.content.title} 吗`)) {
+	  if (await confirm(item.type === SERVICE_TYPE.FOLDER ? `确认删除文件夹 ${item.content.title} 吗，其包含接口也将被删除` : `确认删除 ${item.content.title} 吗`)) {
 		  await removeService(item);
 		  sidebarContext.type = '';
 		  setRender(sidebarContext);
@@ -298,7 +298,7 @@ const Plugin: FC<IProps> = props => {
   }, [sidebarContext]);
 
 	sidebarContext.importService = useCallback(async () => {
-		let clipboard = prompt("将导出的接口数据复制到输入框");
+		let clipboard = await prompt("将导出的接口数据复制到输入框");
 		let isValid = false
 		if (clipboard == null || clipboard == "") {
 			return
