@@ -68,7 +68,7 @@ export function call(
             if (connector.useProxy && httpRegExp.test(url) && url.match(/^https?:\/\/([^/#&?])+/g)?.[0] !== location.origin) {
               return (config?.agent ?? axios)({
                   ...opts,
-                  url: '/paas/api/proxy',
+                  url: connector.proxyUrl ?? '/paas/api/proxy',
                   headers: {...(opts.headers || {}), ['x-target-url']: opts.url},
                   data: opts.data
                 })
